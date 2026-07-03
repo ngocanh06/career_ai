@@ -1,14 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
-// Components
-import Landing from './components/Landing/Landing';
-import DashboardGuest from './components/Dashboard';
+// Logged-in Dashboard Layout
 import DashboardLogged from './components/DashboardLogged';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
 import AiCvAnalysis from './components/Features/AiCvAnalysis';
 import PortfolioBuilder from './components/Features/PortfolioBuilder';
 import CareerOrientation from './components/Features/CareerOrientation';
@@ -19,14 +14,10 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Public / Guest Routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/dashboard-guest" element={<DashboardGuest />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* Redirect root to dashboard */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Logged in / Feature Routes */}
+          {/* Logged-in Routes */}
           <Route path="/dashboard" element={<DashboardLogged />} />
           <Route path="/ai-cv" element={<AiCvAnalysis />} />
           <Route path="/portfolio" element={<PortfolioBuilder />} />

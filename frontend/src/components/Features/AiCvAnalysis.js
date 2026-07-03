@@ -1,10 +1,11 @@
 import React from 'react';
+import DashboardLayout from '../DashboardLogged/DashboardLayout';
+import Topbar from '../DashboardLogged/Topbar';
 
 export default function AiCvAnalysis() {
   return (
-    <div className="ai-cv-analysis-page">
-      <h2>Phân tích CV AI</h2>
-      <p>Tính năng phân tích CV bằng trí tuệ nhân tạo.</p>
-    </div>
+    <DashboardLayout>
+      <Topbar user={{ name: 'Ngọc Anh' }} />
+    </DashboardLayout>
   );
 }

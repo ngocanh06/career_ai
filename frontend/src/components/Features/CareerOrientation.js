@@ -1,10 +1,13 @@
 import React from 'react';
+import DashboardLayout from '../DashboardLogged/DashboardLayout';
 
 export default function CareerOrientation() {
   return (
-    <div className="career-orientation-page">
-      <h2>Định hướng nghề nghiệp</h2>
-      <p>Tính năng tư vấn và định hướng nghề nghiệp.</p>
-    </div>
+    <DashboardLayout>
+      <div>
+        <h2>Định hướng nghề nghiệp</h2>
+        <p>Tính năng định hướng và tư vấn nghề nghiệp.</p>
+      </div>
+    </DashboardLayout>
   );
 }

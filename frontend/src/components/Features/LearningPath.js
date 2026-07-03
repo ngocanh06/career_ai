@@ -1,10 +1,13 @@
 import React from 'react';
+import DashboardLayout from '../DashboardLogged/DashboardLayout';
 
 export default function LearningPath() {
   return (
-    <div className="learning-path-page">
-      <h2>Lộ trình học tập</h2>
-      <p>Gợi ý lộ trình học tập để đạt được mục tiêu nghề nghiệp.</p>
-    </div>
+    <DashboardLayout>
+      <div>
+        <h2>Lộ trình học tập</h2>
+        <p>Lộ trình học tập và phát triển kỹ năng cá nhân hóa.</p>
+      </div>
+    </DashboardLayout>
   );
 }
