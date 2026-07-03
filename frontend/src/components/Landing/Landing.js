@@ -1,5 +1,6 @@
 import React from 'react';
 import './Landing.css';
+import rightImage from '../../assets/images/right.png';
 
 export default function Landing() {
   return (
@@ -10,7 +11,7 @@ export default function Landing() {
           <div className="logo">CareerAI</div>
           <nav className="nav">
             <a href="#home">Trang chủ</a>
-            <a href="#profile">Hộ sơ</a>
+            <a href="#profile">Hồ sơ</a>
             <a href="#career">Nghề nghiệp</a>
             <a href="#tools">Công cụ</a>
             <a href="#learning">Lộ trình học tập</a>
@@ -27,7 +28,7 @@ export default function Landing() {
         <div className="hero-container">
           <div className="hero-content">
             <h1><strong>Giúp bạn tìm được</strong><br/><span className="highlight">việc làm</span> <strong>và thực</strong><br/><strong>hiện hóa</strong> <span className="highlight">ước mơ</span></h1>
-            <p>Minh không chỉ là công cụ, minh còn là người bạn đồng hành sử dụng AI để tìm hiểu kĩ năng và vạch ra lộ trình thăng tiến cá nhân.</p>
+            <p>Mình không chỉ là công cụ, mình còn là người bạn đồng hành sử dụng AI để tìm hiểu kĩ năng và vạch ra lộ trình thăng tiến cá nhân.</p>
             <div className="hero-buttons">
               <button className="btn-primary">Bắt đầu miễn phí →</button>
               <button className="btn-secondary">Tìm hiểu thêm</button>
@@ -38,14 +39,13 @@ export default function Landing() {
                 <div className="avatar"></div>
                 <div className="avatar"></div>
               </div>
-              <span>+10,000 người gía đã tìng tìm công việc AICPO</span>
+              <span className="stat-number">+10,000</span> <span className="stat-text">chuyên gia đã thăng tiến cùng CareerAI</span>
             </div>
           </div>
           <div className="hero-graphics">
-            <div className="graphic graphic-1">📊</div>
-            <div className="graphic graphic-2">📈</div>
-            <div className="graphic graphic-3">🤖</div>
-            <div className="graphic graphic-4">📋</div>
+            <div className="graphic graphic-1">
+                <img src={rightImage} alt="Hero Graphic" />
+            </div>
             <div className="skill-card">
               <p className="skill-title">Nhân viên được tuyển chọn: 85%</p>
               <div className="progress" style={{width: '85%'}}></div>
