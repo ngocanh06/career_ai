@@ -1,0 +1,473 @@
+/* =====================================================
+   AUTH LAYOUT — Login / Register / ForgotPassword
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---------- Root reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #fff;
+}
+
+/* =====================================================
+   LAYOUT: two-column split
+   ===================================================== */
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f3f4f6;
+}
+
+/* =====================================================
+   LEFT PANEL — blue brand side
+   ===================================================== */
+.auth-left {
+  width: 340px;
+  min-width: 300px;
+  background: #2563EB;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 32px 28px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.auth-left-inner {
+  flex: 0;
+}
+
+/* Brand / Logo row */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.auth-brand-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auth-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+/* Description text */
+.auth-left-desc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 4px;
+}
+
+/* AI Insight card */
+.auth-insight-card {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 32px;
+}
+
+.auth-insight-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.auth-insight-icon {
+  color: #93C5FD;
+  font-size: 14px;
+  line-height: 1;
+  filter: brightness(1.3);
+}
+
+.auth-insight-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #93C5FD;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.auth-insight-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+}
+
+/* Left panel footer */
+.auth-left-footer {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.auth-left-footer-dot {
+  opacity: 0.5;
+}
+
+/* =====================================================
+   RIGHT PANEL — white form side
+   ===================================================== */
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: #ffffff;
+}
+
+/* Card */
+.auth-form-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 36px 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Logo inside card */
+.auth-form-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.auth-form-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #EFF6FF;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form-logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.3px;
+}
+
+/* Title / subtitle */
+.auth-form-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: -0.4px;
+}
+
+.auth-form-subtitle {
+  font-size: 13.5px;
+  color: #6B7280;
+  text-align: center;
+  margin-bottom: 28px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* =====================================================
+   FORM ELEMENTS
+   ===================================================== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label row (with optional forgot password link) */
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.auth-forgot-link {
+  font-size: 13px;
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.auth-forgot-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Input wrapper (with icon slots) */
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: #9CA3AF;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px 40px 10px 38px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.auth-input::placeholder {
+  color: #9CA3AF;
+}
+
+.auth-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Eye toggle button */
+.auth-eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  color: #9CA3AF;
+  transition: color 0.15s;
+}
+
+.auth-eye-btn:hover {
+  color: #6B7280;
+}
+
+/* Remember me checkbox */
+.auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.auth-checkbox {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 3px;
+  cursor: pointer;
+  accent-color: #2563EB;
+  flex-shrink: 0;
+}
+
+.auth-remember-text {
+  font-size: 13.5px;
+  color: #374151;
+  user-select: none;
+}
+
+/* Submit button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: #2563EB;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+  font-family: inherit;
+  margin-top: 4px;
+}
+
+.auth-submit-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.auth-submit-btn:active {
+  transform: translateY(1px);
+  background: #1e40af;
+}
+
+/* =====================================================
+   DIVIDER
+   ===================================================== */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: #E5E7EB;
+}
+
+.auth-divider-text {
+  font-size: 10.5px;
+  color: #9CA3AF;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* =====================================================
+   SOCIAL BUTTONS
+   ===================================================== */
+.auth-social-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auth-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.auth-social-btn:hover {
+  border-color: #9CA3AF;
+  background: #F9FAFB;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* =====================================================
+   REGISTER LINK & SECURITY NOTICE
+   ===================================================== */
+.auth-register-link {
+  text-align: center;
+  font-size: 13.5px;
+  color: #6B7280;
+  margin-top: 20px;
+}
+
+.auth-register-link-anchor {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.auth-register-link-anchor:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.auth-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #9CA3AF;
+  margin-top: 14px;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+  .auth-layout {
+    flex-direction: column;
+  }
+
+  .auth-left {
+    width: 100%;
+    padding: 28px 24px 24px;
+    min-height: auto;
+  }
+
+  .auth-insight-card {
+    margin-bottom: 20px;
+  }
+
+  .auth-left-footer {
+    margin-top: 20px;
+  }
+
+  .auth-form-card {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-social-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-form-card {
+    padding: 24px 18px;
+    border-radius: 12px;
+  }
+}
