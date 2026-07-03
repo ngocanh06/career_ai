@@ -1,6 +1,5 @@
 import React from 'react';
 import './Landing.css';
-import rightImage from '../../assets/images/right.png';
 
 export default function Landing() {
   return (
@@ -43,14 +42,56 @@ export default function Landing() {
             </div>
           </div>
           <div className="hero-graphics">
-            <div className="graphic graphic-1">
-                <img src={rightImage} alt="Hero Graphic" />
+            <div className="graphics-container">
+              {/* Cards around robot */}
+              <div className="card card-1">
+                <div className="card-icon">👤</div>
+                <p>Profile</p>
+              </div>
+              <div className="card card-2">
+                <div className="card-icon">📊</div>
+                <p>Analytics</p>
+              </div>
+              <div className="card card-3">
+                <div className="card-icon">📈</div>
+                <p>Growth</p>
+              </div>
+              <div className="card card-4">
+                <div className="card-icon">📋</div>
+                <p>Dashboard</p>
+              </div>
+              
+              {/* Robot in center */}
+              <div className="robot-center">🤖</div>
             </div>
+            
+            {/* Skill card below */}
             <div className="skill-card">
-              <p className="skill-title">Nhân viên được tuyển chọn: 85%</p>
-              <div className="progress" style={{width: '85%'}}></div>
-              <p className="skill-label">Kỹ năng chuyên môn</p>
-              <div className="progress" style={{width: '78%'}}></div>
+              <div className="skill-header">
+                <span className="skill-icon">📄</span>
+                <span className="skill-title-text">PHÂN TÍCH CV</span>
+              </div>
+              <h3>Chi số lương thích: 85%</h3>
+              <div className="skill-progress-group">
+                <div className="skill-progress-item">
+                  <p>Kỹ năng chuyên môn</p>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{width: '92%'}}></div>
+                    <span className="progress-percent">92%</span>
+                  </div>
+                </div>
+                <div className="skill-progress-item">
+                  <p>Kỹ năng mềm</p>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{width: '78%'}}></div>
+                    <span className="progress-percent">78%</span>
+                  </div>
+                </div>
+              </div>
+              <p className="skill-testimonial">
+                <span className="testimonial-icon">⭐</span>
+                "Bộ sưu chúng chỉ AWS Solutions Architect có thể tăng cơ hội thăng tiến của bạn lên 35% trong năm nay."
+              </p>
             </div>
           </div>
         </div>

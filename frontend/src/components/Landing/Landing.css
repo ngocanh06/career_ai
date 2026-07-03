@@ -232,49 +232,86 @@ body {
 /* Hero Graphics */
 .hero-graphics {
   position: relative;
-  height: 450px;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 100%);
+  height: auto;
+  background: transparent;
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.graphic {
-  position: absolute;
-  font-size: 3.5rem;
-  animation: float 4s ease-in-out infinite;
-}
-
-.graphic img {
+.graphics-container {
+  position: relative;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.card {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Card positioning around robot */
+.card-1 {
+  top: 0;
+  left: 0;
   animation: float 4s ease-in-out infinite;
 }
 
-.graphic-1 {
-  top: 20px;
-  left: 20px;
-  animation-delay: 0s;
-  width: 150px;
-  height: 150px;
+.card-2 {
+  top: 0;
+  right: 0;
+  animation: float 4s ease-in-out infinite 0.5s;
 }
 
-.graphic-2 {
-  top: 120px;
-  right: 30px;
-  animation-delay: 0.5s;
+.card-3 {
+  bottom: 0;
+  left: 0;
+  animation: float 4s ease-in-out infinite 1s;
 }
 
-.graphic-3 {
-  bottom: 30px;
-  right: 20px;
-  animation-delay: 1s;
+.card-4 {
+  bottom: 0;
+  right: 0;
+  animation: float 4s ease-in-out infinite 1.5s;
 }
 
-.graphic-4 {
-  bottom: 50px;
-  left: 40px;
-  animation-delay: 1.5s;
+.robot-center {
+  font-size: 5rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: float 4s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -282,41 +319,104 @@ body {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-25px);
+    transform: translateY(-20px);
   }
 }
 
+/* Skill Card */
 .skill-card {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+  width: 100%;
+  max-width: 500px;
   background: white;
   border-radius: 12px;
-  padding: 1.2rem;
-  width: 200px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.skill-title {
-  color: #0458e6;
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 0.8rem;
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
 }
 
-.progress {
-  height: 8px;
-  background: #e8f0ff;
-  border-radius: 4px;
-  margin-bottom: 0.8rem;
-  display: block;
-  background: linear-gradient(90deg, #0458e6 0%, #00d9ff 100%);
+.skill-icon {
+  font-size: 1.8rem;
+  background: #0066ff;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
 }
 
-.skill-label {
+.skill-title-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #999;
+  letter-spacing: 1px;
+}
+
+.skill-card h3 {
+  font-size: 1.3rem;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.skill-progress-group {
+  margin-bottom: 1.5rem;
+}
+
+.skill-progress-item {
+  margin-bottom: 1.2rem;
+}
+
+.skill-progress-item p {
   font-size: 0.85rem;
   color: #666;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0066ff 0%, #00d9ff 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-percent {
+  position: absolute;
+  right: 0;
+  top: -25px;
+  font-size: 0.75rem;
+  color: #0066ff;
+  font-weight: 700;
+}
+
+.skill-testimonial {
+  background: #f5f7fa;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+  border-left: 3px solid #0066ff;
+}
+
+.testimonial-icon {
+  margin-right: 0.5rem;
 }
 
 /* ============ COMPANIES SECTION ============ */
