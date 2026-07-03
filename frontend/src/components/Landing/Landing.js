@@ -26,48 +26,33 @@ export default function Landing() {
       <section className="hero" id="home">
         <div className="hero-container">
           <div className="hero-content">
-            <h1>Giúp bạn tìm được <span className="highlight">việc làm</span> và thực hiện hóa <span className="highlight">ước mơ</span></h1>
+            <h1><strong>Giúp bạn tìm được</strong><br/><span className="highlight">việc làm</span> <strong>và thực</strong><br/><strong>hiện hóa</strong> <span className="highlight">ước mơ</span></h1>
             <p>Minh không chỉ là công cụ, minh còn là người bạn đồng hành sử dụng AI để tìm hiểu kĩ năng và vạch ra lộ trình thăng tiến cá nhân.</p>
             <div className="hero-buttons">
               <button className="btn-primary">Bắt đầu miễn phí →</button>
               <button className="btn-secondary">Tìm hiểu thêm</button>
             </div>
             <div className="hero-stats">
-              <div className="avatar-group">
-                <div className="avatars">
-                  <div className="avatar">👤</div>
-                  <div className="avatar">👤</div>
-                  <div className="avatar">👤</div>
-                </div>
-                <span>+10,000 người gía đã tìng tìm công việc AICPO</span>
+              <div className="avatars">
+                <div className="avatar"></div>
+                <div className="avatar"></div>
+                <div className="avatar"></div>
               </div>
+              <span>+10,000 người gía đã tìng tìm công việc AICPO</span>
             </div>
           </div>
-          <div className="hero-image">
-            <div className="image-placeholder">
-              <div className="dashboard-visual">📊</div>
-              <div className="chart-visual">📈</div>
-              <div className="robot-visual">🤖</div>
-              <div className="data-visual">📋</div>
+          <div className="hero-graphics">
+            <div className="graphic graphic-1">📊</div>
+            <div className="graphic graphic-2">📈</div>
+            <div className="graphic graphic-3">🤖</div>
+            <div className="graphic graphic-4">📋</div>
+            <div className="skill-card">
+              <p className="skill-title">Nhân viên được tuyển chọn: 85%</p>
+              <div className="progress" style={{width: '85%'}}></div>
+              <p className="skill-label">Kỹ năng chuyên môn</p>
+              <div className="progress" style={{width: '78%'}}></div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Skills Highlight */}
-      <section className="skills-highlight">
-        <div className="skills-card">
-          <h3>Nhân viên được tuyển chọn: 85%</h3>
-          <div className="skill-bar">
-            <div className="skill-fill" style={{width: '85%'}}></div>
-          </div>
-          <p>Kỹ năng chuyên môn</p>
-          <div className="skill-bar">
-            <div className="skill-fill" style={{width: '78%'}}></div>
-          </div>
-          <p className="testimonial">
-            "Rất sung chúng chỉ AWS Solutions Architect có thể ứng hơi hôm thằng lần bạn với 35k trong năm nay."
-          </p>
         </div>
       </section>
 
@@ -75,22 +60,23 @@ export default function Landing() {
       <section className="companies">
         <h2>Hơn 22,000 công ty hợp tác với chúng tôi để mang đến cơ hội nghề nghiệp!</h2>
         <div className="companies-grid">
-          <div className="company-logo">Pinterest</div>
-          <div className="company-logo">Spotify</div>
+          <div className="company-logo">📌</div>
+          <div className="company-logo">🎵</div>
           <div className="company-logo">Lowe's</div>
-          <div className="company-logo">Airbnb</div>
-          <div className="company-logo">Slack</div>
-          <div className="company-logo">Dropbox</div>
-          <div className="company-logo">LinkedIn</div>
-          <div className="company-logo">Macy's</div>
-          <div className="company-logo">Walmart</div>
+          <div className="company-logo">🏠</div>
+          <div className="company-logo">➕</div>
+          <div className="company-logo">📦</div>
+          <div className="company-logo">in</div>
+          <div className="company-logo">★</div>
+          <div className="company-logo">🟡</div>
         </div>
       </section>
 
       {/* Solutions Section */}
-      <section className="solutions">
-        <h2>Giải pháp toàn diện cho hành trình nghề nghiệp</h2>
+      <section className="solutions" id="solutions">
+        <h2>Giải pháp toàn diện cho<br/>hành trình nghề nghiệp</h2>
         <p>AICPG kết hợp đồi liệu thị trường thực tế với tuế nhân tạo để dưa ra những chỉ dẫn chính xác nhất.</p>
+        
         <div className="solutions-grid">
           <div className="solution-card">
             <div className="solution-icon">📄</div>
@@ -115,22 +101,19 @@ export default function Landing() {
             <p>Đúng học với quản lý, AI sẽ vạch ra con được ngành nhất để đạt được mục tiêu nghề nghiệp của bạn với các tài liệu học luyến ngành.</p>
           </div>
         </div>
-      </section>
 
-      {/* Data Section */}
-      <section className="data-section">
-        <div className="data-content">
+        <div className="data-section">
           <h2>Dữ liệu thị trường thời gian thực</h2>
           <p>Chúng tôi phân tích hàng ngàn tin tuyển dụng mỗi ngày để cập nhật cho bạn những kỹ năng đang "hot" nhất trong lực lương thực tế tại khu vực của bạn.</p>
-        </div>
-        <div className="data-stats">
-          <div className="stat">
-            <h3>500k+</h3>
-            <p>Tin tuyển dụng</p>
-          </div>
-          <div className="stat">
-            <h3>200+</h3>
-            <p>Vị trí nghề nghiệp</p>
+          <div className="data-stats">
+            <div className="stat">
+              <h3>500k+</h3>
+              <p>Tin tuyển dụng</p>
+            </div>
+            <div className="stat">
+              <h3>200+</h3>
+              <p>Vị trí nghề nghiệp</p>
+            </div>
           </div>
         </div>
       </section>
@@ -159,7 +142,7 @@ export default function Landing() {
       {/* 3 Steps Section */}
       <section className="steps">
         <h2>Chi với 3 bước</h2>
-        <div className="steps-grid">
+        <div className="steps-container">
           <div className="step-item">
             <div className="step-number">1</div>
             <h3>Đăng nhập/Đăng kí</h3>
