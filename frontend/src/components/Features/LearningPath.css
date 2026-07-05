@@ -1,0 +1,662 @@
+/* =============================================
+   LEARNING PATH PAGE
+   ============================================= */
+
+.lp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 24px;
+}
+
+/* ── Hero card ── */
+.lp-hero-card {
+  background: linear-gradient(135deg, #eef1ff 0%, #dde4ff 60%, #c5d0ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-hero-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(59,91,219,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.lp-hero-body { flex: 1; }
+
+.lp-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59,91,219,0.12);
+  border: 1px solid rgba(59,91,219,0.2);
+  color: #3b5bdb;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+}
+
+.lp-hero-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+}
+
+.lp-hero-title span { color: #3b5bdb; }
+
+.lp-hero-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+  max-width: 460px;
+}
+
+.lp-hero-actions { display: flex; gap: 10px; }
+
+.lp-btn-primary {
+  padding: 10px 20px;
+  background: #3b5bdb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s, transform 0.1s;
+}
+.lp-btn-primary:hover { background: #3451c7; transform: translateY(-1px); }
+
+.lp-btn-outline {
+  padding: 10px 20px;
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.lp-btn-outline:hover { border-color: #3b5bdb; color: #3b5bdb; }
+
+/* Progress circle */
+.lp-hero-progress { flex-shrink: 0; text-align: center; }
+
+.lp-circle-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-circle-inner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-circle-pct {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.lp-circle-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.lp-hero-badge-bottom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #3b5bdb;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-top: 10px;
+}
+
+/* ── Journey section ── */
+.lp-journey-card {
+  background: #fff;
+  border: 1px solid #e9eaf0;
+  border-radius: 14px;
+  padding: 22px 28px 28px;
+}
+
+.lp-journey-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.lp-journey-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-journey-icon {
+  width: 34px;
+  height: 34px;
+  background: #eff2ff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-journey-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 2px 0;
+}
+
+.lp-journey-sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.lp-journey-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3b5bdb;
+  background: #eff2ff;
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+
+/* Timeline */
+.lp-timeline {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 0 20px;
+}
+
+.lp-timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.lp-timeline-connector {
+  flex: 1;
+  height: 2px;
+  margin-top: 22px;
+  position: relative;
+  z-index: 0;
+}
+
+.lp-timeline-dot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2.5px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+}
+
+.lp-timeline-dot.done {
+  background: #3b5bdb;
+  border-color: #3b5bdb;
+}
+
+.lp-timeline-dot.active {
+  background: #fff;
+  border-color: #3b5bdb;
+  border-width: 3px;
+  box-shadow: 0 0 0 6px rgba(59,91,219,0.1);
+}
+
+.lp-timeline-dot.upcoming {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.lp-step-month {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #9ca3af;
+  margin: 0 0 4px 0;
+  text-align: center;
+}
+
+.lp-step-month.active-label { color: #3b5bdb; }
+
+.lp-step-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+  margin: 0 0 5px 0;
+  text-align: center;
+}
+
+.lp-step-name.active-label { color: #3b5bdb; font-size: 15px; }
+
+.lp-step-desc {
+  font-size: 11.5px;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 130px;
+  margin: 0;
+}
+
+/* ── Two-column layout ── */
+.lp-two-col {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Resources section ── */
+.lp-resources-section { display: flex; flex-direction: column; gap: 14px; }
+
+.lp-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lp-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lp-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.lp-see-all {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3b5bdb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+.lp-courses-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.lp-course-card {
+  background: #fff;
+  border: 1px solid #e9eaf0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+.lp-course-card:hover { box-shadow: 0 4px 16px rgba(59,91,219,0.08); border-color: #c7d2fe; }
+
+.lp-course-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.lp-course-icon {
+  width: 40px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-course-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+
+.lp-badge-recommend {
+  background: #eff2ff;
+  color: #3b5bdb;
+  border: 1px solid #c7d2fe;
+}
+
+.lp-badge-practice {
+  background: #ecfdf5;
+  color: #10b981;
+  border: 1px solid #a7f3d0;
+}
+
+.lp-course-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+}
+
+.lp-course-desc {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.lp-course-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.lp-course-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.lp-course-level {
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59e0b;
+  background: #fef9c3;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.lp-course-btn {
+  width: 100%;
+  padding: 9px;
+  background: none;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.lp-course-btn:hover { background: #3b5bdb; border-color: #3b5bdb; color: #fff; }
+
+/* Skill gap box */
+.lp-skill-gap-box {
+  background: #fff;
+  border: 1px solid #e9eaf0;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.lp-skill-gap-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+}
+
+.lp-skill-gap-desc {
+  font-size: 12.5px;
+  color: #6b7280;
+  margin: 0 0 14px 0;
+  line-height: 1.55;
+}
+
+.lp-skill-gap-desc span { color: #3b5bdb; font-weight: 600; }
+
+.lp-skill-gap-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #3b5bdb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+/* ── RIGHT SIDEBAR ── */
+.lp-sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+/* Skill analysis card */
+.lp-skill-card {
+  background: #fff;
+  border: 1px solid #e9eaf0;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.lp-skill-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.lp-skill-rows { display: flex; flex-direction: column; gap: 13px; margin-bottom: 20px; }
+
+.lp-skill-row {}
+
+.lp-skill-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.lp-skill-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.lp-skill-row-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.lp-skill-row-pct.has-target { color: #9ca3af; }
+.lp-skill-row-pct.has-target span { color: #3b5bdb; }
+
+.lp-skill-track {
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 99px;
+  overflow: visible;
+  position: relative;
+}
+
+.lp-skill-fill {
+  height: 100%;
+  border-radius: 99px;
+  position: relative;
+  transition: width 0.6s ease;
+}
+
+.lp-skill-target-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: #3b5bdb;
+  border-radius: 1px;
+}
+
+/* Readiness circle */
+.lp-readiness {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.lp-readiness-circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.lp-readiness-inner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lp-readiness-pct {
+  font-size: 22px;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.lp-readiness-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.lp-readiness-desc {
+  font-size: 12.5px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.lp-readiness-desc span { color: #3b5bdb; font-weight: 600; }
+
+/* Sync CV card */
+.lp-sync-card {
+  background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
+  border-radius: 14px;
+  padding: 22px 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.lp-sync-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.lp-sync-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+}
+
+.lp-sync-desc {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.55;
+  margin: 0 0 18px 0;
+}
+
+.lp-sync-btn {
+  width: 100%;
+  padding: 10px;
+  background: #fff;
+  color: #3b5bdb;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.lp-sync-btn:hover { opacity: 0.9; }
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .lp-two-col { grid-template-columns: 1fr; }
+  .lp-sidebar { flex-direction: row; flex-wrap: wrap; }
+  .lp-skill-card, .lp-sync-card { flex: 1; min-width: 260px; }
+}
+
+@media (max-width: 700px) {
+  .lp-hero-card { flex-direction: column; }
+  .lp-courses-grid { grid-template-columns: 1fr; }
+}
