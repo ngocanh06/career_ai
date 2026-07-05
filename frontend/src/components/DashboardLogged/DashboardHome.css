@@ -1,0 +1,473 @@
+/* =============================================
+   DASHBOARD HOME PAGE
+   ============================================= */
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 8px;
+}
+
+/* ── Hero ── */
+.home-greeting {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.home-greeting-sub {
+  font-size: 13.5px;
+  color: #6b7280;
+  line-height: 1.65;
+  margin: 0 0 18px 0;
+  max-width: 540px;
+}
+
+.home-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.home-btn-primary {
+  padding: 10px 22px;
+  background: #3b5bdb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.home-btn-primary:hover { background: #3451c7; transform: translateY(-1px); }
+
+.home-btn-secondary {
+  padding: 10px 22px;
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.home-btn-secondary:hover { border-color: #3b5bdb; color: #3b5bdb; }
+
+/* ── Stats row ── */
+.home-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 14px;
+}
+
+/* ── Card base ── */
+.home-card {
+  background: #fff;
+  border: 1px solid #e9eaf0;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.home-card-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── Profile card ── */
+.home-profile-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.home-profile-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 14px 0;
+}
+
+.home-progress-track {
+  height: 7px;
+  background: #f3f4f6;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.home-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b5bdb, #6b8df7);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+/* ── Score card ── */
+.home-card-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-score-circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 8px;
+}
+
+.home-score-number {
+  position: absolute;
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -1px;
+}
+
+.home-score-sub {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Goal card ── */
+.home-card-goal {
+  background: linear-gradient(135deg, #3b5bdb 0%, #5271f5 100%);
+  border-color: transparent;
+}
+
+.home-card-goal .home-card-label {
+  color: rgba(255,255,255,0.65);
+}
+
+.home-card-goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.home-goal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
+
+.home-goal-demand {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 14px;
+}
+
+.home-goal-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  margin-left: 4px;
+}
+
+.home-goal-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.home-goal-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* ── Two-column ── */
+.home-two-col {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 14px;
+}
+
+.home-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Market card */
+.home-market-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.home-market-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.home-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin-bottom: 16px;
+}
+
+.home-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-skill-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.home-skill-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.home-skill-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #10b981;
+  background: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.home-skill-track {
+  flex: 1;
+  height: 7px;
+  background: #f3f4f6;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.home-skill-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b5bdb, #6b8df7);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.home-skill-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.home-insight-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #f0f4ff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 4px;
+}
+
+.home-insight-box svg { flex-shrink: 0; margin-top: 1px; }
+
+.home-insight-box p {
+  font-size: 12.5px;
+  color: #374151;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Next steps */
+.home-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.home-step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #f3f4f6;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.home-step-item:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 8px rgba(59,91,219,0.07);
+}
+
+.home-step-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.home-step-text { flex: 1; }
+
+.home-step-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 2px 0;
+}
+
+.home-step-desc {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ── Roadmap ── */
+.home-roadmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.home-roadmap-link {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3b5bdb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+.home-roadmap-sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0 0 20px 0;
+}
+
+.home-roadmap-track {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.home-roadmap-line {
+  position: absolute;
+  top: 18px;
+  left: 32px;
+  right: 32px;
+  height: 2px;
+  background: linear-gradient(90deg, #3b5bdb 33%, #e5e7eb 33%);
+  z-index: 0;
+}
+
+.home-roadmap-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.home-roadmap-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e9eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid #e9eaf0;
+}
+
+.home-roadmap-dot.done {
+  background: #3b5bdb;
+  border-color: #3b5bdb;
+}
+
+.home-roadmap-dot.active {
+  background: #3b5bdb;
+  border-color: #3b5bdb;
+  box-shadow: 0 0 0 5px rgba(59,91,219,0.15);
+}
+
+.home-roadmap-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.home-roadmap-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.home-roadmap-name.active-label { color: #3b5bdb; }
+
+.home-roadmap-sub-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .home-stats-row { grid-template-columns: 1fr 1fr; }
+  .home-two-col { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .home-stats-row { grid-template-columns: 1fr; }
+}
