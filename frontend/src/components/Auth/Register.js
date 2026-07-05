@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
 
 export default function Register() {
@@ -7,6 +7,12 @@ export default function Register() {
   const [role, setRole] = useState(''); // 'student' | 'admin'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const navigate = useNavigate();
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    navigate('/dashboard');
+  };
 
   const LeftPanel = () => (
     <div className="auth-left">
@@ -149,7 +155,7 @@ export default function Register() {
           <h1 className="auth-form-title">Tạo tài khoản mới</h1>
           <p className="auth-form-subtitle">Bắt đầu hành trình phát triển sự nghiệp của bạn</p>
 
-          <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+          <form className="auth-form" onSubmit={handleRegister}>
             <div className="auth-field">
               <label className="auth-label">Họ và tên</label>
               <div className="auth-input-wrap">
