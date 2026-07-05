@@ -502,8 +502,6 @@
 
 .lp-skill-rows { display: flex; flex-direction: column; gap: 13px; margin-bottom: 20px; }
 
-.lp-skill-row {}
-
 .lp-skill-row-header {
   display: flex;
   align-items: center;
