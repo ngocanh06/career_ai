@@ -65,7 +65,7 @@ const EditIcon = () => (
   </svg>
 );
 
-function PortfolioPreview({ info, skills, projects, theme }) {
+function PortfolioPreview({ info, skills, projects, awards, theme }) {
   const t = THEMES.find(x => x.id === theme) || THEMES[0];
   return (
     <div className="pf-card">
@@ -143,8 +143,43 @@ function PortfolioPreview({ info, skills, projects, theme }) {
           </div>
         ))}
       </div>
+
+      {/* Awards */}
+      {awards && awards.length > 0 && (
+        <>
+          <div className="pf-section-divider" />
+          <div className="pf-section">
+            <p className="pf-section-title">Thành tựu &amp; Giải thưởng</p>
+            {awards.map(a => (
+              <div key={a.id} className="pf-award-item">
+                <div className="pf-award-icon" style={{ background: t.colors[2] }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={t.colors[0]} strokeWidth="1.5">
+                    <circle cx="12" cy="8" r="6"/>
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                  </svg>
+                </div>
+                <div className="pf-award-body">
+                  <p className="pf-award-title">{a.title}</p>
+                  <p className="pf-award-org">{a.org}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
+}
+
+function nameToSlug(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '');
 }
 
 export default function PortfolioBuilder() {
@@ -156,6 +191,8 @@ export default function PortfolioBuilder() {
   const [newSkill, setNewSkill] = useState('');
   const [projects, setProjects] = useState(DEFAULT_PROJECTS);
   const [awards] = useState(DEFAULT_AWARDS);
+
+  const portfolioUrl = `portfolio.ai/u/${nameToSlug(info.name) || 'tendangnhap'}`;
 
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -354,7 +391,7 @@ export default function PortfolioBuilder() {
               </div>
               <div className="pb-url-input">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                portfolio.ai/u/nguyenvana
+                {portfolioUrl}
               </div>
               <button className="pb-star-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -364,7 +401,7 @@ export default function PortfolioBuilder() {
             {/* Preview frame */}
             <div className="pb-preview-frame">
               <div style={{ width: device === 'mobile' ? 375 : '100%', transition: 'width 0.3s ease' }}>
-                <PortfolioPreview info={info} skills={skills} projects={projects} theme={theme} />
+                <PortfolioPreview info={info} skills={skills} projects={projects} awards={awards} theme={theme} />
               </div>
             </div>
           </div>
