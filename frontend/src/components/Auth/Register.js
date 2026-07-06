@@ -7,10 +7,44 @@ export default function Register() {
   const [role, setRole] = useState(''); // 'student' | 'admin'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleRegister = (e) => {
     e.preventDefault();
+    const newErrors = {};
+
+    if (!fullname.trim()) newErrors.fullname = 'Họ và tên không được để trống';
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email không được để trống';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
+
+    if (!password) {
+      newErrors.password = 'Mật khẩu không được để trống';
+    } else if (password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+
+    if (!confirm) {
+      newErrors.confirm = 'Xác nhận mật khẩu không được để trống';
+    } else if (password !== confirm) {
+      newErrors.confirm = 'Mật khẩu xác nhận không khớp';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     navigate('/dashboard');
   };
 
@@ -165,8 +199,20 @@ export default function Register() {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </span>
-                <input id="fullname" type="text" className="auth-input" placeholder="Nguyễn Văn A" autoComplete="name" />
+                <input 
+                  id="fullname" 
+                  type="text" 
+                  className={`auth-input ${errors.fullname ? 'error' : ''}`} 
+                  placeholder="Nguyễn Văn A" 
+                  autoComplete="name" 
+                  value={fullname}
+                  onChange={(e) => {
+                    setFullname(e.target.value);
+                    if (errors.fullname) setErrors({ ...errors, fullname: '' });
+                  }}
+                />
               </div>
+              {errors.fullname && <p className="auth-error-msg">{errors.fullname}</p>}
             </div>
 
             <div className="auth-field">
@@ -178,8 +224,20 @@ export default function Register() {
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
                 </span>
-                <input id="reg-email" type="email" className="auth-input" placeholder="abc123@gmail.com" autoComplete="email" />
+                <input 
+                  id="reg-email" 
+                  type="email" 
+                  className={`auth-input ${errors.email ? 'error' : ''}`} 
+                  placeholder="abc123@gmail.com" 
+                  autoComplete="email" 
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors({ ...errors, email: '' });
+                  }}
+                />
               </div>
+              {errors.email && <p className="auth-error-msg">{errors.email}</p>}
             </div>
 
             <div className="auth-field">
@@ -191,7 +249,18 @@ export default function Register() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input id="reg-password" type={showPassword ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" />
+                <input 
+                  id="reg-password" 
+                  type={showPassword ? 'text' : 'password'} 
+                  className={`auth-input ${errors.password ? 'error' : ''}`} 
+                  placeholder="••••••••" 
+                  autoComplete="new-password" 
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors({ ...errors, password: '' });
+                  }}
+                />
                 <button type="button" className="auth-eye-btn" onClick={() => setShowPassword(!showPassword)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -199,6 +268,7 @@ export default function Register() {
                   </svg>
                 </button>
               </div>
+              {errors.password && <p className="auth-error-msg">{errors.password}</p>}
             </div>
 
             <div className="auth-field">
@@ -210,7 +280,18 @@ export default function Register() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input id="reg-confirm" type={showConfirm ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" />
+                <input 
+                  id="reg-confirm" 
+                  type={showConfirm ? 'text' : 'password'} 
+                  className={`auth-input ${errors.confirm ? 'error' : ''}`} 
+                  placeholder="••••••••" 
+                  autoComplete="new-password" 
+                  value={confirm}
+                  onChange={(e) => {
+                    setConfirm(e.target.value);
+                    if (errors.confirm) setErrors({ ...errors, confirm: '' });
+                  }}
+                />
                 <button type="button" className="auth-eye-btn" onClick={() => setShowConfirm(!showConfirm)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -218,6 +299,7 @@ export default function Register() {
                   </svg>
                 </button>
               </div>
+              {errors.confirm && <p className="auth-error-msg">{errors.confirm}</p>}
             </div>
 
             <div className="reg-step-nav">
