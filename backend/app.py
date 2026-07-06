@@ -12,7 +12,7 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
+# (password hashing disabled for testing)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -175,14 +175,9 @@ def login():
                 conn.close()
                 return jsonify({'success': False, 'message': 'Email không tồn tại'}), 401
 
-            if user['password_hash'].startswith('pbkdf2:') or user['password_hash'].startswith('scrypt:'):
-                if not check_password_hash(user['password_hash'], password):
-                    conn.close()
-                    return jsonify({'success': False, 'message': 'Mật khẩu không đúng'}), 401
-            else:
-                if user['password_hash'] != password:
-                    conn.close()
-                    return jsonify({'success': False, 'message': 'Mật khẩu không đúng'}), 401
+            if user['password_hash'] != password:
+                conn.close()
+                return jsonify({'success': False, 'message': 'Mật khẩu không đúng'}), 401
 
             if user['status'] != 'active':
                 conn.close()
@@ -495,12 +490,14 @@ def register_verify_otp():
             # Đánh dấu OTP đã dùng
             cursor.execute("UPDATE otp_verification SET is_used = 1 WHERE id = %s", (otp_record['id'],))
 
-            # Tạo user
-            hashed_pw = generate_password_hash(password)
+            # Map role: 'student' -> 'user' để khớp với ENUM trong DB
+            db_role = 'admin' if role == 'admin' else 'user'
+
+            # Tạo user (lưu plain text password cho môi trường test)
             cursor.execute('''
                 INSERT INTO user (email, password_hash, role, status)
                 VALUES (%s, %s, %s, 'active')
-            ''', (email, hashed_pw, role))
+            ''', (email, password, db_role))
             user_id = cursor.lastrowid
 
             # Tạo profile
@@ -608,9 +605,8 @@ def forgot_password_reset():
             if not otp_record or otp_record['is_used'] or otp_record['expires_at'] < datetime.now():
                 return jsonify({'success': False, 'message': 'Yêu cầu không hợp lệ hoặc OTP đã hết hạn.'}), 400
 
-            # Cập nhật mật khẩu
-            hashed_pw = generate_password_hash(new_password)
-            cursor.execute("UPDATE user SET password_hash = %s WHERE email = %s", (hashed_pw, email))
+            # Cập nhật mật khẩu (plain text cho môi trường test)
+            cursor.execute("UPDATE user SET password_hash = %s WHERE email = %s", (new_password, email))
 
             # Đánh dấu OTP đã dùng
             cursor.execute("UPDATE otp_verification SET is_used = 1 WHERE id = %s", (otp_record['id'],))

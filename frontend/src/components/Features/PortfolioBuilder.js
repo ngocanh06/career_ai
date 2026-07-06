@@ -11,22 +11,16 @@ const THEMES = [
 ];
 
 const FALLBACK_INFO = {
-  name: 'Nguyễn Văn A',
-  title: 'Senior Data Architect & AI Researcher',
-  bio: 'Xây dựng giải pháp dữ liệu tối ưu và nghiên cứu các mô hình học máy ứng dụng thực tiễn.',
+  name: '',
+  title: '',
+  bio: '',
   email: '',
   linkedin: '',
 };
 
-const DEFAULT_PROJECTS = [
-  { id: 1, title: 'Hệ thống phân tích hành vi người dùng', desc: 'Sử dụng Deep Learning để dự đoán tỉ lệ rời bỏ của khách hàng với độ chính xác 92%.', tags: ['Python', 'ML', 'BigQuery'] },
-  { id: 2, title: 'Real-time Data Pipeline', desc: 'Xây dựng pipeline xử lý 1M+ sự kiện/ngày với Apache Kafka.', tags: ['Kafka', 'Spark', 'GCP'] },
-];
+const DEFAULT_PROJECTS = [];
 
-const DEFAULT_AWARDS = [
-  { id: 1, title: 'Top 100 AI Researcher 2023', org: 'VietAI Summit' },
-  { id: 2, title: 'Best Data Project', org: 'Google DevFest 2022' },
-];
+const DEFAULT_AWARDS = [];
 
 
 function Toggle({ checked, onChange }) {
@@ -203,10 +197,10 @@ export default function PortfolioBuilder() {
         if (!json.success) return;
         const d = json.data;
         setInfo({
-          name:     d.full_name     || FALLBACK_INFO.name,
-          title:    d.bio           ? d.bio.split('.')[0] : FALLBACK_INFO.title,
-          bio:      d.bio           || FALLBACK_INFO.bio,
-          email:    d.email         || '',
+          name:     d.full_name || '',
+          title:    d.bio ? d.bio.split('.')[0] : '',
+          bio:      d.bio || '',
+          email:    d.email || '',
           linkedin: '',
         });
       })
@@ -218,7 +212,7 @@ export default function PortfolioBuilder() {
       .then(json => {
         if (!json.success) return;
         const mapped = json.data.map(s => s.skill_name);
-        setSkills(mapped.length > 0 ? mapped : ['Python', 'SQL', 'PowerBI', 'Tableau']);
+        setSkills(mapped);
       })
       .catch(() => {});
 
@@ -232,11 +226,9 @@ export default function PortfolioBuilder() {
           title: `${exp.position} - ${exp.company}`,
           desc: exp.description || ''
         }));
-        setProjects(mapped.length > 0 ? mapped : DEFAULT_PROJECTS);
+        setProjects(mapped);
       })
-      .catch(() => {
-        setProjects(DEFAULT_PROJECTS);
-      });
+      .catch(() => {});
 
     // Certificate -> Awards
     fetch(`http://localhost:5000/api/certificate/${userId}`)
@@ -248,11 +240,9 @@ export default function PortfolioBuilder() {
           title: cert.name,
           org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : '')
         }));
-        setAwards(mapped.length > 0 ? mapped : DEFAULT_AWARDS);
+        setAwards(mapped);
       })
-      .catch(() => {
-        setAwards(DEFAULT_AWARDS);
-      });
+      .catch(() => {});
   }, []);
 
 
