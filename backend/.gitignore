@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Node.js (không cần thiết cho backend Python)
+node_modules/
+package-lock.json
+
+# Environment variables (BẢO MẬT - không đẩy lên git)
+.env
+
+# Misc
+.DS_Store
+*.log
