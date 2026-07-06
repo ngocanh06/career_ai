@@ -11,6 +11,7 @@ import logoLinkedin from '../../assets/images/logo/logo-linkedin.png';
 import logoDropbox from '../../assets/images/logo/logo-dropbox.png';
 import logoMacys from '../../assets/images/logo/logo-macys.png';
 import logoWalmart from '../../assets/images/logo/logo-walmart.png';
+import logoMain from '../../assets/images/logo/logo-career.png';
 
 export default function Landing() {
   const companies = [
@@ -22,7 +23,8 @@ export default function Landing() {
     { name: 'Dropbox', logo: logoDropbox, alt: 'Dropbox logo' },
     { name: 'LinkedIn', logo: logoLinkedin, alt: 'LinkedIn logo' },
     { name: "macy's", logo: logoMacys, alt: "Macy's logo" },
-    { name: 'Walmart', logo: logoWalmart, alt: 'Walmart logo' }
+    { name: 'Walmart', logo: logoWalmart, alt: 'Walmart logo' },
+    { name: 'Main', logo: logoMain, alt: 'Main logo' },
   ];
 
   return (
