@@ -38,15 +38,12 @@
   flex-shrink: 0;
 }
 
-.sidebar-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: #3b5bdb;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-logo-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
   flex-shrink: 0;
+  border-radius: 6px;
 }
 
 .sidebar-logo-text {
@@ -403,15 +400,12 @@
   gap: 8px;
 }
 
-.dashboard-footer-logo-icon {
+.dashboard-footer-logo-img {
   width: 28px;
   height: 28px;
-  background: #3b5bdb;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
   flex-shrink: 0;
+  border-radius: 5px;
 }
 
 .dashboard-footer-logo-text {

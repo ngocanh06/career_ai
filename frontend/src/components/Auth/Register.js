@@ -1,30 +1,99 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import OtpVerification from './OtpVerification';
 import './Auth.css';
 
 export default function Register() {
-  const [step, setStep] = useState(1); // 1 = chọn vai trò, 2 = điền thông tin
+  const [step, setStep] = useState(1); // 1 = chọn vai trò, 2 = điền thông tin, 3 = OTP
   const [role, setRole] = useState(''); // 'student' | 'admin'
+  const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    if (!fullname || !email || !password || !confirm) {
+      setError('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+    if (password !== confirm) {
+      setError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/register/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStep(3);
+      } else {
+        setError(data.message || 'Có lỗi xảy ra.');
+      }
+    } catch (err) {
+      setError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (otpCode, setOtpError) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/register/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: otpCode, password, full_name: fullname, role })
+      });
+      const data = await res.json();
+      if (data.success) {
+        navigate('/login');
+      } else {
+        setOtpError(data.message || 'Mã OTP không đúng.');
+      }
+    } catch (err) {
+      setOtpError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async (setOtpError) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/register/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setOtpError(data.message || 'Có lỗi khi gửi lại OTP.');
+      }
+    } catch (err) {
+      setOtpError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const LeftPanel = () => (
     <div className="auth-left">
       <div className="auth-left-inner">
         <div className="auth-brand">
-          <div className="auth-brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-              <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="CareerAI" className="auth-brand-img" />
           <span className="auth-brand-name">CareerAI</span>
         </div>
         <p className="auth-left-desc">
@@ -128,6 +197,24 @@ export default function Register() {
     );
   }
 
+  /* ── STEP 3: Xác thực OTP ── */
+  if (step === 3) {
+    return (
+      <div className="auth-layout">
+        <LeftPanel />
+        <div className="auth-right">
+          <OtpVerification 
+            email={email}
+            onVerify={handleVerifyOtp}
+            onResend={handleResendOtp}
+            onBack={() => setStep(2)}
+            isSubmitting={isSubmitting}
+          />
+        </div>
+      </div>
+    );
+  }
+
   /* ── STEP 2: Điền thông tin ── */
   return (
     <div className="auth-layout">
@@ -142,18 +229,23 @@ export default function Register() {
           </div>
 
           <div className="auth-form-logo">
-            <div className="auth-form-logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563EB" />
-                <path d="M2 17L12 22L22 17" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="CareerAI" className="auth-form-logo-img" />
             <span className="auth-form-logo-text">CareerAI</span>
           </div>
 
           <h1 className="auth-form-title">Tạo tài khoản mới</h1>
           <p className="auth-form-subtitle">Bắt đầu hành trình phát triển sự nghiệp của bạn</p>
+
+          {error && (
+            <div className="auth-error-msg">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {error}
+            </div>
+          )}
 
           <form className="auth-form" onSubmit={handleRegister}>
             <div className="auth-field">
@@ -165,7 +257,7 @@ export default function Register() {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </span>
-                <input id="fullname" type="text" className="auth-input" placeholder="Nguyễn Văn A" autoComplete="name" />
+                <input id="fullname" type="text" className="auth-input" placeholder="Nguyễn Văn A" autoComplete="name" value={fullname} onChange={e => setFullname(e.target.value)} />
               </div>
             </div>
 
@@ -178,7 +270,7 @@ export default function Register() {
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
                 </span>
-                <input id="reg-email" type="email" className="auth-input" placeholder="abc123@gmail.com" autoComplete="email" />
+                <input id="reg-email" type="email" className="auth-input" placeholder="abc123@gmail.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
 
@@ -191,7 +283,7 @@ export default function Register() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input id="reg-password" type={showPassword ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" />
+                <input id="reg-password" type={showPassword ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
                 <button type="button" className="auth-eye-btn" onClick={() => setShowPassword(!showPassword)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -210,7 +302,7 @@ export default function Register() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input id="reg-confirm" type={showConfirm ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" />
+                <input id="reg-confirm" type={showConfirm ? 'text' : 'password'} className="auth-input" placeholder="••••••••" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} />
                 <button type="button" className="auth-eye-btn" onClick={() => setShowConfirm(!showConfirm)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -221,9 +313,9 @@ export default function Register() {
             </div>
 
             <div className="reg-step-nav">
-              <button type="button" className="reg-back-btn" onClick={() => setStep(1)}>← Quay lại</button>
-              <button id="register-submit" type="submit" className="auth-submit-btn reg-submit-inline">
-                Đăng ký &nbsp;→
+              <button type="button" className="reg-back-btn" onClick={() => setStep(1)} disabled={isSubmitting}>← Quay lại</button>
+              <button id="register-submit" type="submit" className="auth-submit-btn reg-submit-inline" disabled={isSubmitting}>
+                {isSubmitting ? <div className="auth-loader"></div> : 'Đăng ký \u00a0\u2192'}
               </button>
             </div>
           </form>

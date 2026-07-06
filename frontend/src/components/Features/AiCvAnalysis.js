@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import Topbar from '../DashboardLogged/Topbar';
 import './AiCvAnalysis.css';
@@ -73,24 +73,42 @@ const IconLightning = () => (
 );
 
 export default function AiCvAnalysis() {
-  const [suggestions, setSuggestions] = useState([
-    {
-      id: 1,
-      type: 'CÂU MÔ TẢ THIẾU TÁC ĐỘNG',
-      section: 'Phần Kinh nghiệm',
-      original: '"Làm việc với các truy vấn SQL và quản lý cơ sở dữ liệu chính của công ty hàng ngày."',
-      recommendation: '"Tối ưu hóa các truy vấn SQL và lập chỉ mục cơ sở dữ liệu, giảm 30% độ trễ và cải thiện khả năng mở rộng cho hơn 1 triệu người dùng."',
-      status: 'pending' // 'pending', 'applied', 'dismissed'
-    },
-    {
-      id: 2,
-      type: 'GỢI Ý ĐỊNH DẠNG',
-      section: 'Phần Tiêu đề',
-      original: '"Số điện thoại: 555-0192 | Email: alex@mail.com"',
-      recommendation: '"Thêm đường dẫn LinkedIn cá nhân và liên kết Portfolio GitHub để tăng độ tin cậy từ nhà tuyển dụng thêm 45%."',
-      status: 'pending'
-    }
-  ]);
+  const [atsScore,      setAtsScore]      = useState(85);
+  const [suggestions,   setSuggestions]   = useState([]);
+  const [missingSkills, setMissingSkills] = useState([]);
+  const [loading,       setLoading]       = useState(true);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+
+    fetch(`http://localhost:5000/api/cv/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const d = json.data;
+        const score = Math.round(d.ats_score || 85);
+        setAtsScore(score);
+
+        // Parse improvement_suggestions
+        try {
+          const parsed = typeof d.improvement_suggestions === 'string'
+            ? JSON.parse(d.improvement_suggestions)
+            : d.improvement_suggestions;
+          setSuggestions((parsed.suggestions || []).map(s => ({ ...s, status: 'pending' })));
+        } catch { setSuggestions([]); }
+
+        // Parse analysis_result weaknesses as missing skills
+        try {
+          const parsed = typeof d.analysis_result === 'string'
+            ? JSON.parse(d.analysis_result)
+            : d.analysis_result;
+          setMissingSkills(parsed.weaknesses || []);
+        } catch { setMissingSkills(['Kubernetes', 'AWS Lambda', 'GraphQL', 'CI/CD Pipelines']); }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleApply = (id) => {
     setSuggestions(prev => prev.map(item => item.id === id ? { ...item, status: 'applied' } : item));
@@ -101,17 +119,15 @@ export default function AiCvAnalysis() {
   };
 
   const stats = [
-    { label: "Chất lượng nội dung", value: 82, badge: "+5%", badgeType: "success", icon: <IconCheckCircle /> },
-    { label: "Độ tương thích ATS", value: 94, badge: "Tốt", badgeType: "success", icon: <IconCheckCircle /> },
-    { label: "Tác động định lượng", value: 58, badge: "Cần cải thiện", badgeType: "danger", icon: <IconLineChart /> },
-    { label: "Độ khớp kỹ năng", value: 71, badge: "Đạt yêu cầu", badgeType: "info", icon: <IconTarget /> }
+    { label: "Chất lượng nội dung", value: Math.min(atsScore - 3, 99),   badge: "+5%",           badgeType: "success", icon: <IconCheckCircle /> },
+    { label: "Độ tương thích ATS",  value: atsScore,                      badge: "Tốt",           badgeType: "success", icon: <IconCheckCircle /> },
+    { label: "Tác động định lượng", value: Math.round(atsScore * 0.68),   badge: "Cần cải thiện", badgeType: "danger",  icon: <IconLineChart />  },
+    { label: "Độ khớp kỹ năng",     value: Math.round(atsScore * 0.83),   badge: "Đạt yêu cầu",  badgeType: "info",    icon: <IconTarget />     },
   ];
-
-  const missingSkills = ["Kubernetes", "AWS Lambda", "GraphQL", "CI/CD Pipelines"];
 
   return (
     <DashboardLayout>
-      <Topbar user={{ name: 'Ngọc Anh' }} />
+      <Topbar />
       
       <div className="aicv-page">
         {/* HERO SECTION */}
@@ -145,13 +161,13 @@ export default function AiCvAnalysis() {
                   <circle
                     cx="50" cy="50" r="42"
                     fill="none" stroke="#ffffff" strokeWidth="8"
-                    strokeDasharray={`${2 * Math.PI * 42 * 0.85} ${2 * Math.PI * 42}`}
+                    strokeDasharray={`${2 * Math.PI * 42 * (atsScore / 100)} ${2 * Math.PI * 42}`}
                     strokeLinecap="round"
                     transform="rotate(-90 50 50)"
                   />
                 </svg>
                 <div className="score-text-overlay">
-                  <span className="score-num">85</span>
+                  <span className="score-num">{atsScore}</span>
                   <span className="score-label">ĐIỂM HỒ SƠ</span>
                 </div>
               </div>

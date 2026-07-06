@@ -52,15 +52,14 @@ body {
   margin-bottom: 28px;
 }
 
-.auth-brand-icon {
+.auth-brand-img {
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
+  border-radius: 6px;
   flex-shrink: 0;
+  /* Trên nền xanh tối – giữ nguyên màu logo */
+  filter: brightness(1.1);
 }
 
 .auth-brand-name {
@@ -162,14 +161,11 @@ body {
   margin-bottom: 20px;
 }
 
-.auth-form-logo-icon {
+.auth-form-logo-img {
   width: 32px;
   height: 32px;
-  background: #EFF6FF;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .auth-form-logo-text {
@@ -344,6 +340,27 @@ body {
 .auth-submit-btn:active {
   transform: translateY(1px);
   background: #1e40af;
+}
+
+/* Error message */
+.auth-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 8px;
+  color: #DC2626;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-top: 4px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* =====================================================
@@ -738,4 +755,99 @@ body {
 
 .fp-footer-link:hover {
   color: #6B7280;
+}
+
+/* =====================================================
+   OTP VERIFICATION COMPONENT
+   ===================================================== */
+.otp-card {
+  max-width: 480px;
+  width: 100%;
+}
+
+.otp-inputs-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+.otp-input {
+  width: 54px;
+  height: 64px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  background-color: #F9FAFB;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: #3b5bdb;
+  background-color: #F0F4FF;
+  box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.1);
+}
+
+.otp-input.error {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+}
+
+.otp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.otp-timer {
+  color: #6B7280;
+}
+
+.otp-timer strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: #3b5bdb;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.otp-resend-btn:hover:not(:disabled) {
+  background-color: #F0F4FF;
+}
+
+.otp-resend-btn:disabled,
+.otp-resend-btn.disabled {
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Loader cho nút submit (Spinner) */
+.auth-loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

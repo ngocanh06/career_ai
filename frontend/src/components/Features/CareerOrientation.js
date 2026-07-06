@@ -79,44 +79,47 @@ export default function CareerOrientation() {
   const [inputVal, setInputVal] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Suggested careers data
-  const careers = [
-    {
-      title: "Senior Data Analyst",
-      match: 94,
-      level: "Rất cao",
-      levelClass: "green",
-      desc: "Phân tích dữ liệu kinh doanh & dự báo thị trường",
-      skills: ["Python", "PowerBI", "SQL"],
-      badge: "AI gợi ý",
-      badgeClass: "blue",
-      icon: <IconChart />,
-      iconClass: "blue"
-    },
-    {
-      title: "Product Owner",
-      match: 87,
-      level: "Cao",
-      levelClass: "blue",
-      desc: "Quản lý vòng đời sản phẩm số & UX Strategy",
-      skills: ["Agile", "Scrum", "Strategy"],
-      badge: "Hot Trend",
-      badgeClass: "green",
-      icon: <IconBriefcase />,
-      iconClass: "green"
-    },
-    {
-      title: "Cloud Solutions Architect",
-      match: 82,
-      level: "Trung bình",
-      levelClass: "orange",
-      desc: "Thiết kế hạ tầng điện toán đám mây cho doanh nghiệp",
-      skills: ["AWS", "Docker", "K8s"],
-      badge: null,
-      icon: <IconCloud />,
-      iconClass: "purple"
-    }
-  ];
+  // ── API state ──────────────────────────────────────────────
+  const [careers, setCareers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Icon + style map dựa theo thứ tự vị trí
+  const CAREER_ICONS    = [<IconChart />, <IconBriefcase />, <IconCloud />];
+  const CAREER_ICON_CLS = ['blue', 'green', 'purple'];
+  const CAREER_LVL_MAP  = { high: { label: 'Rất cao', cls: 'green' }, medium: { label: 'Cao', cls: 'blue' }, low: { label: 'Trung bình', cls: 'orange' } };
+  const CAREER_BADGE    = ['AI gợi ý', 'Hot Trend', null];
+  const CAREER_BADGE_CLS= ['blue', 'green', null];
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+
+    fetch(`http://localhost:5000/api/career/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) throw new Error(json.message);
+        const mapped = json.data.map((c, i) => {
+          const pct = Math.round(c.match_percentage);
+          const lvlKey = pct >= 90 ? 'high' : pct >= 80 ? 'medium' : 'low';
+          return {
+            title:      c.job_title,
+            match:      pct,
+            level:      CAREER_LVL_MAP[lvlKey].label,
+            levelClass: CAREER_LVL_MAP[lvlKey].cls,
+            desc:       c.job_description || '',
+            skills:     [],               // sẽ bổ sung sau khi có API skills
+            badge:      CAREER_BADGE[i] || null,
+            badgeClass: CAREER_BADGE_CLS[i] || null,
+            icon:       CAREER_ICONS[i] || <IconBriefcase />,
+            iconClass:  CAREER_ICON_CLS[i] || 'blue',
+          };
+        });
+        setCareers(mapped);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Comparison role options (toggled with the Swap button)
   const comparisonPairs = [
@@ -247,7 +250,7 @@ export default function CareerOrientation() {
 
   return (
     <DashboardLayout>
-      <Topbar user={{ name: 'Ngọc Anh' }} />
+      <Topbar />
       
       <div className="co-page">
         {/* ================= SECTION 1: RECOMMENDATIONS ================= */}
@@ -263,7 +266,12 @@ export default function CareerOrientation() {
           </div>
 
           <div className="co-career-grid">
-            {careers.map((career, i) => (
+            {loading && (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#6b7280', fontSize: '14px' }}>
+                Đang tải dữ liệu nghề nghiệp...
+              </div>
+            )}
+            {!loading && careers.map((career, i) => (
               <div key={i} className="co-career-card">
                 <div className="co-card-top">
                   <div className={`co-card-icon-container ${career.iconClass}`}>
@@ -514,7 +522,7 @@ export default function CareerOrientation() {
                   </div>
                   <div className="co-msg-content-wrapper">
                     <span className="co-msg-sender-name">
-                      {m.sender === 'assistant' ? 'Assistant' : 'Ngọc Anh'}
+                      {m.sender === 'assistant' ? 'Assistant' : (JSON.parse(localStorage.getItem('career_user'))?.full_name?.split(' ').pop() || 'Bạn')}
                       {m.sender === 'assistant' && (
                         <span className="co-verif-badge">
                           <IconVerify />

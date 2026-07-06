@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const pageTitles = {
   '/dashboard': 'Trang chủ',
@@ -13,12 +13,22 @@ const pageTitles = {
 
 export default function Topbar({ user }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const pageTitle = pageTitles[location.pathname] || 'Dashboard';
 
-  const displayName = user?.name || 'Ngọc Anh';
-  const avatarInitial = displayName.charAt(displayName.length - 1).toUpperCase();
+  const localUser = JSON.parse(localStorage.getItem('career_user')) || {};
+  const displayName = localUser.full_name || user?.name || 'Người dùng';
+  const displayEmail = localUser.email || 'user@example.com';
+  // Lấy chữ cái đầu tiên của tên để làm avatar (ví dụ: Nguyễn Văn A -> A)
+  const nameParts = displayName.split(' ');
+  const avatarInitial = nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    localStorage.removeItem('career_user');
+    navigate('/login');
+  };
 
   return (
     <header className="topbar">
@@ -63,7 +73,7 @@ export default function Topbar({ user }) {
                 <div className="topbar-dropdown-avatar">{avatarInitial}</div>
                 <div>
                   <p className="topbar-dropdown-name">{displayName}</p>
-                  <p className="topbar-dropdown-email">ngocanhh@gmail.com</p>
+                  <p className="topbar-dropdown-email">{displayEmail}</p>
                 </div>
               </div>
               <div className="topbar-dropdown-divider" />
@@ -82,7 +92,7 @@ export default function Topbar({ user }) {
                 Cài đặt
               </button>
               <div className="topbar-dropdown-divider" />
-              <button className="topbar-dropdown-item topbar-dropdown-logout">
+              <button className="topbar-dropdown-item topbar-dropdown-logout" onClick={handleLogout}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />

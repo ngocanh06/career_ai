@@ -4,12 +4,36 @@ import './Auth.css';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe]     = useState(false);
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
+  const [error, setError]               = useState('');
+  const [loading, setLoading]           = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        setError(json.message || 'Đăng nhập thất bại');
+        setLoading(false);
+        return;
+      }
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem('career_user', JSON.stringify(json.data));
+      navigate('/dashboard');
+    } catch {
+      setError('Không thể kết nối server. Vui lòng thử lại.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -19,13 +43,7 @@ export default function Login() {
         <div className="auth-left-inner">
           {/* Logo */}
           <div className="auth-brand">
-            <div className="auth-brand-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="CareerAI" className="auth-brand-img" />
             <span className="auth-brand-name">CareerAI</span>
           </div>
 
@@ -59,13 +77,7 @@ export default function Login() {
         <div className="auth-form-card">
           {/* Logo */}
           <div className="auth-form-logo">
-            <div className="auth-form-logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563EB" />
-                <path d="M2 17L12 22L22 17" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="CareerAI" className="auth-form-logo-img" />
             <span className="auth-form-logo-text">CareerAI</span>
           </div>
 
@@ -77,20 +89,23 @@ export default function Login() {
           <form className="auth-form" onSubmit={handleLogin}>
             {/* Email field */}
             <div className="auth-field">
-              <label className="auth-label">Email/Tên đăng nhập</label>
+              <label className="auth-label">Email</label>
               <div className="auth-input-wrap">
                 <span className="auth-input-icon">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
                   </svg>
                 </span>
                 <input
                   id="email"
-                  type="text"
+                  type="email"
                   className="auth-input"
                   placeholder="abc123@gmail.com"
                   autoComplete="username"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -114,6 +129,9 @@ export default function Login() {
                   className="auth-input"
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
                 />
                 <button
                   type="button"
@@ -148,9 +166,21 @@ export default function Login() {
               <span className="auth-remember-text">Duy trì đăng nhập</span>
             </label>
 
+            {/* Error message */}
+            {error && (
+              <div className="auth-error-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {error}
+              </div>
+            )}
+
             {/* Submit button */}
-            <button id="login-submit" type="submit" className="auth-submit-btn">
-              Đăng nhập &nbsp;→
+            <button id="login-submit" type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập →'}
             </button>
 
             {/* Divider */}

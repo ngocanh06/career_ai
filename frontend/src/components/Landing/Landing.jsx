@@ -31,7 +31,7 @@ export default function Landing() {
       <header className="header">
         <div className="header-container">
           <div className="logo">
-            <div className="logo-box">C</div>
+            <img src="/logo.png" alt="CareerAI" className="landing-logo-img" />
             <span>CareerAI</span>
           </div>
           <nav className="nav">
