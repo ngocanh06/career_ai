@@ -10,7 +10,7 @@ import Register from './components/Auth/Register';
 import ForgotPassword from './components/Auth/ForgotPassword';
 
 // Logged-in Dashboard Layout
-import DashboardLogged from './components/DashboardLogged';
+import DashboardLogged from './components/DashboardLogged/DashboardHome';
 import AiCvAnalysis from './components/Features/AiCvAnalysis';
 import PortfolioBuilder from './components/Features/PortfolioBuilder';
 import CareerOrientation from './components/Features/CareerOrientation';
