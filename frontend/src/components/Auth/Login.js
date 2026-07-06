@@ -5,10 +5,31 @@ import './Auth.css';
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
+    const newErrors = {};
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email/Tên đăng nhập không được để trống';
+    }
+    
+    if (!password) {
+      newErrors.password = 'Mật khẩu không được để trống';
+    } else if (password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    setErrors({});
     navigate('/dashboard');
   };
 
@@ -88,11 +109,17 @@ export default function Login() {
                 <input
                   id="email"
                   type="text"
-                  className="auth-input"
+                  className={`auth-input ${errors.email ? 'error' : ''}`}
                   placeholder="abc123@gmail.com"
                   autoComplete="username"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors({ ...errors, email: '' });
+                  }}
                 />
               </div>
+              {errors.email && <p className="auth-error-msg">{errors.email}</p>}
             </div>
 
             {/* Password field */}
@@ -111,9 +138,14 @@ export default function Login() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  className="auth-input"
+                  className={`auth-input ${errors.password ? 'error' : ''}`}
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors({ ...errors, password: '' });
+                  }}
                 />
                 <button
                   type="button"
@@ -135,6 +167,7 @@ export default function Login() {
                   )}
                 </button>
               </div>
+              {errors.password && <p className="auth-error-msg">{errors.password}</p>}
             </div>
 
             {/* Remember me */}

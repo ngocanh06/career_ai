@@ -739,3 +739,27 @@ body {
 .fp-footer-link:hover {
   color: #6B7280;
 }
+
+.auth-error-msg {
+  color: #EF4444;
+  font-size: 0.8rem;
+  margin-top: 0.375rem;
+  text-align: left;
+}
+
+.auth-input.error {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+}
+.auth-input.error:focus {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.auth-success-msg {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #F9FAFB;
+  border-radius: 12px;
+  border: 1px dashed #E5E7EB;
+}
