@@ -1,77 +1,22 @@
+import Topbar from "../DashboardLogged/Topbar";
 import React, { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import Topbar from '../DashboardLogged/Topbar';
 import './CareerOrientation.css';
+import { BarChart as IconChart, Briefcase as IconBriefcase, Cloud as IconCloud } from "lucide-react";
 
-// SVG Icons
-const IconSparkle = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="co-section-icon">
-    <polygon points="12 2 15 9 22 12 15 15 12 22 9 15 2 12 9 9 12 2"/>
-  </svg>
-);
-
-const IconChart = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10"/>
-    <line x1="12" y1="20" x2="12" y2="4"/>
-    <line x1="6" y1="20" x2="6" y2="14"/>
-  </svg>
-);
-
-const IconBriefcase = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-  </svg>
-);
-
-const IconCloud = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
-  </svg>
-);
-
-const IconTrend = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="co-section-icon">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-    <polyline points="17 6 23 6 23 12"/>
-  </svg>
-);
-
-const IconSwap = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 1l4 4-4 4"/>
-    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <path d="M7 23l-4-4 4-4"/>
-    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-  </svg>
-);
-
-const IconMessage = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
-
-const IconVerify = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-  </svg>
-);
-
-const IconSend = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="22" y1="2" x2="11" y2="13"/>
-    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-);
-
-const IconLightbulb = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 18h6m-3-15a7 7 0 0 1 7 7c0 2.5-2 4.85-3 6h-8c-1-1.15-3-3.5-3-6a7 7 0 0 1 7-7z"/>
-    <line x1="12" y1="21" x2="12" y2="23"/>
-  </svg>
-);
+// Import FontAwesome Icons
+import {
+  FaWandMagicSparkles,
+  FaChartLine,
+  FaBriefcase,
+  FaCloud,
+  FaArrowTrendUp,
+  FaRightLeft,
+  FaCommentDots,
+  FaCircleCheck,
+  FaPaperPlane,
+  FaLightbulb
+} from "react-icons/fa6";
 
 export default function CareerOrientation() {
   const [activeTab, setActiveTab] = useState('side-by-side');
@@ -84,11 +29,11 @@ export default function CareerOrientation() {
   const [loading, setLoading] = useState(true);
 
   // Icon + style map dựa theo thứ tự vị trí
-  const CAREER_ICONS    = [<IconChart />, <IconBriefcase />, <IconCloud />];
+  const CAREER_ICONS = [<IconChart />, <IconBriefcase />, <IconCloud />];
   const CAREER_ICON_CLS = ['blue', 'green', 'purple'];
-  const CAREER_LVL_MAP  = { high: { label: 'Rất cao', cls: 'green' }, medium: { label: 'Cao', cls: 'blue' }, low: { label: 'Trung bình', cls: 'orange' } };
-  const CAREER_BADGE    = ['AI gợi ý', 'Hot Trend', null];
-  const CAREER_BADGE_CLS= ['blue', 'green', null];
+  const CAREER_LVL_MAP = { high: { label: 'Rất cao', cls: 'green' }, medium: { label: 'Cao', cls: 'blue' }, low: { label: 'Trung bình', cls: 'orange' } };
+  const CAREER_BADGE = ['AI gợi ý', 'Hot Trend', null];
+  const CAREER_BADGE_CLS = ['blue', 'green', null];
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('career_user'));
@@ -102,23 +47,23 @@ export default function CareerOrientation() {
           const pct = Math.round(c.match_percentage);
           const lvlKey = pct >= 90 ? 'high' : pct >= 80 ? 'medium' : 'low';
           return {
-            title:      c.job_title,
-            match:      pct,
-            level:      CAREER_LVL_MAP[lvlKey].label,
+            title: c.job_title,
+            match: pct,
+            level: CAREER_LVL_MAP[lvlKey].label,
             levelClass: CAREER_LVL_MAP[lvlKey].cls,
-            desc:       c.job_description || '',
-            skills:     [],               // sẽ bổ sung sau khi có API skills
-            badge:      CAREER_BADGE[i] || null,
+            desc: c.job_description || '',
+            skills: [],               // sẽ bổ sung sau khi có API skills
+            badge: CAREER_BADGE[i] || null,
             badgeClass: CAREER_BADGE_CLS[i] || null,
-            icon:       CAREER_ICONS[i] || <IconBriefcase />,
-            iconClass:  CAREER_ICON_CLS[i] || 'blue',
+            icon: CAREER_ICONS[i] || <IconBriefcase />,
+            iconClass: CAREER_ICON_CLS[i] || 'blue',
           };
         });
         setCareers(mapped);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Comparison role options (toggled with the Swap button)
@@ -228,7 +173,7 @@ export default function CareerOrientation() {
 
     // Predefined answers based on prompt keywords
     let responseText = "Cảm ơn bạn đã hỏi! Với năng lực hiện tại của bạn, chuyên gia khuyên bạn nên tập trung củng cố kỹ năng SQL nâng cao và học thêm các mô hình học máy cơ bản để tăng khả năng cạnh tranh.";
-    
+
     if (text.toLowerCase().includes("senior") || text.toLowerCase().includes("2 năm")) {
       responseText = "Để lên Senior DA trong 2 năm, bạn cần: 1. Nắm vững phân tích dữ liệu lớn & tối ưu SQL nâng cao. 2. Làm chủ ít nhất một công cụ BI (Power BI/Tableau) và viết công thức DAX phức tạp. 3. Nâng cao kỹ năng Business Domain để đưa ra đề xuất kinh doanh thực tế chứ không chỉ làm báo cáo.";
     } else if (text.toLowerCase().includes("chứng chỉ") || text.toLowerCase().includes("ai")) {
@@ -250,14 +195,13 @@ export default function CareerOrientation() {
 
   return (
     <DashboardLayout>
-      <Topbar />
-      
+
       <div className="co-page">
         {/* ================= SECTION 1: RECOMMENDATIONS ================= */}
         <div>
           <div className="co-section-header">
             <div className="co-section-title-wrapper">
-              <IconSparkle />
+              <FaWandMagicSparkles className="co-section-icon" />
               <h2 className="co-section-title">Đề xuất Nghề nghiệp Phù hợp</h2>
             </div>
             <a href="#xem-tat-ca" className="co-link-action" onClick={(e) => e.preventDefault()}>
@@ -318,7 +262,7 @@ export default function CareerOrientation() {
           <div className="co-box-card">
             <div className="co-section-header">
               <div className="co-section-title-wrapper">
-                <IconSparkle />
+                <FaWandMagicSparkles className="co-section-icon" />
                 <h2 className="co-section-title">So sánh Nghề nghiệp</h2>
               </div>
               <div className="co-tabs-container">
@@ -344,7 +288,7 @@ export default function CareerOrientation() {
                   <div className="co-compare-col highlighted">
                     <div className="co-compare-header">
                       <div className="co-card-icon-container blue" style={{ width: '32px', height: '32px' }}>
-                        <IconChart />
+                        <FaChartLine />
                       </div>
                       <div>
                         <h3 className="co-compare-title">{currentPair.left.title}</h3>
@@ -386,7 +330,7 @@ export default function CareerOrientation() {
                   <div className="co-compare-col">
                     <div className="co-compare-header">
                       <div className="co-card-icon-container green" style={{ width: '32px', height: '32px' }}>
-                        <IconBriefcase />
+                        <FaBriefcase />
                       </div>
                       <div>
                         <h3 className="co-compare-title">{currentPair.right.title}</h3>
@@ -426,13 +370,13 @@ export default function CareerOrientation() {
                 </div>
 
                 <button className="co-compare-swap-btn" onClick={handleSwapRoles}>
-                  <IconSwap />
+                  <FaRightLeft style={{ marginRight: '6px' }} />
                   Thay đổi vai trò so sánh
                 </button>
               </>
             ) : (
               <div style={{ marginTop: '20px', padding: '30px 10px', textAlign: 'center', color: '#64748b' }}>
-                <IconLightbulb />
+                <FaLightbulb style={{ fontSize: '24px' }} />
                 <h4 style={{ margin: '12px 0 6px 0', color: '#111827' }}>Phân tích sâu định hướng nghề nghiệp</h4>
                 <p style={{ fontSize: '13px', margin: '0', lineHeight: '1.5' }}>
                   AI đang quét thị trường và phân tích cơ hội phát triển dài hạn. Tính năng báo cáo chi tiết đang được đồng bộ dữ liệu thực tế.
@@ -446,7 +390,7 @@ export default function CareerOrientation() {
             <div className="co-box-card" style={{ flex: '1' }}>
               <div className="co-section-header" style={{ marginBottom: '4px' }}>
                 <div className="co-section-title-wrapper">
-                  <IconTrend />
+                  <FaArrowTrendUp className="co-section-icon" />
                   <h2 className="co-section-title">Xu hướng tại VN</h2>
                 </div>
               </div>
@@ -469,7 +413,7 @@ export default function CareerOrientation() {
             <div className="co-tip-card">
               <div className="co-tip-header">
                 <div className="co-tip-title-row">
-                  <IconSparkle />
+                  <FaWandMagicSparkles />
                   <span>AI Tip</span>
                 </div>
                 <span className="co-tip-badge">Gợi ý</span>
@@ -487,7 +431,7 @@ export default function CareerOrientation() {
           <div className="co-chat-left-panel">
             <div className="co-chat-intro">
               <div className="co-chat-icon-container">
-                <IconMessage />
+                <FaCommentDots style={{ fontSize: '20px' }} />
               </div>
               <h3 className="co-chat-title">Trò chuyện cùng Chuyên gia AI</h3>
               <p className="co-chat-subtitle">
@@ -525,11 +469,11 @@ export default function CareerOrientation() {
                       {m.sender === 'assistant' ? 'Assistant' : (JSON.parse(localStorage.getItem('career_user'))?.full_name?.split(' ').pop() || 'Bạn')}
                       {m.sender === 'assistant' && (
                         <span className="co-verif-badge">
-                          <IconVerify />
+                          <FaCircleCheck />
                         </span>
                       )}
                     </span>
-                    
+
                     {m.isAnalyzing ? (
                       <div className="co-chat-bubble analyzing">
                         <span>ĐANG PHÂN TÍCH</span>
@@ -561,7 +505,7 @@ export default function CareerOrientation() {
                 onChange={(e) => setInputVal(e.target.value)}
               />
               <button type="submit" className="co-chat-send-btn">
-                <IconSend />
+                <FaPaperPlane />
               </button>
             </form>
           </div>

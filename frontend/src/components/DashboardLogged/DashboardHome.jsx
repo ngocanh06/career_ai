@@ -1,7 +1,18 @@
 import React from 'react';
 import DashboardLayout from './DashboardLayout';
-import Topbar from './Topbar';
+import {
+  FaShieldHalved,
+  FaBullseye,
+  FaArrowTrendUp,
+  FaLightbulb,
+  FaChevronRight,
+  FaCheck,
+  FaPenToSquare,
+  FaCertificate,
+  FaCloudArrowUp
+} from "react-icons/fa6";
 import './DashboardHome.css';
+import Topbar from "./Topbar";
 
 const skills = [
   { name: 'Cloud Architecture', pct: 92, color: '#3b5bdb' },
@@ -60,7 +71,6 @@ export default function DashboardLogged() {
 
   return (
     <DashboardLayout>
-      <Topbar />
 
       <div className="home-page">
         {/* ── Hero ── */}

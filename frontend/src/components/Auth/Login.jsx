@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// Import file logo PNG của bạn ở đây
+import logoCareer from '../../assets/images/logo/logo-career.png';
+
+import {
+  FaRegUser,
+  FaLock,
+  FaRegEye,
+  FaRegEyeSlash,
+  FaShieldHalved,
+  FaWandMagicSparkles
+} from "react-icons/fa6";
 import './Auth.css';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe]     = useState(false);
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
-  const [error, setError]               = useState('');
-  const [loading, setLoading]           = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -41,48 +52,51 @@ export default function Login() {
       {/* ===== LEFT PANEL ===== */}
       <div className="auth-left">
         <div className="auth-left-inner">
-          {/* Logo */}
+          {/* Thay thế SVG bằng thẻ img gọi logo của bạn */}
           <div className="auth-brand">
             <img src="/logo.png" alt="CareerAI" className="auth-brand-img" />
             <span className="auth-brand-name">CareerAI</span>
-          </div>
+          </div >
 
           {/* Description */}
-          <p className="auth-left-desc">
-            Nền tảng trí tuệ nhân tạo đồng hành cùng hành trình phát triển sự nghiệp của bạn. Định hướng lộ trình, phân tích CV và kết nối tương lai.
-          </p>
-        </div>
+          < p className="auth-left-desc" >
+            Nền tảng trí tuệ nhân tạo đồng hành cùng hành trình phát triển sự nghiệp của bạn.Định hướng lộ trình, phân tích CV và kết nối tương lai.
+          </p >
+        </div >
 
         {/* AI Insight card */}
-        <div className="auth-insight-card">
+        < div className="auth-insight-card" >
           <div className="auth-insight-header">
-            <span className="auth-insight-icon">✦</span>
+            <span className="auth-insight-icon">
+              <FaWandMagicSparkles style={{ fontSize: '14px', color: '#60a5fa' }} />
+            </span>
             <span className="auth-insight-label">AI INSIGHT</span>
           </div>
           <p className="auth-insight-text">
             "AI của chúng tôi đã phân tích hơn 10.000 lộ trình sự nghiệp để giúp bạn tìm thấy con đường ngắn nhất đến với công việc mơ ước."
           </p>
-        </div>
+        </div >
 
         {/* Footer */}
-        <div className="auth-left-footer">
-          <span>© 2024 AICPG AI-Powered Platform</span>
+        < div className="auth-left-footer" >
+          <span>© 2026 AICPG AI-Powered Platform</span>
           <span className="auth-left-footer-dot">•</span>
           <span>Precision • Pathfinding</span>
-        </div>
-      </div>
+        </div >
+      </div >
 
       {/* ===== RIGHT PANEL ===== */}
-      <div className="auth-right">
+      < div className="auth-right" >
         <div className="auth-form-card">
-          {/* Logo */}
+
+          {/* Thay thế SVG bằng thẻ img gọi logo của bạn ở Panel bên phải */}
           <div className="auth-form-logo">
             <img src="/logo.png" alt="CareerAI" className="auth-form-logo-img" />
             <span className="auth-form-logo-text">CareerAI</span>
-          </div>
+          </div >
 
           {/* Title */}
-          <h1 className="auth-form-title">Chào mừng bạn trở lại</h1>
+          < h1 className="auth-form-title" > Chào mừng bạn trở lại</h1 >
           <p className="auth-form-subtitle">Đăng nhập để tiếp tục lộ trình phát triển sự nghiệp</p>
 
           {/* Form */}
@@ -96,7 +110,7 @@ export default function Login() {
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                </span>
+                </span >
                 <input
                   id="email"
                   type="email"
@@ -107,21 +121,18 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   required
                 />
-              </div>
-            </div>
+              </div >
+            </div >
 
             {/* Password field */}
-            <div className="auth-field">
+            < div className="auth-field" >
               <div className="auth-label-row">
                 <label className="auth-label">Mật khẩu</label>
                 <Link to="/forgot-password" className="auth-forgot-link">Quên mật khẩu?</Link>
               </div>
               <div className="auth-input-wrap">
                 <span className="auth-input-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
+                  <FaLock style={{ color: '#9CA3AF' }} />
                 </span>
                 <input
                   id="password"
@@ -139,24 +150,13 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showPassword ? <FaRegEye style={{ color: '#9CA3AF' }} /> : <FaRegEyeSlash style={{ color: '#9CA3AF' }} />}
                 </button>
               </div>
-            </div>
+            </div >
 
             {/* Remember me */}
-            <label className="auth-remember">
+            < label className="auth-remember" >
               <input
                 type="checkbox"
                 checked={rememberMe}
@@ -164,19 +164,21 @@ export default function Login() {
                 className="auth-checkbox"
               />
               <span className="auth-remember-text">Duy trì đăng nhập</span>
-            </label>
+            </label >
 
             {/* Error message */}
-            {error && (
-              <div className="auth-error-msg">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                {error}
-              </div>
-            )}
+            {
+              error && (
+                <div className="auth-error-msg">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  {error}
+                </div>
+              )
+            }
 
             {/* Submit button */}
             <button id="login-submit" type="submit" className="auth-submit-btn" disabled={loading}>
@@ -208,23 +210,21 @@ export default function Login() {
                 LinkedIn
               </button>
             </div>
-          </form>
+          </form >
 
           {/* Register link */}
-          <p className="auth-register-link">
-            Chưa có tài khoản?{' '}
-            <Link to="/register" className="auth-register-link-anchor">Đăng ký ngay</Link>
-          </p>
+          < p className="auth-register-link" >
+            Chưa có tài khoản ? {' '}
+            < Link to="/register" className="auth-register-link-anchor" > Đăng ký ngay</Link >
+          </p >
 
           {/* Security notice */}
-          <p className="auth-security-note">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            Kết nối được mã hóa 256-bit AES
-          </p>
-        </div>
-      </div>
-    </div>
+          < p className="auth-security-note" >
+            <FaShieldHalved style={{ marginRight: '6px' }} />
+            Kết nối được mã hóa 256 - bit AES
+          </p >
+        </div >
+      </div >
+    </div >
   );
 }

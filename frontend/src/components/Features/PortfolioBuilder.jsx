@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import Topbar from '../DashboardLogged/Topbar';
 import './PortfolioBuilder.css';
+import Topbar from "../DashboardLogged/Topbar";
+import { FaPen as EditIcon } from "react-icons/fa6"; // hoặc icon bút chỉnh sửa bạn muốn dùng
+
+// Import toàn bộ FontAwesome Icons
+import {
+  FaPenToSquare,
+  FaBolt,
+  FaBriefcase,
+  FaMedal,
+  FaCheck,
+  FaXmark,
+  FaPlus,
+  FaWandMagicSparkles,
+  FaLightbulb,
+  FaFloppyDisk,
+  FaUpload,
+  FaDesktop,
+  FaMobileScreen,
+  FaArrowsRotate,
+  FaEye,
+  FaTableCellsLarge,
+  FaLink,
+  FaGlobe,
+  FaStar
+} from "react-icons/fa6";
 
 const THEMES = [
-  { id: 'modern',       name: 'Modern',       colors: ['#3b5bdb', '#6b8df7', '#eef0ff'] },
-  { id: 'creative',     name: 'Creative',     colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
-  { id: 'minimal',      name: 'Minimal',      colors: ['#111827', '#6b7280', '#f3f4f6'] },
+  { id: 'modern', name: 'Modern', colors: ['#3b5bdb', '#6b8df7', '#eef0ff'] },
+  { id: 'creative', name: 'Creative', colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
+  { id: 'minimal', name: 'Minimal', colors: ['#111827', '#6b7280', '#f3f4f6'] },
   { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6', '#f0fdfa'] },
 ];
 
@@ -32,7 +56,7 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-function SectionRow({ dot, title, subtitle, children, editIcon }) {
+function SectionRow({ dot, title, subtitle, children }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="pb-section-row">
@@ -43,20 +67,13 @@ function SectionRow({ dot, title, subtitle, children, editIcon }) {
           <p className="pb-section-row-sub">{subtitle}</p>
         </div>
         <button className="pb-section-row-edit" onClick={e => { e.stopPropagation(); setOpen(!open); }}>
-          {editIcon}
+          <FaPenToSquare style={{ fontSize: '14px' }} />
         </button>
       </div>
       {open && <div className="pb-section-row-body">{children}</div>}
     </div>
   );
 }
-
-const EditIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  </svg>
-);
 
 function PortfolioPreview({ info, skills, projects, awards, theme }) {
   const t = THEMES.find(x => x.id === theme) || THEMES[0];
@@ -78,7 +95,7 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
         <div className="pf-hero-content">
           <div className="pf-avatar" style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5">
-              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
           </div>
           <h2 className="pf-name">{info.name}</h2>
@@ -100,7 +117,7 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
         <div className="pf-skills-card">
           <p className="pf-skills-card-label">
             Kỹ năng cốt lõi
-            <svg width="12" height="12" viewBox="0 0 24 24" fill={t.colors[0]} stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <FaBolt style={{ color: t.colors[0], fontSize: '12px', marginLeft: '4px' }} />
           </p>
           <div className="pf-skill-pills">
             {skills.map(s => <span key={s} className="pf-skill-pill">{s}</span>)}
@@ -125,9 +142,7 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
         {projects.map(p => (
           <div key={p.id} className="pf-project-item" style={{ marginBottom: 10 }}>
             <div className="pf-project-thumb" style={{ background: t.colors[2] }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={t.colors[0]} strokeWidth="1.5">
-                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-              </svg>
+              <FaBriefcase style={{ color: t.colors[0], fontSize: '18px' }} />
             </div>
             <div className="pf-project-body">
               <p className="pf-project-title">{p.title}</p>
@@ -146,10 +161,7 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
             {awards.map(a => (
               <div key={a.id} className="pf-award-item">
                 <div className="pf-award-icon" style={{ background: t.colors[2] }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={t.colors[0]} strokeWidth="1.5">
-                    <circle cx="12" cy="8" r="6"/>
-                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
-                  </svg>
+                  <FaMedal style={{ color: t.colors[0], fontSize: '16px' }} />
                 </div>
                 <div className="pf-award-body">
                   <p className="pf-award-title">{a.title}</p>
@@ -176,14 +188,14 @@ function nameToSlug(name) {
 }
 
 export default function PortfolioBuilder() {
-  const [theme,    setTheme]    = useState('modern');
-  const [device,   setDevice]   = useState('desktop');
-  const [aiOn,     setAiOn]     = useState(true);
-  const [info,     setInfo]     = useState(FALLBACK_INFO);
-  const [skills,   setSkills]   = useState([]);
+  const [theme, setTheme] = useState('modern');
+  const [device, setDevice] = useState('desktop');
+  const [aiOn, setAiOn] = useState(true);
+  const [info, setInfo] = useState(FALLBACK_INFO);
+  const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [projects, setProjects] = useState([]);
-  const [awards,   setAwards]   = useState([]);
+  const [awards, setAwards] = useState([]);
 
   // Fetch user profile + skills + experience + certificates từ API
   useEffect(() => {
@@ -197,14 +209,14 @@ export default function PortfolioBuilder() {
         if (!json.success) return;
         const d = json.data;
         setInfo({
-          name:     d.full_name || '',
-          title:    d.bio ? d.bio.split('.')[0] : '',
-          bio:      d.bio || '',
-          email:    d.email || '',
+          name: d.full_name || '',
+          title: d.bio ? d.bio.split('.')[0] : '',
+          bio: d.bio || '',
+          email: d.email || '',
           linkedin: '',
         });
       })
-      .catch(() => {});
+      .catch(() => { });
 
     // Skills
     fetch(`http://localhost:5000/api/skills/${userId}`)
@@ -214,7 +226,7 @@ export default function PortfolioBuilder() {
         const mapped = json.data.map(s => s.skill_name);
         setSkills(mapped);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     // Experience -> Projects
     fetch(`http://localhost:5000/api/experience/${userId}`)
@@ -228,7 +240,7 @@ export default function PortfolioBuilder() {
         }));
         setProjects(mapped);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     // Certificate -> Awards
     fetch(`http://localhost:5000/api/certificate/${userId}`)
@@ -242,7 +254,7 @@ export default function PortfolioBuilder() {
         }));
         setAwards(mapped);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
 
@@ -258,7 +270,6 @@ export default function PortfolioBuilder() {
 
   return (
     <DashboardLayout>
-      <Topbar />
       <div className="pb-page">
         <div className="pb-main">
 
@@ -282,7 +293,7 @@ export default function PortfolioBuilder() {
                     <div className="pb-theme-card-name">{t.name}</div>
                     {theme === t.id && (
                       <div className="pb-selected-dot">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <FaCheck style={{ color: 'white', fontSize: '10px' }} />
                       </div>
                     )}
                   </div>
@@ -292,7 +303,7 @@ export default function PortfolioBuilder() {
 
             {/* Content header */}
             <div className="pb-content-header-bar">
-              <span className="pb-content-header-bar-label">Khởi nội dung</span>
+              <span className="pb-content-header-bar-label">Khối nội dung</span>
               <div className="pb-ai-toggle-row">
                 Tối ưu AI <Toggle checked={aiOn} onChange={setAiOn} />
               </div>
@@ -302,10 +313,10 @@ export default function PortfolioBuilder() {
             <div className="pb-sections-list">
 
               {/* Thông tin */}
-              <SectionRow dot="#3b5bdb" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`} editIcon={<EditIcon />}>
-                {['name','title','email','linkedin'].map(f => (
+              <SectionRow dot="#3b5bdb" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`}>
+                {['name', 'title', 'email', 'linkedin'].map(f => (
                   <div className="pb-form-group" key={f}>
-                    <label className="pb-form-label">{{ name:'Họ và tên', title:'Chức danh', email:'Email', linkedin:'LinkedIn' }[f]}</label>
+                    <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>
                     <input className="pb-form-input" value={info[f]} onChange={e => setInfo({ ...info, [f]: e.target.value })} />
                   </div>
                 ))}
@@ -316,13 +327,13 @@ export default function PortfolioBuilder() {
               </SectionRow>
 
               {/* Kỹ năng */}
-              <SectionRow dot="#f59e0b" title="Kỹ năng cốt lõi" subtitle={`${skills.length} kỹ năng đã được xác thực`} editIcon={<EditIcon />}>
+              <SectionRow dot="#f59e0b" title="Kỹ năng cốt lõi" subtitle={`${skills.length} kỹ năng đã được xác thực`}>
                 <div className="pb-skills-tags">
                   {skills.map(s => (
                     <div key={s} className="pb-skill-tag">
                       {s}
                       <button className="pb-skill-remove" onClick={() => setSkills(skills.filter(x => x !== s))}>
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <FaXmark />
                       </button>
                     </div>
                   ))}
@@ -334,9 +345,9 @@ export default function PortfolioBuilder() {
               </SectionRow>
 
               {/* Dự án */}
-              <SectionRow dot="#8b5cf6" title="Dự án tiêu biểu" subtitle={`${projects.length} dự án cần tối ưu nội dung`} editIcon={<EditIcon />}>
+              <SectionRow dot="#8b5cf6" title="Dự án tiêu biểu" subtitle={`${projects.length} dự án cần tối ưu nội dung`}>
                 <button className="pb-ai-optimize-btn">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <FaWandMagicSparkles style={{ marginRight: '6px' }} />
                   Tối ưu nội dung dự án bằng AI
                 </button>
                 {projects.map(p => (
@@ -344,7 +355,7 @@ export default function PortfolioBuilder() {
                     <div className="pb-proj-card-head">
                       <span className="pb-proj-card-title">{p.title}</span>
                       <button className="pb-proj-remove" onClick={() => setProjects(projects.filter(x => x.id !== p.id))}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                        <FaXmark />
                       </button>
                     </div>
                     <input className="pb-form-input" style={{ marginBottom: 6 }} value={p.title} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, title: e.target.value } : x))} />
@@ -352,7 +363,7 @@ export default function PortfolioBuilder() {
                   </div>
                 ))}
                 <button className="pb-add-item-btn" onClick={() => setProjects([...projects, { id: Date.now(), title: 'Dự án mới', desc: '', tags: [] }])}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <FaPlus style={{ marginRight: '6px' }} />
                   Thêm dự án
                 </button>
               </SectionRow>
@@ -363,22 +374,22 @@ export default function PortfolioBuilder() {
                   <div key={a.id} className="pb-proj-card">
                     <div className="pb-form-group" style={{ marginBottom: 6 }}>
                       <label className="pb-form-label">Tên giải thưởng</label>
-                      <input 
-                        className="pb-form-input" 
-                        value={a.title} 
-                        onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))} 
+                      <input
+                        className="pb-form-input"
+                        value={a.title}
+                        onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))}
                       />
                     </div>
                     <label className="pb-form-label">Tổ chức / Năm</label>
-                    <input 
-                      className="pb-form-input" 
-                      value={a.org} 
-                      onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))} 
+                    <input
+                      className="pb-form-input"
+                      value={a.org}
+                      onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))}
                     />
                   </div>
                 ))}
                 <button className="pb-add-item-btn" onClick={() => setAwards([...awards, { id: Date.now(), title: 'Giải thưởng mới', org: '' }])}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   Thêm giải thưởng
                 </button>
               </SectionRow>
@@ -386,14 +397,14 @@ export default function PortfolioBuilder() {
 
             {/* Add section */}
             <button className="pb-add-section-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <FaPlus style={{ marginRight: '6px' }} />
               Thêm nội dung mới
             </button>
 
             {/* AI insight */}
             <div className="pb-ai-insight">
               <div className="pb-ai-insight-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <FaLightbulb style={{ color: 'white', fontSize: '14px' }} />
               </div>
               <div>
                 <p className="pb-ai-insight-label">AI Insight</p>
@@ -404,11 +415,11 @@ export default function PortfolioBuilder() {
             {/* Actions */}
             <div className="pb-actions-bar">
               <button className="pb-btn-save">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <FaFloppyDisk style={{ marginRight: '6px' }} />
                 Lưu bản nháp
               </button>
               <button className="pb-btn-publish">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <FaUpload style={{ marginRight: '6px' }} />
                 Xuất bản Portfolio
               </button>
             </div>
@@ -419,27 +430,24 @@ export default function PortfolioBuilder() {
             {/* Toolbar row 1 */}
             <div className="pb-preview-toolbar">
               <div className="pb-device-switch">
-                {[['desktop','Desktop'], ['mobile','Mobile']].map(([d, label]) => (
+                {[['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([d, label]) => (
                   <button key={d} className={`pb-device-btn ${device === d ? 'active' : ''}`} onClick={() => setDevice(d)}>
-                    {d === 'desktop'
-                      ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                      : <svg width="11" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                    }
+                    {d === 'desktop' ? <FaDesktop style={{ marginRight: '4px' }} /> : <FaMobileScreen style={{ marginRight: '4px' }} />}
                     {label}
                   </button>
                 ))}
               </div>
               <button className="pb-refresh-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <FaArrowsRotate />
               </button>
             </div>
 
             {/* Toolbar row 2 */}
             <div className="pb-preview-actions-bar">
               {[
-                { label: 'Chỉ để xem trực tiếp', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
-                { label: 'Chỉnh sửa bố cục', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> },
-                { label: 'Sao chép liên kết', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> },
+                { label: 'Chỉ để xem trực tiếp', icon: <FaEye style={{ marginRight: '6px' }} /> },
+                { label: 'Chỉnh sửa bố cục', icon: <FaTableCellsLarge style={{ marginRight: '6px' }} /> },
+                { label: 'Sao chép liên kết', icon: <FaLink style={{ marginRight: '6px' }} /> },
               ].map(({ label, icon }) => (
                 <button key={label} className="pb-action-btn">{icon}{label}</button>
               ))}
@@ -453,11 +461,11 @@ export default function PortfolioBuilder() {
                 <div className="pb-dot" style={{ background: '#10b981' }} />
               </div>
               <div className="pb-url-input">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <FaGlobe style={{ color: '#9ca3af', marginRight: '6px' }} />
                 {portfolioUrl}
               </div>
               <button className="pb-star-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <FaStar style={{ color: '#9ca3af' }} />
               </button>
             </div>
 
