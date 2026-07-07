@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// Import file logo PNG của bạn ở đây
+import logoCareer from '../../assets/images/logo/logo-career.png';
+
+import { 
+  FaRegUser, 
+  FaLock, 
+  FaRegEye, 
+  FaRegEyeSlash, 
+  FaShieldHalved, 
+  FaWandMagicSparkles 
+} from "react-icons/fa6";
 import './Auth.css';
 
 export default function Login() {
@@ -38,15 +49,13 @@ export default function Login() {
       {/* ===== LEFT PANEL ===== */}
       <div className="auth-left">
         <div className="auth-left-inner">
-          {/* Logo */}
+          {/* Thay thế SVG bằng thẻ img gọi logo của bạn */}
           <div className="auth-brand">
-            <div className="auth-brand-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <img 
+              src={logoCareer} 
+              alt="CareerAI Logo" 
+              style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '6px' }} 
+            />
             <span className="auth-brand-name">CareerAI</span>
           </div>
 
@@ -59,7 +68,9 @@ export default function Login() {
         {/* AI Insight card */}
         <div className="auth-insight-card">
           <div className="auth-insight-header">
-            <span className="auth-insight-icon">✦</span>
+            <span className="auth-insight-icon">
+              <FaWandMagicSparkles style={{ fontSize: '14px', color: '#60a5fa' }} />
+            </span>
             <span className="auth-insight-label">AI INSIGHT</span>
           </div>
           <p className="auth-insight-text">
@@ -69,7 +80,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="auth-left-footer">
-          <span>© 2024 AICPG AI-Powered Platform</span>
+          <span>© 2026 AICPG AI-Powered Platform</span>
           <span className="auth-left-footer-dot">•</span>
           <span>Precision • Pathfinding</span>
         </div>
@@ -78,15 +89,14 @@ export default function Login() {
       {/* ===== RIGHT PANEL ===== */}
       <div className="auth-right">
         <div className="auth-form-card">
-          {/* Logo */}
+          
+          {/* Thay thế SVG bằng thẻ img gọi logo của bạn ở Panel bên phải */}
           <div className="auth-form-logo">
-            <div className="auth-form-logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563EB" />
-                <path d="M2 17L12 22L22 17" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <img 
+              src={logoCareer} 
+              alt="CareerAI Logo" 
+              style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+            />
             <span className="auth-form-logo-text">CareerAI</span>
           </div>
 
@@ -101,10 +111,7 @@ export default function Login() {
               <label className="auth-label">Email/Tên đăng nhập</label>
               <div className="auth-input-wrap">
                 <span className="auth-input-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <FaRegUser style={{ color: '#9CA3AF' }} />
                 </span>
                 <input
                   id="email"
@@ -130,10 +137,7 @@ export default function Login() {
               </div>
               <div className="auth-input-wrap">
                 <span className="auth-input-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
+                  <FaLock style={{ color: '#9CA3AF' }} />
                 </span>
                 <input
                   id="password"
@@ -153,18 +157,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showPassword ? <FaRegEye style={{ color: '#9CA3AF' }} /> : <FaRegEyeSlash style={{ color: '#9CA3AF' }} />}
                 </button>
               </div>
               {errors.password && <p className="auth-error-msg">{errors.password}</p>}
@@ -221,9 +214,7 @@ export default function Login() {
 
           {/* Security notice */}
           <p className="auth-security-note">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
+            <FaShieldHalved style={{ marginRight: '6px' }} />
             Kết nối được mã hóa 256-bit AES
           </p>
         </div>
