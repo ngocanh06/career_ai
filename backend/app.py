@@ -13,6 +13,7 @@ import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 # (password hashing disabled for testing)
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 load_dotenv()
