@@ -41,11 +41,11 @@
   text-decoration: none; /* Tránh bị gạch chân nếu sau này bọc thẻ Link */
 }
 
-/* THÊM ĐOẠN NÀY ĐỂ CHỈNH ẢNH LOGO */
-.logo img {
+.landing-logo-img {
   height: 50px; /* Chiều cao vừa vặn với font-size 22px của chữ */
   width: auto;
   object-fit: contain;
+  border-radius: 6px;
   display: block;
 }
 

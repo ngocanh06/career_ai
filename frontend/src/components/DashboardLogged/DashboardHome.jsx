@@ -1,10 +1,10 @@
 import React from 'react';
 import DashboardLayout from './DashboardLayout';
-import { 
-  FaShieldHalved, 
-  FaBullseye, 
-  FaArrowTrendUp, 
-  FaLightbulb, 
+import {
+  FaShieldHalved,
+  FaBullseye,
+  FaArrowTrendUp,
+  FaLightbulb,
   FaChevronRight,
   FaCheck,
   FaPenToSquare,
@@ -12,28 +12,46 @@ import {
   FaCloudArrowUp
 } from "react-icons/fa6";
 import './DashboardHome.css';
+import Topbar from "./Topbar";
 
 const skills = [
-  { name: 'Cloud Architecture', pct: 92 },
-  { name: 'Product Strategy',   pct: 78 },
-  { name: 'Data Visualization', pct: 65 },
+  { name: 'Cloud Architecture', pct: 92, color: '#3b5bdb' },
+  { name: 'Product Strategy', pct: 78, color: '#3b5bdb' },
+  { name: 'Data Visualization', pct: 65, color: '#3b5bdb' },
 ];
 
 const nextSteps = [
   {
-    icon: <FaPenToSquare style={{ fontSize: '18px', color: '#2563eb' }} />,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="9" y1="13" x2="15" y2="13" />
+        <line x1="9" y1="17" x2="13" y2="17" />
+      </svg>
+    ),
     title: 'Tinh chỉnh từ khóa CV',
     desc: 'Được đề xuất bởi AI',
-    color: '#eff6ff',
+    color: '#eff2ff',
   },
   {
-    icon: <FaCertificate style={{ fontSize: '18px', color: '#0ea5e9' }} />,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
     title: 'Chứng chỉ Python hoàn chỉnh',
     desc: 'Còn lại 3 bài mẫu',
     color: '#e0f2fe',
   },
   {
-    icon: <FaCloudArrowUp style={{ fontSize: '18px', color: '#8b5cf6' }} />,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+      </svg>
+    ),
     title: 'Update Portfolio',
     desc: 'Đồng bộ với LinkedIn',
     color: '#f5f3ff',
@@ -41,22 +59,26 @@ const nextSteps = [
 ];
 
 const roadmap = [
-  { label: 'Foundation',    sub: 'Hoàn thành',          done: true,  active: false },
-  { label: 'Specialization', sub: 'Trạng thái hiện tại', done: false, active: true  },
-  { label: 'Leadership',    sub: 'Q3 2025',              done: false, active: false },
-  { label: 'Mastery',       sub: '2026 Goal',            done: false, active: false },
+  { label: 'Foundation', sub: 'Hoàn thành', done: true, active: false },
+  { label: 'Specialization', sub: 'Trung tâm hiện tại', done: false, active: true },
+  { label: 'Leadership', sub: 'Q3 2025', done: false, active: false },
+  { label: 'Mastery', sub: '2026 Goal', done: false, active: false },
 ];
 
 export default function DashboardLogged() {
+  const localUser = JSON.parse(localStorage.getItem('career_user')) || {};
+  const fullName = localUser.full_name || 'Người dùng';
+
   return (
-    <DashboardLayout user={{ name: 'Ngọc Anh' }}>
+    <DashboardLayout>
+
       <div className="home-page">
         {/* ── Hero ── */}
         <div className="home-hero">
-          <h1 className="home-greeting">Xin chào, Ngọc Anh!</h1>
+          <h1 className="home-greeting">Xin chào, {fullName}!</h1>
           <p className="home-greeting-sub">
             Con đường sự nghiệp của bạn đang rất tươi sáng. Chúng tôi đã tìm thấy 3 cơ hội
-            việc làm phù hợp cao dựa trên hồ sơ kỹ năng được cập nhật của bạn.
+            việc làm phù hợp cao nhờ trên hồ sơ kỹ năng được cập nhật của bạn.
           </p>
           <div className="home-hero-actions">
             <button className="home-btn-primary">Xem cơ hội</button>
@@ -69,11 +91,13 @@ export default function DashboardLogged() {
           {/* Profile status */}
           <div className="home-card">
             <div className="home-card-label">
-              <FaShieldHalved style={{ color: '#2563eb', fontSize: '14px' }} />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
               TRẠNG THÁI HỒ SƠ
             </div>
             <p className="home-profile-title">Hoàn thành 85%</p>
-            <p className="home-profile-sub">Gần đạt mức hiển thị chuyên gia.</p>
+            <p className="home-profile-sub">Gần đạt mức hiệu chỉnh giá.</p>
             <div className="home-progress-track">
               <div className="home-progress-fill" style={{ width: '85%' }} />
             </div>
@@ -83,12 +107,11 @@ export default function DashboardLogged() {
           <div className="home-card home-card-score">
             <div className="home-card-label">ĐIỂM CV</div>
             <div className="home-score-circle">
-              {/* Giữ lại SVG này vì nó vẽ chart vòng tròn phần trăm (stroke-dasharray) */}
-              <svg viewBox="0 0 100 100" width="85" height="85">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="8"/>
+              <svg viewBox="0 0 100 100" width="90" height="90">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#e8edff" strokeWidth="9" />
                 <circle
                   cx="50" cy="50" r="42"
-                  fill="none" stroke="#10b981" strokeWidth="8"
+                  fill="none" stroke="#3b5bdb" strokeWidth="9"
                   strokeDasharray={`${2 * Math.PI * 42 * 0.85} ${2 * Math.PI * 42}`}
                   strokeLinecap="round"
                   transform="rotate(-90 50 50)"
@@ -103,7 +126,10 @@ export default function DashboardLogged() {
           <div className="home-card home-card-goal">
             <div className="home-card-goal-header">
               <span className="home-card-label">MỤC TIÊU NGHỀ NGHIỆP</span>
-              <FaBullseye style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px' }} />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
+              </svg>
             </div>
             <p className="home-goal-title">Chuyên viên phân tích dữ liệu</p>
             <div className="home-goal-demand">
@@ -120,7 +146,10 @@ export default function DashboardLogged() {
             <div className="home-market-header">
               <span className="home-section-title">Giá trị thị trường &amp; nhu cầu kỹ năng</span>
               <span className="home-market-trend">
-                <FaArrowTrendUp style={{ color: '#10b981' }} />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                  <polyline points="17 6 23 6 23 12" />
+                </svg>
                 +12%/năm
               </span>
             </div>
@@ -129,18 +158,24 @@ export default function DashboardLogged() {
                 <div key={s.name} className="home-skill-row">
                   <div className="home-skill-meta">
                     <span className="home-skill-name">{s.name}</span>
-                    <span className="home-skill-badge">{s.pct}% Phù hợp</span>
+                    <span className="home-skill-badge">Phù hợp</span>
                   </div>
                   <div className="home-skill-track">
                     <div className="home-skill-fill" style={{ width: `${s.pct}%` }} />
                   </div>
+                  <span className="home-skill-pct">{s.pct}%</span>
                 </div>
               ))}
             </div>
             <div className="home-insight-box">
-              <FaLightbulb style={{ color: '#2563eb', fontSize: '16px' }} />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
               <p>
-                Thông tin chuyên sâu: Học Tableau có thể giúp tăng giá trị thị trường của bạn lên <strong>15%</strong> tại khu vực hiện tại
+                Thông tin chuyên sâu: Học Tableau có thể giúp tăng giá trị thị trường của bạn lên 15%
+                tại khu vực hiện tại
               </p>
             </div>
           </div>
@@ -156,7 +191,9 @@ export default function DashboardLogged() {
                     <p className="home-step-title">{s.title}</p>
                     <p className="home-step-desc">{s.desc}</p>
                   </div>
-                  <FaChevronRight style={{ color: '#94a3b8', fontSize: '12px' }} />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </div>
               ))}
             </div>
@@ -168,23 +205,26 @@ export default function DashboardLogged() {
           <div className="home-roadmap-header">
             <span className="home-section-title">Lộ trình nghề nghiệp: Kiến trúc sư cao cấp</span>
             <button className="home-roadmap-link">
-              Tùy chỉnh đường dẫn <FaChevronRight style={{ marginLeft: '4px', fontSize: '10px' }} />
+              Tùy chỉnh đường dẫn
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </button>
           </div>
           <p className="home-roadmap-sub">Dự báo Pathfinder dựa trên các kỹ năng hiện có</p>
 
           <div className="home-roadmap-track">
             <div className="home-roadmap-line" />
-            <div className="home-roadmap-line-filled" />
             {roadmap.map((step, i) => (
               <div key={i} className="home-roadmap-step">
                 <div className={`home-roadmap-dot ${step.done ? 'done' : ''} ${step.active ? 'active' : ''}`}>
                   {step.done ? (
-                     <FaCheck style={{ color: 'white', fontSize: '12px' }} />
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   ) : step.active ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5">
-                      <circle cx="12" cy="12" r="10" fill="#fff"/>
-                      <circle cx="12" cy="12" r="4" fill="#2563eb"/>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
                   ) : null}
                 </div>

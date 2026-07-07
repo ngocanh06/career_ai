@@ -1,29 +1,140 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import OtpVerification from './OtpVerification';
 import './Auth.css';
 
 export default function ForgotPassword() {
+  const [step, setStep] = useState(1); // 1 = Email, 2 = OTP, 3 = Reset Password
   const [email, setEmail] = useState('');
-  const [errors, setErrors] = useState({});
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  // 1. Gửi yêu cầu OTP
+  const handleRequestOtp = async (e) => {
     e.preventDefault();
-    const newErrors = {};
-    if (!email.trim()) {
-      newErrors.email = 'Email không được để trống';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email không hợp lệ';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    setError('');
+    if (!email) {
+      setError('Vui lòng nhập địa chỉ email.');
       return;
     }
 
-    setErrors({});
-    setIsSuccess(true);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/forgot-password/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStep(2);
+      } else {
+        setError(data.message || 'Có lỗi xảy ra.');
+      }
+    } catch (err) {
+      setError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // 2. Xác thực OTP
+  const handleVerifyOtp = async (code, setOtpError) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/forgot-password/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpCode(code);
+        setStep(3);
+      } else {
+        setOtpError(data.message || 'Mã OTP không đúng.');
+      }
+    } catch (err) {
+      setOtpError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 3. Đặt lại mật khẩu mới
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!newPassword || !confirmPassword) {
+      setError('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/forgot-password/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: otpCode, new_password: newPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        navigate('/login');
+      } else {
+        setError(data.message || 'Có lỗi xảy ra.');
+      }
+    } catch (err) {
+      setError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async (setOtpError) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/forgot-password/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setOtpError(data.message || 'Có lỗi khi gửi lại OTP.');
+      }
+    } catch (err) {
+      setOtpError('Không thể kết nối đến máy chủ.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // === RENDER STEP 2: OTP ===
+  if (step === 2) {
+    return (
+      <div className="fp-layout">
+        <OtpVerification 
+          email={email}
+          onVerify={handleVerifyOtp}
+          onResend={handleResendOtp}
+          onBack={() => setStep(1)}
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="fp-layout">
@@ -42,53 +153,114 @@ export default function ForgotPassword() {
 
       {/* Card */}
       <div className="fp-card">
-        <h1 className="fp-title">Quên mật khẩu?</h1>
-        <p className="fp-subtitle">
-          Nhập email bạn đã đăng ký. Chúng tôi sẽ gửi hướng dẫn khôi phục mật khẩu cho bạn.
-        </p>
-
-        {!isSuccess ? (
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="auth-field">
-            <label className="auth-label">Địa chỉ Email</label>
-            <div className="auth-input-wrap">
-              <span className="auth-input-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-              </span>
-              <input
-                id="forgot-email"
-                type="email"
-                className={`auth-input ${errors.email ? 'error' : ''}`}
-                placeholder="example@career.com"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors({ ...errors, email: '' });
-                }}
-              />
-            </div>
-            {errors.email && <p className="auth-error-msg">{errors.email}</p>}
-          </div>
-
-          <button id="forgot-submit" type="submit" className="auth-submit-btn" style={{ marginTop: '8px' }}>
-            Gửi yêu cầu &nbsp;→
-          </button>
-        </form>
-        ) : (
-          <div className="auth-success-msg">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" style={{ margin: '0 auto 16px' }}>
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <h3 style={{ color: '#111827', fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>Yêu cầu thành công</h3>
-            <p style={{ color: '#6B7280', fontSize: '0.95rem' }}>
-              Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu đến email <strong>{email}</strong>. Vui lòng kiểm tra hộp thư của bạn.
+        {step === 1 ? (
+          <>
+            <h1 className="fp-title">Quên mật khẩu?</h1>
+            <p className="fp-subtitle">
+              Nhập email bạn đã đăng ký. Chúng tôi sẽ gửi mã xác thực (OTP) cho bạn.
             </p>
-          </div>
+
+            {error && (
+              <div className="auth-error-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            <form className="auth-form" onSubmit={handleRequestOtp}>
+              <div className="auth-field">
+                <label className="auth-label">Địa chỉ Email</label>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                  </span>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    className="auth-input"
+                    placeholder="example@career.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <button id="forgot-submit" type="submit" className="auth-submit-btn" style={{ marginTop: '8px' }} disabled={isSubmitting}>
+                {isSubmitting ? <div className="auth-loader"></div> : 'Gửi yêu cầu \u00a0\u2192'}
+              </button>
+            </form>
+          </>
+        ) : (
+          /* STEP 3: RESET PASSWORD */
+          <>
+            <h1 className="fp-title">Đặt lại mật khẩu</h1>
+            <p className="fp-subtitle">
+              Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
+            </p>
+
+            {error && (
+              <div className="auth-error-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            <form className="auth-form" onSubmit={handleResetPassword}>
+              <div className="auth-field">
+                <label className="auth-label">Mật khẩu mới</label>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input type={showPassword ? 'text' : 'password'} className="auth-input" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  <button type="button" className="auth-eye-btn" onClick={() => setShowPassword(!showPassword)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="auth-field">
+                <label className="auth-label">Xác nhận mật khẩu mới</label>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input type={showConfirm ? 'text' : 'password'} className="auth-input" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                  <button type="button" className="auth-eye-btn" onClick={() => setShowConfirm(!showConfirm)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="auth-submit-btn" style={{ marginTop: '8px' }} disabled={isSubmitting}>
+                {isSubmitting ? <div className="auth-loader"></div> : 'Xác nhận đổi mật khẩu \u00a0\u2192'}
+              </button>
+            </form>
+          </>
         )}
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>

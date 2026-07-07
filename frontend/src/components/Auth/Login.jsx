@@ -3,13 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 // Import file logo PNG của bạn ở đây
 import logoCareer from '../../assets/images/logo/logo-career.png';
 
-import { 
-  FaRegUser, 
-  FaLock, 
-  FaRegEye, 
-  FaRegEyeSlash, 
-  FaShieldHalved, 
-  FaWandMagicSparkles 
+import {
+  FaRegUser,
+  FaLock,
+  FaRegEye,
+  FaRegEyeSlash,
+  FaShieldHalved,
+  FaWandMagicSparkles
 } from "react-icons/fa6";
 import './Auth.css';
 
@@ -18,30 +18,33 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const newErrors = {};
-    
-    if (!email.trim()) {
-      newErrors.email = 'Email/Tên đăng nhập không được để trống';
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        setError(json.message || 'Đăng nhập thất bại');
+        setLoading(false);
+        return;
+      }
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem('career_user', JSON.stringify(json.data));
+      navigate('/dashboard');
+    } catch {
+      setError('Không thể kết nối server. Vui lòng thử lại.');
+      setLoading(false);
     }
-    
-    if (!password) {
-      newErrors.password = 'Mật khẩu không được để trống';
-    } else if (password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
-    setErrors({});
-    navigate('/dashboard');
   };
 
   return (
@@ -51,22 +54,18 @@ export default function Login() {
         <div className="auth-left-inner">
           {/* Thay thế SVG bằng thẻ img gọi logo của bạn */}
           <div className="auth-brand">
-            <img 
-              src={logoCareer} 
-              alt="CareerAI Logo" 
-              style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '6px' }} 
-            />
+            <img src="/logo.png" alt="CareerAI" className="auth-brand-img" />
             <span className="auth-brand-name">CareerAI</span>
-          </div>
+          </div >
 
           {/* Description */}
-          <p className="auth-left-desc">
-            Nền tảng trí tuệ nhân tạo đồng hành cùng hành trình phát triển sự nghiệp của bạn. Định hướng lộ trình, phân tích CV và kết nối tương lai.
-          </p>
-        </div>
+          < p className="auth-left-desc" >
+            Nền tảng trí tuệ nhân tạo đồng hành cùng hành trình phát triển sự nghiệp của bạn.Định hướng lộ trình, phân tích CV và kết nối tương lai.
+          </p >
+        </div >
 
         {/* AI Insight card */}
-        <div className="auth-insight-card">
+        < div className="auth-insight-card" >
           <div className="auth-insight-header">
             <span className="auth-insight-icon">
               <FaWandMagicSparkles style={{ fontSize: '14px', color: '#60a5fa' }} />
@@ -76,61 +75,57 @@ export default function Login() {
           <p className="auth-insight-text">
             "AI của chúng tôi đã phân tích hơn 10.000 lộ trình sự nghiệp để giúp bạn tìm thấy con đường ngắn nhất đến với công việc mơ ước."
           </p>
-        </div>
+        </div >
 
         {/* Footer */}
-        <div className="auth-left-footer">
+        < div className="auth-left-footer" >
           <span>© 2026 AICPG AI-Powered Platform</span>
           <span className="auth-left-footer-dot">•</span>
           <span>Precision • Pathfinding</span>
-        </div>
-      </div>
+        </div >
+      </div >
 
       {/* ===== RIGHT PANEL ===== */}
-      <div className="auth-right">
+      < div className="auth-right" >
         <div className="auth-form-card">
-          
+
           {/* Thay thế SVG bằng thẻ img gọi logo của bạn ở Panel bên phải */}
           <div className="auth-form-logo">
-            <img 
-              src={logoCareer} 
-              alt="CareerAI Logo" 
-              style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
-            />
+            <img src="/logo.png" alt="CareerAI" className="auth-form-logo-img" />
             <span className="auth-form-logo-text">CareerAI</span>
-          </div>
+          </div >
 
           {/* Title */}
-          <h1 className="auth-form-title">Chào mừng bạn trở lại</h1>
+          < h1 className="auth-form-title" > Chào mừng bạn trở lại</h1 >
           <p className="auth-form-subtitle">Đăng nhập để tiếp tục lộ trình phát triển sự nghiệp</p>
 
           {/* Form */}
           <form className="auth-form" onSubmit={handleLogin}>
             {/* Email field */}
             <div className="auth-field">
-              <label className="auth-label">Email/Tên đăng nhập</label>
+              <label className="auth-label">Email</label>
               <div className="auth-input-wrap">
                 <span className="auth-input-icon">
-                  <FaRegUser style={{ color: '#9CA3AF' }} />
-                </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </span >
                 <input
                   id="email"
-                  type="text"
-                  className={`auth-input ${errors.email ? 'error' : ''}`}
+                  type="email"
+                  className="auth-input"
                   placeholder="abc123@gmail.com"
                   autoComplete="username"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors({ ...errors, email: '' });
-                  }}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                 />
-              </div>
-              {errors.email && <p className="auth-error-msg">{errors.email}</p>}
-            </div>
+              </div >
+            </div >
 
             {/* Password field */}
-            <div className="auth-field">
+            < div className="auth-field" >
               <div className="auth-label-row">
                 <label className="auth-label">Mật khẩu</label>
                 <Link to="/forgot-password" className="auth-forgot-link">Quên mật khẩu?</Link>
@@ -142,14 +137,12 @@ export default function Login() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  className={`auth-input ${errors.password ? 'error' : ''}`}
+                  className="auth-input"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors({ ...errors, password: '' });
-                  }}
+                  onChange={e => setPassword(e.target.value)}
+                  required
                 />
                 <button
                   type="button"
@@ -160,11 +153,10 @@ export default function Login() {
                   {showPassword ? <FaRegEye style={{ color: '#9CA3AF' }} /> : <FaRegEyeSlash style={{ color: '#9CA3AF' }} />}
                 </button>
               </div>
-              {errors.password && <p className="auth-error-msg">{errors.password}</p>}
-            </div>
+            </div >
 
             {/* Remember me */}
-            <label className="auth-remember">
+            < label className="auth-remember" >
               <input
                 type="checkbox"
                 checked={rememberMe}
@@ -172,11 +164,25 @@ export default function Login() {
                 className="auth-checkbox"
               />
               <span className="auth-remember-text">Duy trì đăng nhập</span>
-            </label>
+            </label >
+
+            {/* Error message */}
+            {
+              error && (
+                <div className="auth-error-msg">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  {error}
+                </div>
+              )
+            }
 
             {/* Submit button */}
-            <button id="login-submit" type="submit" className="auth-submit-btn">
-              Đăng nhập &nbsp;→
+            <button id="login-submit" type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập →'}
             </button>
 
             {/* Divider */}
@@ -204,21 +210,21 @@ export default function Login() {
                 LinkedIn
               </button>
             </div>
-          </form>
+          </form >
 
           {/* Register link */}
-          <p className="auth-register-link">
-            Chưa có tài khoản?{' '}
-            <Link to="/register" className="auth-register-link-anchor">Đăng ký ngay</Link>
-          </p>
+          < p className="auth-register-link" >
+            Chưa có tài khoản ? {' '}
+            < Link to="/register" className="auth-register-link-anchor" > Đăng ký ngay</Link >
+          </p >
 
           {/* Security notice */}
-          <p className="auth-security-note">
+          < p className="auth-security-note" >
             <FaShieldHalved style={{ marginRight: '6px' }} />
-            Kết nối được mã hóa 256-bit AES
-          </p>
-        </div>
-      </div>
-    </div>
+            Kết nối được mã hóa 256 - bit AES
+          </p >
+        </div >
+      </div >
+    </div >
   );
 }

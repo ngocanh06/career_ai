@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
+import Topbar from '../DashboardLogged/Topbar';
 import './LearningPath.css';
-
-// Import FontAwesome Icons
 import {
   FaWandMagicSparkles,
   FaDownload,
@@ -17,45 +16,76 @@ import {
   FaArrowRight,
   FaChartSimple,
   FaFileArrowUp,
-  FaChartPie, // Icon cho khóa học 1
-  FaChartLine // Icon cho khóa học 2
 } from "react-icons/fa6";
 
-const courses = [
-  {
-    id: 1,
-    title: 'Data Visualization Specialization',
-    desc: 'Hướng dẫn toàn diện về Power BI và Tableau với các bộ dữ liệu thực tế.',
-    hours: 14,
-    level: 'NÂNG CAO',
-    type: 'ĐỀ XUẤT',
-    badgeClass: 'lp-badge-recommend',
-    icon: <FaChartPie style={{ fontSize: '24px', color: '#3b5bdb' }} /> // Đã đổi sang FontAwesome
-  },
-  {
-    id: 2,
-    title: 'Tableau Desktop Specialist',
-    desc: 'Chuẩn bị cho kỳ thi và đi sâu vào việc tạo bảng điều khiển và kể chuyện.',
-    hours: 8,
-    level: 'TRUNG CẤP',
-    type: 'THỰC TẾ',
-    badgeClass: 'lp-badge-practice',
-    icon: <FaChartLine style={{ fontSize: '24px', color: '#10b981' }} /> // Đã đổi sang FontAwesome
-  }
-];
+// Ánh xạ proficiency_level sang % số
+const LEVEL_PCT = { expert: 100, advanced: 80, intermediate: 60, beginner: 30 };
 
-const skills = [
-  { name: 'SQL / Cơ sở dữ liệu', pct: 100, target: null },
-  { name: 'Thống kê', pct: 95, target: null },
-  { name: 'Power BI / Tableau', pct: 65, target: 90 },
-  { name: 'Học máy', pct: 10, target: 75, low: true },
-];
+// Ánh xạ skill_name sang target %
+const SKILL_TARGET = { 'PowerBI': 90, 'Tableau': 90, 'Học máy': 75 };
 
 export default function LearningPath() {
+  const [roadmap, setRoadmap] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+
+    Promise.all([
+      fetch(`http://localhost:5000/api/roadmap/${userId}`).then(r => r.json()),
+      fetch(`http://localhost:5000/api/skills/${userId}`).then(r => r.json()),
+    ])
+      .then(([rmJson, skJson]) => {
+        // ── Roadmap + courses ──
+        if (rmJson.success) {
+          setRoadmap(rmJson.data);
+          const ICONS = ['📊', '📉', '🤖', '☁️'];
+          const TYPES = ['ĐỀ XUẤT', 'THỰC TẾ', 'CƠ BẢN', 'NÂNG CAO'];
+          const BADGES = ['lp-badge-recommend', 'lp-badge-practice', 'lp-badge-recommend', 'lp-badge-practice'];
+          const LEVELS = ['NÂNG CAO', 'TRUNG CẤP', 'CƠ BẢN', 'NÂNG CAO'];
+          const mapped = (rmJson.data.goals || [])
+            .filter(g => g.status === 'in_progress')
+            .flatMap((g, gi) => {
+              let parsed = [];
+              try { parsed = JSON.parse(g.suggested_courses); } catch { parsed = []; }
+              return parsed.map((c, ci) => ({
+                id: gi * 10 + ci,
+                title: c.name,
+                desc: `${c.platform} — ${g.skill_name || ''}`,
+                hours: Math.round((g.progress_percentage || 50) / 5) + 4,
+                level: LEVELS[gi] || 'TRUNG CẤP',
+                type: TYPES[ci % TYPES.length],
+                badgeClass: BADGES[ci % BADGES.length],
+                icon: ICONS[gi] || '📘',
+              }));
+            });
+          setCourses(mapped.length > 0 ? mapped : []);
+        }
+        // ── Skills ──
+        if (skJson.success) {
+          const mapped = skJson.data.map(s => ({
+            name: s.skill_name,
+            pct: LEVEL_PCT[s.proficiency_level] || 50,
+            target: SKILL_TARGET[s.skill_name] || null,
+            low: (LEVEL_PCT[s.proficiency_level] || 50) < 40,
+          }));
+          setSkills(mapped);
+        }
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const completionRate = roadmap ? Math.round(roadmap.completion_rate) : 70;
+
   return (
-    <DashboardLayout user={{ name: 'Ngọc Anh' }}>
+    <DashboardLayout>
       <div className="lp-page">
-        
+
         {/* Hero Card */}
         <div className="lp-hero-card">
           <div className="lp-hero-body">
@@ -73,15 +103,15 @@ export default function LearningPath() {
               <button className="lp-btn-outline">Tùy chỉnh lộ trình</button>
             </div>
           </div>
-          
+
           <div className="lp-hero-progress">
             <div className="lp-circle-wrap">
               <svg width="150" height="150" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#3b5bdb" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42 * 0.7} ${2 * Math.PI * 42}`} transform="rotate(-90 50 50)" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#3b5bdb" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42 * (completionRate / 100)} ${2 * Math.PI * 42}`} transform="rotate(-90 50 50)" />
               </svg>
               <div className="lp-circle-inner">
-                <span className="lp-circle-pct">70%</span>
+                <span className="lp-circle-pct">{completionRate}%</span>
                 <span className="lp-circle-label">HOÀN TẤT</span>
               </div>
             </div>
@@ -114,11 +144,11 @@ export default function LearningPath() {
                 <FaCheck style={{ color: 'white', fontSize: '14px' }} />
               </div>
               <p className="lp-step-month active-label">THÁNG 1</p>
-              <p className="lp-step-name active-label" style={{color:'#111827'}}>Nền tảng</p>
+              <p className="lp-step-name active-label" style={{ color: '#111827' }}>Nền tảng</p>
               <p className="lp-step-desc">SQL, Thống kê nâng cao &amp; Xử lý dữ liệu</p>
             </div>
             <div className="lp-timeline-connector" style={{ background: '#3b5bdb' }} />
-            
+
             {/* Step 2 (Active) */}
             <div className="lp-timeline-step">
               <div className="lp-timeline-dot active">
@@ -129,7 +159,7 @@ export default function LearningPath() {
               <p className="lp-step-desc">Power BI, Tableau &amp; Kể chuyện qua dữ liệu</p>
             </div>
             <div className="lp-timeline-connector" style={{ background: '#e5e7eb' }} />
-            
+
             {/* Step 3 (Upcoming) */}
             <div className="lp-timeline-step">
               <div className="lp-timeline-dot upcoming">
@@ -195,7 +225,7 @@ export default function LearningPath() {
                 <FaChartSimple style={{ color: '#3b5bdb', fontSize: '16px' }} />
                 Phân tích kỹ năng
               </h3>
-              
+
               <div className="lp-skill-rows">
                 {skills.map(s => (
                   <div key={s.name} className="lp-skill-row">
@@ -221,8 +251,8 @@ export default function LearningPath() {
                     <circle cx="50" cy="50" r="44" fill="none" stroke="#3b5bdb" strokeWidth="12" />
                   </svg>
                   <div className="lp-readiness-inner">
-                    <span className="lp-readiness-pct">70%</span>
-                    <span className="lp-readiness-sub">Sẵn sàng<br/>nghề nghiệp</span>
+                    <span className="lp-readiness-pct">{completionRate}%</span>
+                    <span className="lp-readiness-sub">Sẵn sàng<br />nghề nghiệp</span>
                   </div>
                 </div>
                 <p className="lp-readiness-desc">Bạn chỉ còn <span>5 cột mốc</span> để hoàn thiện bộ kỹ năng Senior.</p>

@@ -1,46 +1,63 @@
-import React, { useState } from 'react';
-
-// LƯU Ý: Nếu đường dẫn này báo lỗi, hãy sửa lại cho khớp với thư mục của bạn 
-// (ví dụ: import DashboardLayout from './DashboardLayout';)
-import DashboardLayout from '../DashboardLogged/DashboardLayout'; 
+import React, { useState, useEffect } from 'react';
+import DashboardLayout from '../DashboardLogged/DashboardLayout';
+import Topbar from '../DashboardLogged/Topbar';
 import './AiCvAnalysis.css';
+import { CheckCircle as IconCheckCircle, LineChart as IconLineChart, Target as IconTarget } from "lucide-react";
 
-import { 
-  FaWandMagicSparkles, 
-  FaDownload, 
-  FaShareNodes, 
-  FaFileLines, 
-  FaArrowsRotate, 
-  FaLightbulb, 
+import {
+  FaWandMagicSparkles,
+  FaDownload,
+  FaShareNodes,
+  FaFileLines,
+  FaArrowsRotate,
+  FaLightbulb,
   FaCircleCheck, // Đã fix chuẩn tên icon ở đây
-  FaChartLine, 
-  FaBullseye, 
+  FaChartLine,
+  FaBullseye,
   FaBolt,
   FaCircleInfo
 } from "react-icons/fa6";
 
 export default function AiCvAnalysis() {
-  const [suggestions, setSuggestions] = useState([
-    {
-      id: 1,
-      type: 'CÂU MÔ TẢ THIẾU TÁC ĐỘNG',
-      section: 'Phần Kinh nghiệm',
-      original: '"Làm việc với các truy vấn SQL và quản lý cơ sở dữ liệu chính của công ty hàng ngày."',
-      recommendation: '"Tối ưu hóa các truy vấn SQL và lập chỉ mục cơ sở dữ liệu, giảm 30% độ trễ và cải thiện khả năng mở rộng cho hơn 1 triệu người dùng."',
-      status: 'pending' 
-    },
-    {
-      id: 2,
-      type: 'GỢI Ý ĐỊNH DẠNG',
-      section: 'Phần Tiêu đề',
-      original: '"Số điện thoại: 555-0192 | Email: alex@mail.com"',
-      recommendation: '"Thêm đường dẫn LinkedIn cá nhân và liên kết Portfolio GitHub để tăng độ tin cậy từ nhà tuyển dụng thêm 45%."',
-      status: 'pending'
-    }
-  ]);
+  const [atsScore, setAtsScore] = useState(85);
+  const [suggestions, setSuggestions] = useState([]);
+  const [MissingSkills, setMissingSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+
+    fetch(`http://localhost:5000/api/cv/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const d = json.data;
+        const score = Math.round(d.ats_score || 85);
+        setAtsScore(score);
+
+        // Parse improvement_suggestions
+        try {
+          const parsed = typeof d.improvement_suggestions === 'string'
+            ? JSON.parse(d.improvement_suggestions)
+            : d.improvement_suggestions;
+          setSuggestions((parsed.suggestions || []).map(s => ({ ...s, status: 'pending' })));
+        } catch { setSuggestions([]); }
+
+        // Parse analysis_result weaknesses as missing skills
+        try {
+          const parsed = typeof d.analysis_result === 'string'
+            ? JSON.parse(d.analysis_result)
+            : d.analysis_result;
+          setMissingSkills(parsed.weaknesses || []);
+        } catch { setMissingSkills(['Kubernetes', 'AWS Lambda', 'GraphQL', 'CI/CD Pipelines']); }
+      })
+      .catch(() => { })
+      .finally(() => setLoading(false));
+  }, []);
 
   // Đã fix thẻ <FaCircleCheck /> ở đây
-  const stats = [
+  const statss = [
     { label: "Chất lượng nội dung", value: 82, badge: "+5%", badgeType: "success", icon: <FaCircleCheck className="card-header-icon color-green" /> },
     { label: "Độ tương thích ATS", value: 94, badge: "Tốt", badgeType: "success", icon: <FaCircleCheck className="card-header-icon color-green" /> },
     { label: "Tác động định lượng", value: 58, badge: "Cần cải thiện", badgeType: "danger", icon: <FaChartLine className="card-header-icon color-purple" /> },
@@ -57,8 +74,17 @@ export default function AiCvAnalysis() {
     setSuggestions(prev => prev.map(item => item.id === id ? { ...item, status: 'dismissed' } : item));
   };
 
+  const stats = [
+    { label: "Chất lượng nội dung", value: Math.min(atsScore - 3, 99), badge: "+5%", badgeType: "success", icon: <IconCheckCircle /> },
+    { label: "Độ tương thích ATS", value: atsScore, badge: "Tốt", badgeType: "success", icon: <IconCheckCircle /> },
+    { label: "Tác động định lượng", value: Math.round(atsScore * 0.68), badge: "Cần cải thiện", badgeType: "danger", icon: <IconLineChart /> },
+    { label: "Độ khớp kỹ năng", value: Math.round(atsScore * 0.83), badge: "Đạt yêu cầu", badgeType: "info", icon: <IconTarget /> },
+  ];
+
   return (
-    <DashboardLayout user={{ name: 'Ngọc Anh' }}>
+    <DashboardLayout>
+
+
       <div className="aicv-page">
         {/* ================= HERO SECTION ================= */}
         <div className="aicv-hero-banner">
@@ -82,22 +108,22 @@ export default function AiCvAnalysis() {
               </button>
             </div>
           </div>
-          
+
           <div className="aicv-hero-right">
             <div className="aicv-score-circular-wrapper">
               <div className="aicv-circular-progress-svg">
                 <svg viewBox="0 0 100 100" width="120" height="120">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="8"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="8" />
                   <circle
                     cx="50" cy="50" r="42"
                     fill="none" stroke="#ffffff" strokeWidth="8"
-                    strokeDasharray={`${2 * Math.PI * 42 * 0.85} ${2 * Math.PI * 42}`}
+                    strokeDasharray={`${2 * Math.PI * 42 * (atsScore / 100)} ${2 * Math.PI * 42}`}
                     strokeLinecap="round"
                     transform="rotate(-90 50 50)"
                   />
                 </svg>
                 <div className="score-text-overlay">
-                  <span className="score-num">85</span>
+                  <span className="score-num">{atsScore}</span>
                   <span className="score-label">ĐIỂM HỒ SƠ</span>
                 </div>
               </div>
@@ -120,7 +146,7 @@ export default function AiCvAnalysis() {
                   <FaArrowsRotate className="link-icon" /> Thay thế tệp
                 </button>
               </div>
-              
+
               <div className="aicv-cv-preview-box">
                 <div className="cv-mock-page">
                   <div className="cv-mock-line cv-mock-header"></div>
@@ -210,7 +236,7 @@ export default function AiCvAnalysis() {
                         <span className="suggestion-type-badge">{sug.type}</span>
                         <span className="suggestion-section">{sug.section}</span>
                       </div>
-                      
+
                       <div className="suggestion-diff-box">
                         <div className="diff-line diff-minus">
                           <span className="diff-sign">−</span>

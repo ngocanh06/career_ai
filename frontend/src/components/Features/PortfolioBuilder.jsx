@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './PortfolioBuilder.css';
+import Topbar from "../DashboardLogged/Topbar";
+import { FaPen as EditIcon } from "react-icons/fa6"; // hoặc icon bút chỉnh sửa bạn muốn dùng
 
 // Import toàn bộ FontAwesome Icons
 import {
@@ -26,31 +28,24 @@ import {
 } from "react-icons/fa6";
 
 const THEMES = [
-  { id: 'modern',       name: 'Modern',       colors: ['#3b5bdb', '#6b8df7', '#eef0ff'] },
-  { id: 'creative',     name: 'Creative',     colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
-  { id: 'minimal',      name: 'Minimal',      colors: ['#111827', '#6b7280', '#f3f4f6'] },
+  { id: 'modern', name: 'Modern', colors: ['#3b5bdb', '#6b8df7', '#eef0ff'] },
+  { id: 'creative', name: 'Creative', colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
+  { id: 'minimal', name: 'Minimal', colors: ['#111827', '#6b7280', '#f3f4f6'] },
   { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6', '#f0fdfa'] },
 ];
 
-const DEFAULT_INFO = {
-  name: 'Nguyễn Văn A',
-  title: 'Senior Data Architect & AI Researcher',
-  bio: 'Xây dựng giải pháp dữ liệu tối ưu và nghiên cứu các mô hình học máy ứng dụng thực tiễn, giúp doanh nghiệp bứt phá bằng sức mạnh của trí tuệ nhân tạo.',
-  email: 'nguyenvana@email.com',
-  linkedin: 'linkedin.com/in/nguyenvana',
+const FALLBACK_INFO = {
+  name: '',
+  title: '',
+  bio: '',
+  email: '',
+  linkedin: '',
 };
 
-const DEFAULT_SKILLS = ['Python', 'TensorFlow', 'SQL Expert', 'Cloud Architect'];
+const DEFAULT_PROJECTS = [];
 
-const DEFAULT_PROJECTS = [
-  { id: 1, title: 'Hệ thống phân tích hành vi người dùng', desc: 'Sử dụng Deep Learning để dự đoán tỉ lệ rời bỏ của khách hàng với độ chính xác 92%.', tags: ['Python', 'ML', 'BigQuery'] },
-  { id: 2, title: 'Real-time Data Pipeline', desc: 'Xây dựng pipeline xử lý 1M+ sự kiện/ngày với Apache Kafka.', tags: ['Kafka', 'Spark', 'GCP'] },
-];
+const DEFAULT_AWARDS = [];
 
-const DEFAULT_AWARDS = [
-  { id: 1, title: 'Top 100 AI Researcher 2023', org: 'VietAI Summit' },
-  { id: 2, title: 'Best Data Project', org: 'Google DevFest 2022' },
-];
 
 function Toggle({ checked, onChange }) {
   return (
@@ -100,7 +95,7 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
         <div className="pf-hero-content">
           <div className="pf-avatar" style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5">
-              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
           </div>
           <h2 className="pf-name">{info.name}</h2>
@@ -196,11 +191,72 @@ export default function PortfolioBuilder() {
   const [theme, setTheme] = useState('modern');
   const [device, setDevice] = useState('desktop');
   const [aiOn, setAiOn] = useState(true);
-  const [info, setInfo] = useState(DEFAULT_INFO);
-  const [skills, setSkills] = useState(DEFAULT_SKILLS);
+  const [info, setInfo] = useState(FALLBACK_INFO);
+  const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
-  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
-  const [awards] = useState(DEFAULT_AWARDS);
+  const [projects, setProjects] = useState([]);
+  const [awards, setAwards] = useState([]);
+
+  // Fetch user profile + skills + experience + certificates từ API
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+
+    // User profile
+    fetch(`http://localhost:5000/api/user/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const d = json.data;
+        setInfo({
+          name: d.full_name || '',
+          title: d.bio ? d.bio.split('.')[0] : '',
+          bio: d.bio || '',
+          email: d.email || '',
+          linkedin: '',
+        });
+      })
+      .catch(() => { });
+
+    // Skills
+    fetch(`http://localhost:5000/api/skills/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const mapped = json.data.map(s => s.skill_name);
+        setSkills(mapped);
+      })
+      .catch(() => { });
+
+    // Experience -> Projects
+    fetch(`http://localhost:5000/api/experience/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const mapped = json.data.map(exp => ({
+          id: exp.experience_id,
+          title: `${exp.position} - ${exp.company}`,
+          desc: exp.description || ''
+        }));
+        setProjects(mapped);
+      })
+      .catch(() => { });
+
+    // Certificate -> Awards
+    fetch(`http://localhost:5000/api/certificate/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) return;
+        const mapped = json.data.map(cert => ({
+          id: cert.certificate_id,
+          title: cert.name,
+          org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : '')
+        }));
+        setAwards(mapped);
+      })
+      .catch(() => { });
+  }, []);
+
 
   const portfolioUrl = `portfolio.ai/u/${nameToSlug(info.name) || 'tendangnhap'}`;
 
@@ -211,8 +267,9 @@ export default function PortfolioBuilder() {
     }
   };
 
+
   return (
-    <DashboardLayout user={{ name: 'Ngọc Anh' }}>
+    <DashboardLayout>
       <div className="pb-page">
         <div className="pb-main">
 
@@ -257,9 +314,9 @@ export default function PortfolioBuilder() {
 
               {/* Thông tin */}
               <SectionRow dot="#3b5bdb" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`}>
-                {['name','title','email','linkedin'].map(f => (
+                {['name', 'title', 'email', 'linkedin'].map(f => (
                   <div className="pb-form-group" key={f}>
-                    <label className="pb-form-label">{{ name:'Họ và tên', title:'Chức danh', email:'Email', linkedin:'LinkedIn' }[f]}</label>
+                    <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>
                     <input className="pb-form-input" value={info[f]} onChange={e => setInfo({ ...info, [f]: e.target.value })} />
                   </div>
                 ))}
@@ -312,19 +369,27 @@ export default function PortfolioBuilder() {
               </SectionRow>
 
               {/* Thành tựu */}
-              <SectionRow dot="#10b981" title="Thành tựu & Giải thưởng" subtitle={awards[0]?.title}>
+              <SectionRow dot="#10b981" title="Thành tựu & Giải thưởng" subtitle={awards[0]?.title || 'Chưa có thành tựu'} editIcon={<EditIcon />}>
                 {awards.map(a => (
                   <div key={a.id} className="pb-proj-card">
                     <div className="pb-form-group" style={{ marginBottom: 6 }}>
                       <label className="pb-form-label">Tên giải thưởng</label>
-                      <input className="pb-form-input" defaultValue={a.title} />
+                      <input
+                        className="pb-form-input"
+                        value={a.title}
+                        onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))}
+                      />
                     </div>
                     <label className="pb-form-label">Tổ chức / Năm</label>
-                    <input className="pb-form-input" defaultValue={a.org} />
+                    <input
+                      className="pb-form-input"
+                      value={a.org}
+                      onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))}
+                    />
                   </div>
                 ))}
-                <button className="pb-add-item-btn">
-                  <FaPlus style={{ marginRight: '6px' }} />
+                <button className="pb-add-item-btn" onClick={() => setAwards([...awards, { id: Date.now(), title: 'Giải thưởng mới', org: '' }])}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   Thêm giải thưởng
                 </button>
               </SectionRow>
@@ -365,7 +430,7 @@ export default function PortfolioBuilder() {
             {/* Toolbar row 1 */}
             <div className="pb-preview-toolbar">
               <div className="pb-device-switch">
-                {[['desktop','Desktop'], ['mobile','Mobile']].map(([d, label]) => (
+                {[['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([d, label]) => (
                   <button key={d} className={`pb-device-btn ${device === d ? 'active' : ''}`} onClick={() => setDevice(d)}>
                     {d === 'desktop' ? <FaDesktop style={{ marginRight: '4px' }} /> : <FaMobileScreen style={{ marginRight: '4px' }} />}
                     {label}
