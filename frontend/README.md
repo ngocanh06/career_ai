@@ -14,10 +14,12 @@ npm install
 npm start
 ```
 ## Cài đặt các dependencies bị thiếu
+```bash
 cd frontend
 npm install react-icons
 npm install lucide-react
 npm install @fortawesome/fontawesome-free
+```
 Truy cập [http://localhost:3000](http://localhost:3000) để xem ứng dụng trên trình duyệt.
 
 ## Lưu ý về Code & Cấu trúc (Dành cho Team Leader)
