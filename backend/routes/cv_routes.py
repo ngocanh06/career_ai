@@ -4,10 +4,10 @@ import json
 import random
 from flask import Blueprint, jsonify, request, current_app
 from utils.db import get_db
+from utils.ai import call_openai_json
 
 import pdfplumber
 import docx
-from openai import OpenAI
 
 cv_bp = Blueprint('cv', __name__)
 
@@ -28,15 +28,7 @@ def extract_text_from_file(filepath, file_type):
         print(f"Lỗi khi đọc file: {e}")
     return text
 
-def analyze_cv_with_deepseek(cv_text):
-    api_key = os.getenv('DEEPSEEK_API_KEY')
-    if not api_key:
-        print("Không tìm thấy DEEPSEEK_API_KEY")
-        return None
-    
-    # Khởi tạo OpenAI client với DeepSeek API
-    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-    
+def analyze_cv_with_openai(cv_text):
     prompt = f"""
 Bạn là một chuyên gia nhân sự và một hệ thống ATS đánh giá hồ sơ.
 Dưới đây là văn bản trích xuất từ CV của ứng viên. Hãy phân tích và trả về DUY NHẤT một chuỗi JSON hợp lệ theo đúng cấu trúc sau (không kèm theo văn bản giải thích nào khác ngoài JSON):
@@ -69,23 +61,7 @@ Văn bản CV:
 {cv_text[:6000]}
 \"\"\"
 """
-
-    try:
-        response = client.chat.completions.create(
-            model="deepseek-chat",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that outputs only valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={
-                'type': 'json_object'
-            }
-        )
-        content = response.choices[0].message.content
-        return json.loads(content)
-    except Exception as e:
-        print(f"Lỗi gọi API DeepSeek: {e}")
-        return None
+    return call_openai_json(prompt)
 
 # -------------------------------------------------------
 # API: Lấy thông tin phân tích CV theo user_id
@@ -99,7 +75,7 @@ def get_cv(user_id):
                 "SELECT cv_id, file_path, file_type, "
                 "DATE_FORMAT(upload_date, '%%Y-%%m-%%d') as upload_date, ats_score, "
                 "analysis_result, improvement_suggestions, status "
-                "FROM cv WHERE user_id = %s ORDER BY upload_date DESC LIMIT 1",
+                "FROM cv WHERE user_id = %s ORDER BY cv_id DESC LIMIT 1",
                 (user_id,)
             )
             cv = cursor.fetchone()
@@ -154,8 +130,8 @@ def upload_cv():
             # Fallback nếu CV là ảnh hoặc không đọc được chữ
             cv_text = "Hồ sơ ngắn gọn, tập trung vào kỹ năng cơ bản."
 
-        # Phân tích bằng DeepSeek AI
-        ai_result = analyze_cv_with_deepseek(cv_text)
+        # Phân tích bằng OpenAI
+        ai_result = analyze_cv_with_openai(cv_text)
         
         # Nếu AI lỗi, fallback tạo ngẫu nhiên
         if not ai_result:

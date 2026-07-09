@@ -35,10 +35,10 @@ export default function CareerOrientation() {
   const CAREER_BADGE = ['AI gợi ý', 'Hot Trend', null];
   const CAREER_BADGE_CLS = ['blue', 'green', null];
 
-  useEffect(() => {
+  const fetchCareers = () => {
     const user = JSON.parse(localStorage.getItem('career_user'));
     const userId = user ? user.user_id : 19;
-
+    setLoading(true);
     fetch(`http://localhost:5000/api/career/${userId}`)
       .then(r => r.json())
       .then(json => {
@@ -52,7 +52,7 @@ export default function CareerOrientation() {
             level: CAREER_LVL_MAP[lvlKey].label,
             levelClass: CAREER_LVL_MAP[lvlKey].cls,
             desc: c.job_description || '',
-            skills: [],               // sẽ bổ sung sau khi có API skills
+            skills: [],
             badge: CAREER_BADGE[i] || null,
             badgeClass: CAREER_BADGE_CLS[i] || null,
             icon: CAREER_ICONS[i] || <IconBriefcase />,
@@ -63,54 +63,81 @@ export default function CareerOrientation() {
       })
       .catch(() => { })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchCareers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const generateCareers = async () => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/career/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+      });
+      await res.json();
+      fetchCareers();
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  };
+
   // Comparison role options (toggled with the Swap button)
-  const comparisonPairs = [
+  const comparisonPairs = careers.length >= 2 ? [
     {
       left: {
-        title: "Data Analyst",
-        badge: "Top Choice",
-        badgeClass: "blue",
-        skills: ["Phân tích", "Excel", "Thống kê"],
+        title: careers[0].title,
+        badge: careers[0].badge || "Lựa chọn tốt nhất",
+        badgeClass: careers[0].badgeClass || "blue",
+        skills: ["Tư duy phân tích", "Chuyên môn sâu", "Khả năng ứng biến"],
         salary: "15M - 35M",
-        potential: 8.5,
-        pct: 85,
-        colorClass: "blue"
+        potential: (careers[0].match / 10).toFixed(1),
+        pct: careers[0].match,
+        colorClass: careers[0].iconClass || "blue"
       },
       right: {
-        title: "Business Analyst",
-        badge: "Strategic",
-        badgeClass: "green",
-        skills: ["Giao tiếp", "Agile", "UML"],
-        salary: "18M - 40M",
-        potential: 7.8,
-        pct: 78,
-        colorClass: "teal"
+        title: careers[1].title,
+        badge: careers[1].badge || "Phù hợp cao",
+        badgeClass: careers[1].badgeClass || "green",
+        skills: ["Tư duy hệ thống", "Giải quyết vấn đề", "Giao tiếp"],
+        salary: "12M - 30M",
+        potential: (careers[1].match / 10).toFixed(1),
+        pct: careers[1].match,
+        colorClass: careers[1].iconClass || "teal"
       }
     },
-    {
+    careers.length >= 3 ? {
       left: {
-        title: "Data Engineer",
-        badge: "Hot Growth",
-        badgeClass: "blue",
-        skills: ["Python", "Spark", "Hadoop"],
-        salary: "22M - 45M",
-        potential: 9.0,
-        pct: 90,
-        colorClass: "blue"
+        title: careers[1].title,
+        badge: careers[1].badge || "Phù hợp cao",
+        badgeClass: careers[1].badgeClass || "green",
+        skills: ["Tư duy hệ thống", "Giải quyết vấn đề", "Giao tiếp"],
+        salary: "12M - 30M",
+        potential: (careers[1].match / 10).toFixed(1),
+        pct: careers[1].match,
+        colorClass: careers[1].iconClass || "green"
       },
       right: {
-        title: "Cloud Architect",
-        badge: "High Demand",
-        badgeClass: "green",
-        skills: ["AWS", "Docker", "Terraform"],
-        salary: "30M - 60M",
-        potential: 9.2,
-        pct: 92,
-        colorClass: "teal"
+        title: careers[2].title,
+        badge: careers[2].badge || "Đang phát triển",
+        badgeClass: careers[2].badgeClass || "purple",
+        skills: ["Nghiên cứu", "Tư duy sáng tạo", "Kỹ thuật chuyên ngành"],
+        salary: "10M - 25M",
+        potential: (careers[2].match / 10).toFixed(1),
+        pct: careers[2].match,
+        colorClass: careers[2].iconClass || "purple"
       }
+    } : null
+  ].filter(Boolean) : [
+    {
+      left: { title: "Đang tải...", badge: "...", badgeClass: "blue", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "blue" },
+      right: { title: "Đang tải...", badge: "...", badgeClass: "green", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "teal" }
     }
   ];
 
@@ -160,37 +187,58 @@ export default function CareerOrientation() {
   }, [messages]);
 
   // Handle custom text submit
-  const handleSendText = (text) => {
+  const handleSendText = async (text) => {
     if (!text.trim()) return;
 
     const userMsgId = Date.now();
-    const newUserMsg = { id: userMsgId, sender: 'user', text };
+    const newUserMsg = { id: userMsgId, role: 'user', sender: 'user', text, content: text };
     const loadingMsgId = userMsgId + 1;
     const newLoadingMsg = { id: loadingMsgId, sender: 'assistant', isAnalyzing: true };
 
-    setMessages(prev => [...prev, newUserMsg, newLoadingMsg]);
+    const newMessages = [...messages, newUserMsg];
+    setMessages([...newMessages, newLoadingMsg]);
     setInputVal('');
 
-    // Predefined answers based on prompt keywords
-    let responseText = "Cảm ơn bạn đã hỏi! Với năng lực hiện tại của bạn, chuyên gia khuyên bạn nên tập trung củng cố kỹ năng SQL nâng cao và học thêm các mô hình học máy cơ bản để tăng khả năng cạnh tranh.";
-
-    if (text.toLowerCase().includes("senior") || text.toLowerCase().includes("2 năm")) {
-      responseText = "Để lên Senior DA trong 2 năm, bạn cần: 1. Nắm vững phân tích dữ liệu lớn & tối ưu SQL nâng cao. 2. Làm chủ ít nhất một công cụ BI (Power BI/Tableau) và viết công thức DAX phức tạp. 3. Nâng cao kỹ năng Business Domain để đưa ra đề xuất kinh doanh thực tế chứ không chỉ làm báo cáo.";
-    } else if (text.toLowerCase().includes("chứng chỉ") || text.toLowerCase().includes("ai")) {
-      responseText = "Các chứng chỉ AI giá trị nhất bao gồm: 1. TensorFlow Developer Certificate (Google). 2. AWS Certified Machine Learning - Specialty. 3. Azure AI Engineer Associate (Microsoft). Ngoài ra, các khóa học chuyên sâu về LLMs và Prompt Engineering cũng rất được săn đón.";
-    }
-
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:5000/api/career/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
+          id: loadingMsgId,
+          role: 'assistant',
+          sender: 'assistant',
+          text: json.data,
+          content: json.data
+        } : m));
+      } else {
+        setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
+          id: loadingMsgId,
+          role: 'assistant',
+          sender: 'assistant',
+          text: "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.",
+          content: "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau."
+        } : m));
+      }
+    } catch (e) {
       setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
         id: loadingMsgId,
+        role: 'assistant',
         sender: 'assistant',
-        text: responseText
+        text: "Xin lỗi, đã xảy ra lỗi kết nối.",
+        content: "Xin lỗi, đã xảy ra lỗi kết nối."
       } : m));
-    }, 1200);
+    }
   };
 
   const handleSwapRoles = () => {
-    setCompareIndex(prev => (prev + 1) % comparisonPairs.length);
+    setCompareIndex(prev => {
+      const nextIndex = (prev + 1) % comparisonPairs.length;
+      return Number.isNaN(nextIndex) ? 0 : nextIndex;
+    });
   };
 
   return (
@@ -204,9 +252,11 @@ export default function CareerOrientation() {
               <FaWandMagicSparkles className="co-section-icon" />
               <h2 className="co-section-title">Đề xuất Nghề nghiệp Phù hợp</h2>
             </div>
-            <a href="#xem-tat-ca" className="co-link-action" onClick={(e) => e.preventDefault()}>
-              Xem tất cả →
-            </a>
+            <button className="co-btn-outline" onClick={generateCareers} disabled={loading} style={{
+              background: 'white', border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer'
+            }}>
+              {loading ? "Đang tạo..." : "Phân tích bằng AI"}
+            </button>
           </div>
 
           <div className="co-career-grid">
@@ -250,7 +300,9 @@ export default function CareerOrientation() {
                   ))}
                 </div>
 
-                <button className="co-card-btn">Chi tiết lộ trình</button>
+                <button className="co-card-btn" onClick={() => {
+                  window.location.href = '/learning-path';
+                }}>Chi tiết lộ trình học tập</button>
               </div>
             ))}
           </div>
@@ -375,12 +427,36 @@ export default function CareerOrientation() {
                 </button>
               </>
             ) : (
-              <div style={{ marginTop: '20px', padding: '30px 10px', textAlign: 'center', color: '#64748b' }}>
-                <FaLightbulb style={{ fontSize: '24px' }} />
-                <h4 style={{ margin: '12px 0 6px 0', color: '#111827' }}>Phân tích sâu định hướng nghề nghiệp</h4>
-                <p style={{ fontSize: '13px', margin: '0', lineHeight: '1.5' }}>
-                  AI đang quét thị trường và phân tích cơ hội phát triển dài hạn. Tính năng báo cáo chi tiết đang được đồng bộ dữ liệu thực tế.
-                </p>
+              <div className="co-deep-analysis">
+                <div className="co-da-header">
+                  <FaWandMagicSparkles style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: 18 }} />
+                  <h4 style={{ margin: 0, color: '#111827', fontSize: 15 }}>Phân tích AI: {currentPair.left.title} vs {currentPair.right.title}</h4>
+                </div>
+                
+                <div className="co-da-content">
+                  <div className="co-da-block">
+                    <p className="co-da-label">Tương lai & Xu hướng</p>
+                    <p className="co-da-text">
+                      <strong>{currentPair.left.title}:</strong> Đang có xu hướng tăng trưởng cực kỳ mạnh mẽ, đặc biệt khi dữ liệu lớn (Big Data) trở thành cốt lõi của doanh nghiệp. Bạn sẽ có lợi thế tuyệt đối trong dài hạn, tuy nhiên mức độ cạnh tranh cũng khá cao.
+                      <br /><br />
+                      <strong>{currentPair.right.title}:</strong> Nhu cầu luôn ổn định ở mức cao. Doanh nghiệp nào cũng cần người phân tích và hiểu hệ thống để cải thiện hiệu suất. Rủi ro tự động hóa thấp do tính chất tư duy chiến lược và quản lý con người.
+                    </p>
+                  </div>
+
+                  <div className="co-da-block">
+                    <p className="co-da-label">Khoảng cách kỹ năng hiện tại</p>
+                    <p className="co-da-text">
+                      Bạn đang có lợi thế mạnh về tư duy phân tích, đây là gốc rễ của cả 2 mảng. Tuy nhiên, nếu chọn <strong>{currentPair.left.title}</strong>, bạn cần học sâu hơn về công cụ kỹ thuật (SQL, Python). Còn với <strong>{currentPair.right.title}</strong>, bạn nên trau dồi khả năng thuyết trình, quản lý dự án (Agile/Scrum) và thiết kế hệ thống.
+                    </p>
+                  </div>
+                  
+                  <div className="co-da-block" style={{ border: 'none', paddingBottom: 0, marginBottom: 0 }}>
+                    <p className="co-da-label">AI Khuyến nghị cho bạn</p>
+                    <p className="co-da-text" style={{ color: 'var(--primary-color, #3b5bdb)', fontWeight: 500 }}>
+                      Dựa trên Bio của bạn, {currentPair.left.title} có vẻ là lựa chọn phù hợp nhất với quỹ đạo phát triển ngắn hạn. Bạn có thể đạt mức năng lực chuyên môn sau khoảng 3 - 6 tháng học tập cường độ cao.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

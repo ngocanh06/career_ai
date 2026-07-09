@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './PortfolioBuilder.css';
 import Topbar from "../DashboardLogged/Topbar";
@@ -24,7 +26,8 @@ import {
   FaTableCellsLarge,
   FaLink,
   FaGlobe,
-  FaStar
+  FaStar,
+  FaDownload
 } from "react-icons/fa6";
 
 const THEMES = [
@@ -126,11 +129,11 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
         <div className="pf-score-card" style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
           <p className="pf-score-card-label">Chỉ số ấn tượng</p>
           <div>
-            <div className="pf-score-number">95%</div>
+            <div className="pf-score-number">{info.score}%</div>
             <div className="pf-score-sub">Khả năng phù hợp với JD</div>
           </div>
           <div className="pf-score-bar-track">
-            <div className="pf-score-bar-fill" style={{ width: '95%' }} />
+            <div className="pf-score-bar-fill" style={{ width: `${info.score}%` }} />
           </div>
         </div>
       </div>
@@ -147,6 +150,8 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
             <div className="pf-project-body">
               <p className="pf-project-title">{p.title}</p>
               <p className="pf-project-desc">{p.desc}</p>
+              {p.tech && <p className="pf-project-tech" style={{ fontSize: 11, color: t.colors[0], marginTop: 6, fontWeight: 600 }}>Công nghệ: {p.tech}</p>}
+              {p.link && <a href={p.link} className="pf-project-link" style={{ fontSize: 11, color: '#6b7280', marginTop: 4, display: 'inline-block' }}>{p.link}</a>}
             </div>
           </div>
         ))}
@@ -196,6 +201,9 @@ export default function PortfolioBuilder() {
   const [newSkill, setNewSkill] = useState('');
   const [projects, setProjects] = useState([]);
   const [awards, setAwards] = useState([]);
+  const [aiInsight, setAiInsight] = useState({ insight: 'Đang phân tích Portfolio của bạn...', score: 95 });
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   // Fetch user profile + skills + experience + certificates từ API
   useEffect(() => {
@@ -210,8 +218,8 @@ export default function PortfolioBuilder() {
         const d = json.data;
         setInfo({
           name: d.full_name || '',
-          title: d.bio ? d.bio.split('.')[0] : '',
-          bio: d.bio || '',
+          title: d.bio && d.bio.includes('||') ? d.bio.split('||')[0] : (d.bio ? d.bio.split('.')[0] : ''),
+          bio: d.bio && d.bio.includes('||') ? d.bio.split('||')[1] : (d.bio || ''),
           email: d.email || '',
           linkedin: '',
         });
@@ -257,6 +265,122 @@ export default function PortfolioBuilder() {
       .catch(() => { });
   }, []);
 
+  // Fetch AI insight when skills or projects change
+  useEffect(() => {
+    if (skills.length === 0 && projects.length === 0) return;
+    
+    const timer = setTimeout(() => {
+      setAiInsight(prev => ({ ...prev, insight: "Đang phân tích..." }));
+      fetch('http://localhost:5000/api/portfolio/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skills, projects })
+      })
+      .then(r => r.json())
+      .then(json => {
+        if (json.success) setAiInsight({ insight: json.data.insight, score: json.data.score || 95 });
+      })
+      .catch(() => setAiInsight(prev => ({ ...prev, insight: "AI hiện không khả dụng." })));
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [skills, projects]);
+
+  const handleOptimizeProjects = async () => {
+    if (projects.length === 0) return;
+    setIsOptimizing(true);
+    const newProjects = [...projects];
+    
+    for (let i = 0; i < newProjects.length; i++) {
+      if (newProjects[i].desc) {
+        try {
+          const res = await fetch('http://localhost:5000/api/portfolio/optimize-project', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: newProjects[i].desc })
+          });
+          const json = await res.json();
+          if (json.success) {
+            newProjects[i].desc = json.data;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    
+    setProjects(newProjects);
+    setIsOptimizing(false);
+  };
+
+  const handleExtractCV = async () => {
+    setIsExtracting(true);
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+    try {
+      const res = await fetch(`http://localhost:5000/api/portfolio/extract-cv/${userId}`, {
+        method: 'POST'
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const d = json.data;
+        if (d.skills) setSkills(prev => [...new Set([...prev, ...d.skills])]);
+        if (d.projects) {
+          const mappedProjs = d.projects.map((p, i) => ({
+            id: Date.now() + i,
+            title: p.title || 'Dự án mới',
+            desc: p.desc || '',
+            tech: p.tech || ''
+          }));
+          setProjects(prev => [...prev, ...mappedProjs]);
+        }
+        if (d.awards) {
+          const mappedAwards = d.awards.map((a, i) => ({
+            id: Date.now() + 100 + i,
+            title: a.title || 'Giải thưởng',
+            org: a.org || ''
+          }));
+          setAwards(prev => [...prev, ...mappedAwards]);
+        }
+        alert('Đã trích xuất thông tin từ CV thành công!');
+      } else {
+        alert(json.message || 'Lỗi trích xuất CV');
+      }
+    } catch (e) {
+      alert('Không thể kết nối máy chủ để trích xuất CV');
+    }
+    setIsExtracting(false);
+  };
+
+  const handleSaveProfile = async () => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+    try {
+      await fetch(`http://localhost:5000/api/user/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: info.name,
+          bio: `${info.title}||${info.bio}`
+        })
+      });
+    } catch (e) {
+      console.error('Failed to save profile', e);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('portfolio-preview-content');
+    if (element) {
+      const opt = {
+        margin:       [0, 0, 0, 0],
+        filename:     `Portfolio_${nameToSlug(info.name) || 'career_ai'}.pdf`,
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+  };
 
   const portfolioUrl = `portfolio.ai/u/${nameToSlug(info.name) || 'tendangnhap'}`;
 
@@ -313,16 +437,16 @@ export default function PortfolioBuilder() {
             <div className="pb-sections-list">
 
               {/* Thông tin */}
-              <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`}>
+              <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title} Data Architect`}>
                 {['name', 'title', 'email', 'linkedin'].map(f => (
                   <div className="pb-form-group" key={f}>
                     <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>
-                    <input className="pb-form-input" value={info[f]} onChange={e => setInfo({ ...info, [f]: e.target.value })} />
+                    <input className="pb-form-input" value={info[f]} onChange={e => setInfo({ ...info, [f]: e.target.value })} onBlur={handleSaveProfile} />
                   </div>
                 ))}
                 <div className="pb-form-group">
                   <label className="pb-form-label">Giới thiệu</label>
-                  <textarea className="pb-form-textarea" value={info.bio} onChange={e => setInfo({ ...info, bio: e.target.value })} />
+                  <textarea className="pb-form-textarea" value={info.bio} onChange={e => setInfo({ ...info, bio: e.target.value })} onBlur={handleSaveProfile} />
                 </div>
               </SectionRow>
 
@@ -346,9 +470,9 @@ export default function PortfolioBuilder() {
 
               {/* Dự án */}
               <SectionRow dot="#8b5cf6" title="Dự án tiêu biểu" subtitle={`${projects.length} dự án cần tối ưu nội dung`}>
-                <button className="pb-ai-optimize-btn">
+                <button className="pb-ai-optimize-btn" onClick={handleOptimizeProjects} disabled={isOptimizing}>
                   <FaWandMagicSparkles style={{ marginRight: '6px' }} />
-                  Tối ưu nội dung dự án bằng AI
+                  {isOptimizing ? "Đang tối ưu bằng AI..." : "Tối ưu nội dung dự án bằng AI"}
                 </button>
                 {projects.map(p => (
                   <div key={p.id} className="pb-proj-card">
@@ -358,8 +482,17 @@ export default function PortfolioBuilder() {
                         <FaXmark />
                       </button>
                     </div>
-                    <input className="pb-form-input" style={{ marginBottom: 6 }} value={p.title} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, title: e.target.value } : x))} />
-                    <textarea className="pb-form-textarea" style={{ minHeight: 52 }} value={p.desc} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, desc: e.target.value } : x))} />
+                    <label className="pb-form-label">Tên dự án</label>
+                    <input className="pb-form-input" style={{ marginBottom: 10 }} value={p.title} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, title: e.target.value } : x))} />
+                    
+                    <label className="pb-form-label">Công nghệ / Kỹ năng sử dụng</label>
+                    <input className="pb-form-input" style={{ marginBottom: 10 }} placeholder="React, Node.js, Python..." value={p.tech || ''} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, tech: e.target.value } : x))} />
+                    
+                    <label className="pb-form-label">Link dự án (Tuỳ chọn)</label>
+                    <input className="pb-form-input" style={{ marginBottom: 10 }} placeholder="https://..." value={p.link || ''} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, link: e.target.value } : x))} />
+                    
+                    <label className="pb-form-label">Mô tả chi tiết</label>
+                    <textarea className="pb-form-textarea" style={{ minHeight: 60 }} placeholder="Mô tả công việc bạn đã làm trong dự án này..." value={p.desc} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, desc: e.target.value } : x))} />
                   </div>
                 ))}
                 <button className="pb-add-item-btn" onClick={() => setProjects([...projects, { id: Date.now(), title: 'Dự án mới', desc: '', tags: [] }])}>
@@ -372,17 +505,24 @@ export default function PortfolioBuilder() {
               <SectionRow dot="#10b981" title="Thành tựu & Giải thưởng" subtitle={awards[0]?.title || 'Chưa có thành tựu'} editIcon={<EditIcon />}>
                 {awards.map(a => (
                   <div key={a.id} className="pb-proj-card">
-                    <div className="pb-form-group" style={{ marginBottom: 6 }}>
-                      <label className="pb-form-label">Tên giải thưởng</label>
+                    <div className="pb-proj-card-head">
+                      <span className="pb-proj-card-title">{a.title}</span>
+                      <button className="pb-proj-remove" onClick={() => setAwards(awards.filter(x => x.id !== a.id))}>
+                        <FaXmark />
+                      </button>
+                    </div>
+                    <div className="pb-form-group" style={{ marginBottom: 10 }}>
+                      <label className="pb-form-label">Tên giải thưởng / Chứng chỉ</label>
                       <input
                         className="pb-form-input"
                         value={a.title}
                         onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))}
                       />
                     </div>
-                    <label className="pb-form-label">Tổ chức / Năm</label>
+                    <label className="pb-form-label">Tổ chức cấp & Năm nhận</label>
                     <input
                       className="pb-form-input"
+                      placeholder="VD: Google - 2025"
                       value={a.org}
                       onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))}
                     />
@@ -395,12 +535,6 @@ export default function PortfolioBuilder() {
               </SectionRow>
             </div>
 
-            {/* Add section */}
-            <button className="pb-add-section-btn">
-              <FaPlus style={{ marginRight: '6px' }} />
-              Thêm nội dung mới
-            </button>
-
             {/* AI insight */}
             <div className="pb-ai-insight">
               <div className="pb-ai-insight-icon">
@@ -408,19 +542,19 @@ export default function PortfolioBuilder() {
               </div>
               <div>
                 <p className="pb-ai-insight-label">AI Insight</p>
-                <p className="pb-ai-insight-text">Bạn nên thêm chỉ số tăng trưởng 20% vào dự án AI. Phần tích hơn sẽ tăng độ tin cậy.</p>
+                <p className="pb-ai-insight-text">{aiInsight.insight}</p>
               </div>
             </div>
 
             {/* Actions */}
             <div className="pb-actions-bar">
-              <button className="pb-btn-save">
-                <FaFloppyDisk style={{ marginRight: '6px' }} />
-                Lưu bản nháp
+              <button className="pb-btn-save" onClick={handleExtractCV} disabled={isExtracting}>
+                <FaWandMagicSparkles style={{ marginRight: '6px' }} />
+                {isExtracting ? 'Đang đọc CV...' : 'Auto điền từ CV'}
               </button>
-              <button className="pb-btn-publish">
-                <FaUpload style={{ marginRight: '6px' }} />
-                Xuất bản Portfolio
+              <button className="pb-btn-publish" onClick={handleDownloadPDF}>
+                <FaDownload style={{ marginRight: '6px' }} />
+                Tải về thành PDF
               </button>
             </div>
           </div>
@@ -471,8 +605,8 @@ export default function PortfolioBuilder() {
 
             {/* Preview frame */}
             <div className="pb-preview-frame">
-              <div style={{ width: device === 'mobile' ? 375 : '100%', transition: 'width 0.3s ease' }}>
-                <PortfolioPreview info={info} skills={skills} projects={projects} awards={awards} theme={theme} />
+              <div id="portfolio-preview-content" style={{ width: '100%', maxWidth: '640px', margin: '0 auto', background: 'transparent' }}>
+                <PortfolioPreview info={{...info, score: aiInsight.score}} skills={skills} projects={projects} awards={awards} theme={theme} />
               </div>
             </div>
           </div>
