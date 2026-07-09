@@ -39,7 +39,7 @@
   gap: 6px;
   background: rgba(59,91,219,0.12);
   border: 1px solid rgba(59,91,219,0.2);
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -56,7 +56,7 @@
   margin: 0 0 6px 0;
 }
 
-.lp-hero-title span { color: #3b5bdb; }
+.lp-hero-title span { color: var(--primary-color, #3b5bdb); }
 
 .lp-hero-sub {
   font-size: 13px;
@@ -70,7 +70,7 @@
 
 .lp-btn-primary {
   padding: 10px 20px;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -97,7 +97,7 @@
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
-.lp-btn-outline:hover { border-color: #3b5bdb; color: #3b5bdb; }
+.lp-btn-outline:hover { border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
 
 /* Progress circle */
 .lp-hero-progress { flex-shrink: 0; text-align: center; }
@@ -137,7 +137,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -197,7 +197,7 @@
   gap: 6px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   background: #eff2ff;
   padding: 5px 12px;
   border-radius: 8px;
@@ -244,13 +244,13 @@
 }
 
 .lp-timeline-dot.done {
-  background: #3b5bdb;
-  border-color: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
+  border-color: var(--primary-color, #3b5bdb);
 }
 
 .lp-timeline-dot.active {
   background: #fff;
-  border-color: #3b5bdb;
+  border-color: var(--primary-color, #3b5bdb);
   border-width: 3px;
   box-shadow: 0 0 0 6px rgba(59,91,219,0.1);
 }
@@ -270,7 +270,7 @@
   text-align: center;
 }
 
-.lp-step-month.active-label { color: #3b5bdb; }
+.lp-step-month.active-label { color: var(--primary-color, #3b5bdb); }
 
 .lp-step-name {
   font-size: 14px;
@@ -280,7 +280,7 @@
   text-align: center;
 }
 
-.lp-step-name.active-label { color: #3b5bdb; font-size: 15px; }
+.lp-step-name.active-label { color: var(--primary-color, #3b5bdb); font-size: 15px; }
 
 .lp-step-desc {
   font-size: 11.5px;
@@ -323,7 +323,7 @@
 .lp-see-all {
   font-size: 12.5px;
   font-weight: 600;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   background: none;
   border: none;
   cursor: pointer;
@@ -376,7 +376,7 @@
 
 .lp-badge-recommend {
   background: #eff2ff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   border: 1px solid #c7d2fe;
 }
 
@@ -439,7 +439,7 @@
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.lp-course-btn:hover { background: #3b5bdb; border-color: #3b5bdb; color: #fff; }
+.lp-course-btn:hover { background: var(--primary-color, #3b5bdb); border-color: var(--primary-color, #3b5bdb); color: #fff; }
 
 /* Skill gap box */
 .lp-skill-gap-box {
@@ -463,7 +463,7 @@
   line-height: 1.55;
 }
 
-.lp-skill-gap-desc span { color: #3b5bdb; font-weight: 600; }
+.lp-skill-gap-desc span { color: var(--primary-color, #3b5bdb); font-weight: 600; }
 
 .lp-skill-gap-link {
   display: flex;
@@ -471,7 +471,7 @@
   gap: 5px;
   font-size: 13px;
   font-weight: 700;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   background: none;
   border: none;
   cursor: pointer;
@@ -522,7 +522,7 @@
 }
 
 .lp-skill-row-pct.has-target { color: #9ca3af; }
-.lp-skill-row-pct.has-target span { color: #3b5bdb; }
+.lp-skill-row-pct.has-target span { color: var(--primary-color, #3b5bdb); }
 
 .lp-skill-track {
   height: 6px;
@@ -544,7 +544,7 @@
   top: -3px;
   width: 2px;
   height: 12px;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   border-radius: 1px;
 }
 
@@ -597,11 +597,11 @@
   margin: 0;
 }
 
-.lp-readiness-desc span { color: #3b5bdb; font-weight: 600; }
+.lp-readiness-desc span { color: var(--primary-color, #3b5bdb); font-weight: 600; }
 
 /* Sync CV card */
 .lp-sync-card {
-  background: linear-gradient(135deg, #3b5bdb 0%, #4c6ef5 100%);
+  background: linear-gradient(135deg, var(--primary-color, #3b5bdb) 0%, #4c6ef5 100%);
   border-radius: 14px;
   padding: 22px 20px;
   color: #fff;
@@ -636,7 +636,7 @@
   width: 100%;
   padding: 10px;
   background: #fff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   border: none;
   border-radius: 8px;
   font-size: 13px;
@@ -658,3 +658,23 @@
   .lp-hero-card { flex-direction: column; }
   .lp-courses-grid { grid-template-columns: 1fr; }
 }
+
+/* =============================================
+   DARK THEME OVERRIDES
+   ============================================= */
+body.dark-theme .lp-journey-card, body.dark-theme .lp-course-card, body.dark-theme .lp-skill-gap-box, body.dark-theme .lp-skill-card { background: #22252e; border-color: #343842; }
+body.dark-theme .lp-course-card:hover { border-color: #4b5563; }
+body.dark-theme .lp-timeline-dot { background: #22252e; border-color: #343842; }
+body.dark-theme .lp-timeline-dot.active { background: #1a1c23; border-color: var(--primary-color, #3b5bdb); }
+body.dark-theme .lp-timeline-dot.upcoming { background: #1a1c23; border-color: #4b5563; }
+body.dark-theme .lp-journey-title, body.dark-theme .lp-course-name, body.dark-theme .lp-skill-gap-title, body.dark-theme .lp-skill-card-title, body.dark-theme .lp-section-title { color: #f1f5f9; }
+body.dark-theme .lp-journey-sub, body.dark-theme .lp-course-desc, body.dark-theme .lp-skill-gap-desc, body.dark-theme .lp-readiness-desc { color: #8f95a3; }
+body.dark-theme .lp-btn-outline { background: #22252e; border-color: #4b5563; color: #d1d5db; }
+body.dark-theme .lp-btn-outline:hover { border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
+body.dark-theme .lp-course-btn { background: #1a1c23; border-color: #4b5563; color: #d1d5db; }
+body.dark-theme .lp-course-btn:hover { background: var(--primary-color, #3b5bdb); color: #f1f5f9; }
+body.dark-theme .lp-sync-btn { background: #22252e; color: var(--primary-color, #3b5bdb); }
+body.dark-theme .lp-sync-btn:hover { background: #1a1c23; }
+body.dark-theme .lp-skill-track { background: #343842; }
+body.dark-theme .lp-readiness-pct { color: #f1f5f9; }
+body.dark-theme .lp-course-icon { background: #1a1d24; }

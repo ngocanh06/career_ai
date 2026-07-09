@@ -8,9 +8,9 @@ __pycache__/
 # Node.js (không cần thiết cho backend Python)
 node_modules/
 package-lock.json
-
-# Environment variables (BẢO MẬT - không đẩy lên git)
 .env
+# Environment variables (BẢO MẬT - không đẩy lên git)
+
 
 # Misc
 .DS_Store

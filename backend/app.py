@@ -12,14 +12,16 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
-# (password hashing disabled for testing)
-# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # -------------------------------------------------------
 # Cấu hình kết nối MySQL
@@ -172,11 +174,19 @@ def login():
             )
             user = cursor.fetchone()
 
+            ip_addr = request.remote_addr or 'Unknown'
+            user_agent = request.headers.get('User-Agent') or 'Unknown Device'
+
             if not user:
                 conn.close()
                 return jsonify({'success': False, 'message': 'Email không tồn tại'}), 401
 
             if user['password_hash'] != password:
+                cursor.execute(
+                    "INSERT INTO login_history (user_id, ip_address, device_info, status) VALUES (%s, %s, %s, 'Thất bại')",
+                    (user['user_id'], ip_addr, user_agent)
+                )
+                conn.commit()
                 conn.close()
                 return jsonify({'success': False, 'message': 'Mật khẩu không đúng'}), 401
 
@@ -184,13 +194,26 @@ def login():
                 conn.close()
                 return jsonify({'success': False, 'message': 'Tài khoản đã bị khóa'}), 403
 
+            # Thành công -> Ghi vào login_history
+            cursor.execute(
+                "INSERT INTO login_history (user_id, ip_address, device_info, status) VALUES (%s, %s, %s, 'Thành công')",
+                (user['user_id'], ip_addr, user_agent)
+            )
+            
+            # Cập nhật hoặc thêm user_session
+            cursor.execute("SELECT id FROM user_session WHERE user_id=%s AND device_info=%s LIMIT 1", (user['user_id'], user_agent))
+            session_row = cursor.fetchone()
+            if session_row:
+                cursor.execute("UPDATE user_session SET last_active=NOW(), ip_address=%s, location='Hà Nội, VN' WHERE id=%s", (ip_addr, session_row['id']))
+            else:
+                cursor.execute("INSERT INTO user_session (user_id, device_info, location, ip_address, is_current) VALUES (%s, %s, 'Hà Nội, VN', %s, 1)", (user['user_id'], user_agent, ip_addr))
+
             # Cập nhật last_login
             cursor.execute(
                 "UPDATE user SET last_login = NOW() WHERE user_id = %s",
                 (user['user_id'],)
             )
             conn.commit()
-
         conn.close()
         return jsonify({
             'success': True,
@@ -204,6 +227,66 @@ def login():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+
+# -------------------------------------------------------
+# API: Lấy phiên đăng nhập và lịch sử
+# -------------------------------------------------------
+@app.route('/api/user/<int:user_id>/sessions', methods=['GET'])
+def get_sessions(user_id):
+    try:
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, device_info, location, ip_address, is_current, "
+                "DATE_FORMAT(last_active, '%%d/%%m/%%Y %%H:%%i') as last_active "
+                "FROM user_session WHERE user_id = %s ORDER BY last_active DESC",
+                (user_id,)
+            )
+            sessions = cursor.fetchall()
+            
+            # Simple heuristic to mark the current session
+            user_agent = request.headers.get('User-Agent') or ''
+            for s in sessions:
+                s['is_current'] = (s['device_info'] == user_agent)
+                
+        conn.close()
+        return jsonify({'success': True, 'data': sessions})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/user/<int:user_id>/login_history', methods=['GET'])
+def get_login_history(user_id):
+    try:
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, ip_address, device_info, status, "
+                "DATE_FORMAT(created_at, '%%d/%%m/%%Y %%H:%%i') as time "
+                "FROM login_history WHERE user_id = %s ORDER BY created_at DESC LIMIT 10",
+                (user_id,)
+            )
+            history = cursor.fetchall()
+        conn.close()
+        return jsonify({'success': True, 'data': history})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/user/<int:user_id>/sessions', methods=['DELETE'])
+def clear_other_sessions(user_id):
+    try:
+        user_agent = request.headers.get('User-Agent') or ''
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM user_session WHERE user_id = %s AND device_info != %s",
+                (user_id, user_agent)
+            )
+            conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Đã đăng xuất các thiết bị khác'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 # -------------------------------------------------------
@@ -413,6 +496,119 @@ def get_education(user_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+# -------------------------------------------------------
+# API: Cập nhật thông tin profile người dùng
+# -------------------------------------------------------
+@app.route('/api/user/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        body = request.get_json()
+
+        conn = get_db()
+        with conn.cursor() as cursor:
+            # Lấy profile hiện tại
+            cursor.execute(
+                "SELECT p.full_name, p.phone, p.bio FROM profile p WHERE p.user_id = %s",
+                (user_id,)
+            )
+            current = cursor.fetchone() or {}
+
+            # Chỉ cập nhật field nào được gửi lên
+            full_name = body.get('full_name', current.get('full_name', '')).strip() if 'full_name' in body else current.get('full_name', '')
+            phone = body.get('phone', current.get('phone', '')).strip() if 'phone' in body else current.get('phone', '')
+            bio = body.get('bio', current.get('bio', '')).strip() if 'bio' in body else current.get('bio', '')
+
+            if not full_name:
+                return jsonify({'success': False, 'message': 'Tên hiển thị không được để trống'}), 400
+
+            cursor.execute("SELECT profile_id FROM profile WHERE user_id = %s", (user_id,))
+            prof = cursor.fetchone()
+            if prof:
+                cursor.execute(
+                    "UPDATE profile SET full_name = %s, phone = %s, bio = %s WHERE user_id = %s",
+                    (full_name, phone or None, bio or None, user_id)
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO profile (user_id, full_name, phone, bio) VALUES (%s, %s, %s, %s)",
+                    (user_id, full_name, phone or None, bio or None)
+                )
+            conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Cập nhật thông tin thành công'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: Đổi mật khẩu người dùng
+# -------------------------------------------------------
+@app.route('/api/user/<int:user_id>/password', methods=['PUT'])
+def change_password(user_id):
+    try:
+        body = request.get_json()
+        current_pw = (body.get('current_password') or '').strip()
+        new_pw     = (body.get('new_password') or '').strip()
+
+        if not current_pw or not new_pw:
+            return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin'}), 400
+        if len(new_pw) < 6:
+            return jsonify({'success': False, 'message': 'Mật khẩu mới phải có ít nhất 6 ký tự'}), 400
+
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT password_hash FROM user WHERE user_id = %s", (user_id,))
+            user = cursor.fetchone()
+            if not user:
+                return jsonify({'success': False, 'message': 'Người dùng không tồn tại'}), 404
+            if user['password_hash'] != current_pw:
+                return jsonify({'success': False, 'message': 'Mật khẩu hiện tại không đúng'}), 400
+            cursor.execute("UPDATE user SET password_hash = %s WHERE user_id = %s", (new_pw, user_id))
+            conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Đổi mật khẩu thành công'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: Tải lên ảnh đại diện
+# -------------------------------------------------------
+@app.route('/api/user/<int:user_id>/avatar', methods=['POST'])
+def upload_avatar(user_id):
+    try:
+        if 'avatar' not in request.files:
+            return jsonify({'success': False, 'message': 'Không tìm thấy file ảnh'}), 400
+        file = request.files['avatar']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': 'Chưa chọn file'}), 400
+        
+        import time
+        from werkzeug.utils import secure_filename
+        
+        # Save file
+        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'png'
+        filename = f"avatar_{user_id}_{int(time.time())}.{ext}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        avatar_url = f"http://localhost:5000/static/uploads/{filename}"
+        
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT profile_id FROM profile WHERE user_id = %s", (user_id,))
+            prof = cursor.fetchone()
+            if prof:
+                cursor.execute("UPDATE profile SET avatar_url = %s WHERE user_id = %s", (avatar_url, user_id))
+            else:
+                cursor.execute("INSERT INTO profile (user_id, avatar_url) VALUES (%s, %s)", (user_id, avatar_url))
+            conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Tải ảnh lên thành công', 'avatar_url': avatar_url})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 # -------------------------------------------------------

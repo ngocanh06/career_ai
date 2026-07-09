@@ -28,7 +28,7 @@ import {
 } from "react-icons/fa6";
 
 const THEMES = [
-  { id: 'modern', name: 'Modern', colors: ['#3b5bdb', '#6b8df7', '#eef0ff'] },
+  { id: 'modern', name: 'Modern', colors: ['var(--primary-color, #3b5bdb)', '#6b8df7', '#eef0ff'] },
   { id: 'creative', name: 'Creative', colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
   { id: 'minimal', name: 'Minimal', colors: ['#111827', '#6b7280', '#f3f4f6'] },
   { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6', '#f0fdfa'] },
@@ -313,7 +313,7 @@ export default function PortfolioBuilder() {
             <div className="pb-sections-list">
 
               {/* Thông tin */}
-              <SectionRow dot="#3b5bdb" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`}>
+              <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title.split(' ')[0]} Data Architect`}>
                 {['name', 'title', 'email', 'linkedin'].map(f => (
                   <div className="pb-form-group" key={f}>
                     <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>

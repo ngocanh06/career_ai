@@ -9,6 +9,7 @@ const pageTitles = {
   '/career': 'Định hướng nghề nghiệp',
   '/learning-path': 'Lộ trình học tập',
   '/settings': 'Cài đặt',
+  '/profile': 'Hồ sơ của tôi',
   '/support': 'Hỗ trợ',
 };
 
@@ -70,10 +71,10 @@ export default function Topbar({ user }) {
                 </div>
               </div>
               <div className="topbar-dropdown-divider" />
-              <button className="topbar-dropdown-item">
+              <button className="topbar-dropdown-item" onClick={() => { setShowDropdown(false); navigate('/profile'); }}>
                 <FaUser /> Hồ sơ của tôi
               </button>
-              <button className="topbar-dropdown-item">
+              <button className="topbar-dropdown-item" onClick={() => { setShowDropdown(false); navigate('/settings'); }}>
                 <FaGear /> Cài đặt
               </button>
               <div className="topbar-dropdown-divider" />

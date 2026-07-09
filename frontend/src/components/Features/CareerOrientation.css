@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-section-title {
@@ -43,7 +43,7 @@
 .co-link-action {
   font-size: 13px;
   font-weight: 600;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -79,7 +79,7 @@
 .co-career-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(59, 91, 219, 0.06);
-  border-color: #3b5bdb;
+  border-color: var(--primary-color, #3b5bdb);
 }
 
 .co-card-top {
@@ -101,7 +101,7 @@
 
 .co-card-icon-container.blue {
   background: #eff2ff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-card-icon-container.green {
@@ -124,7 +124,7 @@
 
 .co-card-badge.blue {
   background: #eff2ff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-card-badge.green {
@@ -180,7 +180,7 @@
 }
 
 .co-card-stat-val.blue {
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-card-stat-val.orange {
@@ -210,7 +210,7 @@
 .co-card-btn {
   width: 100%;
   padding: 11px;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -324,7 +324,7 @@
 
 .co-compare-badge.blue {
   background: #eff2ff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-compare-badge.green {
@@ -392,7 +392,7 @@
 }
 
 .co-potential-bar-fill.blue {
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
 }
 
 .co-potential-bar-fill.teal {
@@ -427,8 +427,8 @@
 }
 
 .co-compare-swap-btn:hover {
-  border-color: #3b5bdb;
-  color: #3b5bdb;
+  border-color: var(--primary-color, #3b5bdb);
+  color: var(--primary-color, #3b5bdb);
   background: #f8faff;
 }
 
@@ -475,7 +475,7 @@
 .co-trend-num {
   font-size: 13px;
   font-weight: 700;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-trend-name {
@@ -507,7 +507,7 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
 }
 
 .co-tip-header {
@@ -521,7 +521,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   font-weight: 700;
   font-size: 13px;
 }
@@ -529,7 +529,7 @@
 .co-tip-badge {
   font-size: 10px;
   font-weight: 700;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   background: rgba(59, 91, 219, 0.08);
   padding: 2px 8px;
   border-radius: 4px;
@@ -561,7 +561,7 @@
 
 /* Left panel: Info & quick options */
 .co-chat-left-panel {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b5bdb 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, var(--primary-color, #3b5bdb) 100%);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -687,7 +687,7 @@
 
 .co-chat-avatar.assistant {
   background: #eff2ff;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
 }
 
 .co-chat-avatar.user {
@@ -741,7 +741,7 @@
 }
 
 .co-chat-bubble.user {
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   color: #ffffff;
   border-top-right-radius: 2px;
 }
@@ -749,7 +749,7 @@
 /* Loading/Thinking Bubble */
 .co-chat-bubble.analyzing {
   background: #f8fafc;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   font-style: italic;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -764,8 +764,8 @@
   width: 6px;
   height: 6px;
   border-radius: 5px;
-  background-color: #3b5bdb;
-  color: #3b5bdb;
+  background-color: var(--primary-color, #3b5bdb);
+  color: var(--primary-color, #3b5bdb);
   animation: co-dot-flashing 1s infinite linear alternate;
   animation-delay: .5s;
   display: inline-block;
@@ -779,8 +779,8 @@
   width: 6px;
   height: 6px;
   border-radius: 5px;
-  background-color: #3b5bdb;
-  color: #3b5bdb;
+  background-color: var(--primary-color, #3b5bdb);
+  color: var(--primary-color, #3b5bdb);
 }
 .co-dot-flashing::before {
   left: -12px;
@@ -795,7 +795,7 @@
 
 @keyframes co-dot-flashing {
   0% {
-    background-color: #3b5bdb;
+    background-color: var(--primary-color, #3b5bdb);
   }
   50%, 100% {
     background-color: rgba(59, 91, 219, 0.2);
@@ -824,7 +824,7 @@
 }
 
 .co-chat-input-field:focus {
-  border-color: #3b5bdb;
+  border-color: var(--primary-color, #3b5bdb);
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.08);
 }
@@ -832,7 +832,7 @@
 .co-chat-send-btn {
   width: 38px;
   height: 38px;
-  background: #3b5bdb;
+  background: var(--primary-color, #3b5bdb);
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -879,3 +879,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =============================================
+   DARK THEME OVERRIDES
+   ============================================= */
+body.dark-theme .co-box-card, body.dark-theme .co-career-card, body.dark-theme .co-chat-card, body.dark-theme .co-chat-window { background: #22252e; border-color: #343842; }
+body.dark-theme .co-compare-col { background: #1a1d24; border-color: #343842; }
+body.dark-theme .co-compare-col.highlighted { background: #22252e; border-color: #4b5563; }
+body.dark-theme .co-tabs-container { background: #1a1d24; }
+body.dark-theme .co-tab-btn.active { background: #22252e; color: #f1f5f9; }
+body.dark-theme .co-card-title, body.dark-theme .co-compare-title, body.dark-theme .co-compare-salary, body.dark-theme .co-trend-name, body.dark-theme .co-chat-title { color: #f1f5f9; }
+body.dark-theme .co-card-desc, body.dark-theme .co-trend-subtitle, body.dark-theme .co-tip-content, body.dark-theme .co-chat-subtitle { color: #8f95a3; }
+body.dark-theme .co-compare-swap-btn { background: #22252e; border-color: #4b5563; color: #d1d5db; }
+body.dark-theme .co-compare-swap-btn:hover { background: #303440; border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
+body.dark-theme .co-trend-item { background: #1a1d24; border-color: #343842; }
+body.dark-theme .co-trend-item:hover { border-color: #4b5563; }
+body.dark-theme .co-tip-card { background: #1a1d24; border-color: #343842; }
+body.dark-theme .co-chat-messages-container { background: #1a1c23; }
+body.dark-theme .co-chat-bubble.assistant { background: #22252e; color: #f1f5f9; border-color: #343842; }
+body.dark-theme .co-chat-input-bar { border-color: #343842; background: #1a1c23; }
+body.dark-theme .co-chat-input-field { background: #22252e; border-color: #4b5563; color: #f1f5f9; }
+body.dark-theme .co-compare-skill-item { background: #1a1d24; color: #d1d5db; }

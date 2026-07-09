@@ -493,3 +493,19 @@
 @media (max-width: 640px) {
   .home-stats-row { grid-template-columns: 1fr; }
 }
+/* =============================================
+   DARK THEME OVERRIDES
+   ============================================= */
+body.dark-theme .home-card { background: #22252e; border-color: #343842; }
+body.dark-theme .home-greeting, body.dark-theme .home-profile-title, body.dark-theme .home-score-number, body.dark-theme .home-section-title, body.dark-theme .home-step-title, body.dark-theme .home-skill-name { color: #f1f5f9; }
+body.dark-theme .home-greeting-sub, body.dark-theme .home-profile-sub, body.dark-theme .home-score-sub, body.dark-theme .home-step-desc, body.dark-theme .home-roadmap-sub, body.dark-theme .home-roadmap-name { color: #8f95a3; }
+body.dark-theme .home-btn-secondary { background: #22252e; color: #f1f5f9; border-color: #343842; }
+body.dark-theme .home-btn-secondary:hover { background: #303440; border-color: #4b5563; }
+body.dark-theme .home-step-item { border-color: #343842; background: #22252e; }
+body.dark-theme .home-step-item:hover { background: #303440; border-color: #4b5563; }
+body.dark-theme .home-insight-box { background: #1a1c23; border-color: #343842; }
+body.dark-theme .home-roadmap-dot { background: #22252e; border-color: #343842; }
+body.dark-theme .home-roadmap-dot.active { background: #22252e; }
+body.dark-theme .home-roadmap-line { background: #343842; }
+body.dark-theme .home-progress-track, body.dark-theme .home-skill-track { background: #343842; }
+body.dark-theme .home-skill-meta { color: #d1d5db; }

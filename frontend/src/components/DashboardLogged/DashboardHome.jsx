@@ -15,15 +15,15 @@ import './DashboardHome.css';
 import Topbar from "./Topbar";
 
 const skills = [
-  { name: 'Cloud Architecture', pct: 92, color: '#3b5bdb' },
-  { name: 'Product Strategy', pct: 78, color: '#3b5bdb' },
-  { name: 'Data Visualization', pct: 65, color: '#3b5bdb' },
+  { name: 'Cloud Architecture', pct: 92, color: 'var(--primary-color, #3b5bdb)' },
+  { name: 'Product Strategy', pct: 78, color: 'var(--primary-color, #3b5bdb)' },
+  { name: 'Data Visualization', pct: 65, color: 'var(--primary-color, #3b5bdb)' },
 ];
 
 const nextSteps = [
   {
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <line x1="9" y1="13" x2="15" y2="13" />
@@ -111,7 +111,7 @@ export default function DashboardLogged() {
                 <circle cx="50" cy="50" r="42" fill="none" stroke="#e8edff" strokeWidth="9" />
                 <circle
                   cx="50" cy="50" r="42"
-                  fill="none" stroke="#3b5bdb" strokeWidth="9"
+                  fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="9"
                   strokeDasharray={`${2 * Math.PI * 42 * 0.85} ${2 * Math.PI * 42}`}
                   strokeLinecap="round"
                   transform="rotate(-90 50 50)"
@@ -168,7 +168,7 @@ export default function DashboardLogged() {
               ))}
             </div>
             <div className="home-insight-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" strokeWidth="2" strokeLinecap="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />

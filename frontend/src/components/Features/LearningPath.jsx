@@ -108,7 +108,7 @@ export default function LearningPath() {
             <div className="lp-circle-wrap">
               <svg width="150" height="150" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#3b5bdb" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42 * (completionRate / 100)} ${2 * Math.PI * 42}`} transform="rotate(-90 50 50)" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42 * (completionRate / 100)} ${2 * Math.PI * 42}`} transform="rotate(-90 50 50)" />
               </svg>
               <div className="lp-circle-inner">
                 <span className="lp-circle-pct">{completionRate}%</span>
@@ -124,7 +124,7 @@ export default function LearningPath() {
           <div className="lp-journey-header">
             <div className="lp-journey-header-left">
               <div className="lp-journey-icon">
-                <FaRoute style={{ color: '#3b5bdb', fontSize: '18px' }} />
+                <FaRoute style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
               </div>
               <div>
                 <h2 className="lp-journey-title">Hành trình chinh phục</h2>
@@ -147,12 +147,12 @@ export default function LearningPath() {
               <p className="lp-step-name active-label" style={{ color: '#111827' }}>Nền tảng</p>
               <p className="lp-step-desc">SQL, Thống kê nâng cao &amp; Xử lý dữ liệu</p>
             </div>
-            <div className="lp-timeline-connector" style={{ background: '#3b5bdb' }} />
+            <div className="lp-timeline-connector" style={{ background: 'var(--primary-color, #3b5bdb)' }} />
 
             {/* Step 2 (Active) */}
             <div className="lp-timeline-step">
               <div className="lp-timeline-dot active">
-                <FaBolt style={{ color: '#3b5bdb', fontSize: '14px' }} />
+                <FaBolt style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '14px' }} />
               </div>
               <p className="lp-step-month active-label">THÁNG 2 (HIỆN TẠI)</p>
               <p className="lp-step-name active-label">Trực quan hóa</p>
@@ -178,7 +178,7 @@ export default function LearningPath() {
           <div className="lp-resources-section">
             <div className="lp-section-header">
               <div className="lp-section-header-left">
-                <FaBookOpen style={{ color: '#3b5bdb', fontSize: '18px' }} />
+                <FaBookOpen style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
                 <h3 className="lp-section-title">Tài nguyên học tập tháng 6</h3>
               </div>
               <button className="lp-see-all">Xem tất cả</button>
@@ -222,7 +222,7 @@ export default function LearningPath() {
           <div className="lp-sidebar">
             <div className="lp-skill-card">
               <h3 className="lp-skill-card-title">
-                <FaChartSimple style={{ color: '#3b5bdb', fontSize: '16px' }} />
+                <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
                 Phân tích kỹ năng
               </h3>
 
@@ -236,7 +236,7 @@ export default function LearningPath() {
                       </span>
                     </div>
                     <div className="lp-skill-track">
-                      <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : '#3b5bdb' }} />
+                      <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
                       {s.target && (
                         <div className="lp-skill-target-marker" style={{ left: `${s.target}%` }} />
                       )}
@@ -248,7 +248,7 @@ export default function LearningPath() {
               <div className="lp-readiness">
                 <div className="lp-readiness-circle">
                   <svg width="110" height="110" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="#3b5bdb" strokeWidth="12" />
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="12" />
                   </svg>
                   <div className="lp-readiness-inner">
                     <span className="lp-readiness-pct">{completionRate}%</span>
