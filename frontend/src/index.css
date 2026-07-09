@@ -17,3 +17,33 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Global appearance variables */
+:root {
+  --primary-color: #3b5bdb;
+}
+
+/* Dark Theme Overrides */
+body.dark-theme { background-color: #111216; color: #f1f5f9; }
+body.dark-theme .stg-page { background-color: #111216; }
+body.dark-theme .stg-sidebar { background-color: #272a33; border-right-color: #343842; }
+body.dark-theme .stg-content { background-color: #1a1d24; border-color: #343842; }
+body.dark-theme .stg-section { background-color: #1a1d24; border-color: #343842; }
+body.dark-theme .stg-row { border-bottom-color: #343842; }
+body.dark-theme .stg-page-title, body.dark-theme .stg-content-title, body.dark-theme .stg-section-title, body.dark-theme .stg-row-title { color: #f1f5f9; }
+body.dark-theme .stg-page-subtitle, body.dark-theme .stg-row-desc, body.dark-theme .stg-hint { color: #8f95a3; }
+body.dark-theme .stg-input, body.dark-theme .stg-select, body.dark-theme .stg-textarea { background-color: #22252e; border-color: #343842; color: #f1f5f9; }
+body.dark-theme .stg-btn-outline { border-color: #343842; color: #d1d5db; }
+body.dark-theme .stg-btn-outline:hover { background-color: #303440; }
+body.dark-theme .stg-theme-card { border-color: #343842; color: #d1d5db; }
+body.dark-theme .stg-theme-card:hover { background-color: #303440; }
+body.dark-theme .stg-account-card { border-color: #343842; }
+body.dark-theme .stg-info-box { background-color: #1e2a3b; border-color: #2c3e50; color: #bfdbfe; }
+/* Dashboard Dark Theme Overrides */
+body.dark-theme .dashboard-sidebar { background-color: #1a1c23; border-right-color: #343842; }
+body.dark-theme .dashboard-content { background-color: #111216; }
+body.dark-theme .dashboard-header { background-color: #1a1c23; border-bottom-color: #343842; }
+/* Compact Mode Overrides */
+body.compact-mode .stg-row { padding: 12px 0; }
+body.compact-mode .stg-section-body { padding: 16px 20px; }
+body.compact-mode .stg-input, body.compact-mode .stg-select { padding: 6px 10px; }

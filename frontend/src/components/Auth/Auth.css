@@ -5,7 +5,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ---------- Root reset ---------- */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -359,8 +361,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* =====================================================
@@ -416,7 +425,7 @@ body {
 .auth-social-btn:hover {
   border-color: #9CA3AF;
   background: #F9FAFB;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* =====================================================
@@ -789,7 +798,7 @@ body {
 
 .otp-input:focus {
   outline: none;
-  border-color: #3b5bdb;
+  border-color: var(--primary-color, #3b5bdb);
   background-color: #F0F4FF;
   box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.1);
 }
@@ -819,7 +828,7 @@ body {
 .otp-resend-btn {
   background: none;
   border: none;
-  color: #3b5bdb;
+  color: var(--primary-color, #3b5bdb);
   font-weight: 600;
   cursor: pointer;
   padding: 4px 8px;
@@ -841,7 +850,7 @@ body {
 .auth-loader {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: white;
   animation: spin 1s ease-in-out infinite;
@@ -849,5 +858,7 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

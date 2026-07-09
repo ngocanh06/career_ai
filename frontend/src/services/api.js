@@ -22,6 +22,63 @@ async function fetchJson(url) {
 export const getUser = (userId) =>
   fetchJson(`${BASE_URL}/user/${userId}`);
 
+export const updateUser = async (userId, data) => {
+  const res = await fetch(`${BASE_URL}/user/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
+export const changePassword = async (userId, data) => {
+  const res = await fetch(`${BASE_URL}/user/${userId}/password`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
+export const uploadAvatar = async (userId, file) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await fetch(`${BASE_URL}/user/${userId}/avatar`, {
+    method: 'POST',
+    body: formData,
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
+export const getLoginSessions = async (userId) => {
+  const res = await fetch(`${BASE_URL}/user/${userId}/sessions`);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
+export const getLoginHistory = async (userId) => {
+  const res = await fetch(`${BASE_URL}/user/${userId}/login_history`);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
+export const revokeOtherSessions = async (userId) => {
+  const res = await fetch(`${BASE_URL}/user/${userId}/sessions`, {
+    method: 'DELETE',
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message);
+  return json;
+};
+
 // ── Career Orientation ───────────────────────────────────────
 export const getCareers = (userId) =>
   fetchJson(`${BASE_URL}/career/${userId}`);
