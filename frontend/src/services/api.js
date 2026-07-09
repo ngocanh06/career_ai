@@ -63,12 +63,6 @@ export const getLoginSessions = async (userId) => {
   return json;
 };
 
-export const getLoginHistory = async (userId) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}/login_history`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
-};
 
 export const revokeOtherSessions = async (userId) => {
   const res = await fetch(`${BASE_URL}/user/${userId}/sessions`, {

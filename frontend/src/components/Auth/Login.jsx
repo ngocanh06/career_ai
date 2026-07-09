@@ -96,8 +96,31 @@ export default function Login() {
           </div >
 
           {/* Title */}
-          < h1 className="auth-form-title" > Chào mừng bạn trở lại</h1 >
+          <h1 className="auth-form-title"> Chào mừng bạn trở lại</h1 >
           <p className="auth-form-subtitle">Đăng nhập để tiếp tục lộ trình phát triển sự nghiệp</p>
+
+          {/* Back to home */}
+          <div style={{ marginBottom: '16px' }}>
+            <Link
+              to="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                color: '#6b7280',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#3b5bdb'}
+              onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Quay lại trang chủ
+            </Link>
+          </div>
 
           {/* Form */}
           <form className="auth-form" onSubmit={handleLogin}>
