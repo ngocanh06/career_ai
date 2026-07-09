@@ -83,7 +83,7 @@ def career_chat():
         data = request.json
         messages = data.get('messages', [])
         
-        system_prompt = "Bạn là trợ lý AI chuyên tư vấn định hướng nghề nghiệp. Trả lời bằng tiếng Việt, thân thiện và ngắn gọn (dưới 100 chữ)."
+        system_prompt = "Bạn là chuyên gia tư vấn nghề nghiệp. Trả lời bằng tiếng Việt, thân thiện. Hãy định dạng văn bản rõ ràng: sử dụng xuống dòng (\\n) để chia các đoạn hoặc các mục liệt kê, dùng dấu **in đậm** cho các từ khóa quan trọng."
         ai_reply = call_openai_text(messages, system_prompt=system_prompt)
         
         if ai_reply:

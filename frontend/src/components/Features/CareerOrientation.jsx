@@ -241,6 +241,26 @@ export default function CareerOrientation() {
     });
   };
 
+  const renderMessageText = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      const parts = line.split(/(\*\*.*?\*\*)/g);
+      const renderedLine = parts.map((part, j) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={j}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+      return (
+        <React.Fragment key={i}>
+          {renderedLine}
+          {i < lines.length - 1 && <br />}
+        </React.Fragment>
+      );
+    });
+  };
+
   return (
     <DashboardLayout>
 
@@ -557,7 +577,7 @@ export default function CareerOrientation() {
                       </div>
                     ) : (
                       <div className={`co-chat-bubble ${m.sender === 'assistant' ? 'assistant' : 'user'}`}>
-                        {m.text}
+                        {renderMessageText(m.text)}
                       </div>
                     )}
                   </div>
