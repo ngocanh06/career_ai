@@ -1,54 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import Topbar from '../DashboardLogged/Topbar';
 import './LearningPath.css';
 import {
-  FaWandMagicSparkles,
-  FaDownload,
-  FaRoute,
-  FaCalendarDay,
-  FaCheck,
-  FaBolt,
-  FaLock,
-  FaBookOpen,
-  FaClock,
-  FaStar,
-  FaArrowRight,
-  FaChartSimple,
-  FaFileArrowUp,
+  FaWandMagicSparkles, FaDownload, FaRoute, FaCalendarDay,
+  FaCheck, FaBolt, FaLock, FaBookOpen, FaClock, FaStar,
+  FaArrowRight, FaChartSimple, FaFileArrowUp, FaXmark,
+  FaChevronDown, FaChevronUp, FaTrash, FaBullseye,
 } from "react-icons/fa6";
 
-// Ánh xạ proficiency_level sang % số
 const LEVEL_PCT = { expert: 100, advanced: 80, intermediate: 60, beginner: 30 };
 
-// Ánh xạ skill_name sang target %
-const SKILL_TARGET = { 'PowerBI': 90, 'Tableau': 90, 'Học máy': 75 };
+const CAREER_TARGETS = [
+  'Senior Data Analyst', 'Data Scientist', 'Machine Learning Engineer',
+  'Fullstack Developer', 'Backend Developer', 'Frontend Developer',
+  'DevOps Engineer', 'Product Manager', 'Business Analyst',
+  'UX/UI Designer', 'Cloud Architect', 'Cybersecurity Engineer',
+];
 
 export default function LearningPath() {
   const [roadmap, setRoadmap] = useState(null);
   const [courses, setCourses] = useState([]);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const [generatingInsight, setGeneratingInsight] = useState(false);
+  const [aiInsight, setAiInsight] = useState("Nhấn 'Lấy gợi ý AI mới' để nhận phân tích cá nhân hoá.");
+  const [expandedGoal, setExpandedGoal] = useState(null);
+  const [showTargetModal, setShowTargetModal] = useState(false);
+  const [selectedTarget, setSelectedTarget] = useState('');
+  const [customTarget, setCustomTarget] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
+  const getUser = () => {
     const user = JSON.parse(localStorage.getItem('career_user'));
-    const userId = user ? user.user_id : 19;
+    return user ? user.user_id : 19;
+  };
 
+  const fetchRoadmap = () => {
+    const userId = getUser();
+    setLoading(true);
     Promise.all([
       fetch(`http://localhost:5000/api/roadmap/${userId}`).then(r => r.json()),
       fetch(`http://localhost:5000/api/skills/${userId}`).then(r => r.json()),
     ])
       .then(([rmJson, skJson]) => {
-        // ── Roadmap + courses ──
         if (rmJson.success) {
           setRoadmap(rmJson.data);
-          const ICONS = ['📊', '📉', '🤖', '☁️'];
+          const ICONS = ['📊', '📉', '🤖', '☁️', '🎯', '🔥'];
           const TYPES = ['ĐỀ XUẤT', 'THỰC TẾ', 'CƠ BẢN', 'NÂNG CAO'];
           const BADGES = ['lp-badge-recommend', 'lp-badge-practice', 'lp-badge-recommend', 'lp-badge-practice'];
           const LEVELS = ['NÂNG CAO', 'TRUNG CẤP', 'CƠ BẢN', 'NÂNG CAO'];
           const mapped = (rmJson.data.goals || [])
-            .filter(g => g.status === 'in_progress')
             .flatMap((g, gi) => {
               let parsed = [];
               try { parsed = JSON.parse(g.suggested_courses); } catch { parsed = []; }
@@ -56,70 +58,213 @@ export default function LearningPath() {
                 id: gi * 10 + ci,
                 title: c.name,
                 desc: `${c.platform} — ${g.skill_name || ''}`,
-                hours: Math.round((g.progress_percentage || 50) / 5) + 4,
-                level: LEVELS[gi] || 'TRUNG CẤP',
+                hours: 8 + gi * 4 + ci * 2,
+                level: LEVELS[gi % LEVELS.length] || 'TRUNG CẤP',
                 type: TYPES[ci % TYPES.length],
                 badgeClass: BADGES[ci % BADGES.length],
-                icon: ICONS[gi] || '📘',
+                icon: ICONS[gi % ICONS.length],
+                goalMonth: g.target_month,
               }));
             });
-          setCourses(mapped.length > 0 ? mapped : []);
+          setCourses(mapped);
         }
-        // ── Skills ──
         if (skJson.success) {
-          const mapped = skJson.data.map(s => ({
+          setSkills(skJson.data.map(s => ({
             name: s.skill_name,
             pct: LEVEL_PCT[s.proficiency_level] || 50,
-            target: SKILL_TARGET[s.skill_name] || null,
             low: (LEVEL_PCT[s.proficiency_level] || 50) < 40,
-          }));
-          setSkills(mapped);
+          })));
         }
       })
-      .catch(err => setError(err.message))
+      .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  const handleGenerateRoadmap = async (overrideTarget = null) => {
+    const target = (typeof overrideTarget === 'string' ? overrideTarget : null) || selectedTarget || customTarget;
+    if (!target) { setShowTargetModal(true); return; }
+    setShowTargetModal(false);
+    setGenerating(true);
+    const userId = getUser();
+    try {
+      const res = await fetch('http://localhost:5000/api/roadmap/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, target_career: target })
+      });
+      await res.json();
+      fetchRoadmap();
+    } catch (e) { console.error(e); }
+    setGenerating(false);
+    setSelectedTarget('');
+    setCustomTarget('');
+  };
+
+  useEffect(() => { 
+    const queryParams = new URLSearchParams(window.location.search);
+    const target = queryParams.get('target');
+    if (target) {
+      window.history.replaceState({}, document.title, "/learning-path");
+      handleGenerateRoadmap(target);
+    } else {
+      fetchRoadmap(); 
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const completionRate = roadmap ? Math.round(roadmap.completion_rate) : 70;
+  const handleDeleteRoadmap = async () => {
+    if (!roadmap) return;
+    const userId = getUser();
+    try {
+      await fetch(`http://localhost:5000/api/roadmap/${roadmap.roadmap_id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+      });
+      setRoadmap(null);
+      setCourses([]);
+      setShowDeleteConfirm(false);
+    } catch (e) { console.error(e); }
+  };
+
+  const generateAIInsight = async () => {
+    if (!roadmap) return;
+    setGeneratingInsight(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/roadmap/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roadmap, skills })
+      });
+      const json = await res.json();
+      if (json.success) setAiInsight(json.data);
+    } catch (e) { console.error(e); }
+    setGeneratingInsight(false);
+  };
+
+  const completionRate = roadmap ? Math.round(roadmap.completion_rate) : 0;
+
+  const getParsedCourses = (goal) => {
+    try { return JSON.parse(goal.suggested_courses) || []; }
+    catch { return []; }
+  };
 
   return (
     <DashboardLayout>
       <div className="lp-page">
 
-        {/* Hero Card */}
+        {/* ── TARGET MODAL ── */}
+        {showTargetModal && (
+          <div className="lp-modal-overlay" onClick={() => setShowTargetModal(false)}>
+            <div className="lp-modal" onClick={e => e.stopPropagation()}>
+              <div className="lp-modal-header">
+                <div className="lp-modal-title">
+                  <FaBullseye style={{ color: 'var(--primary-color, #3b5bdb)', marginRight: 8 }} />
+                  Chọn mục tiêu nghề nghiệp
+                </div>
+                <button className="lp-modal-close" onClick={() => setShowTargetModal(false)}><FaXmark /></button>
+              </div>
+              <p className="lp-modal-sub">AI sẽ tạo lộ trình học tập cá nhân hoá dựa trên mục tiêu bạn chọn và kỹ năng hiện tại.</p>
+              <div className="lp-target-grid">
+                {CAREER_TARGETS.map(t => (
+                  <button key={t} className={`lp-target-btn ${selectedTarget === t ? 'selected' : ''}`} onClick={() => { setSelectedTarget(t); setCustomTarget(''); }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+              <div className="lp-modal-divider">hoặc nhập thủ công</div>
+              <input
+                className="lp-custom-target-input"
+                placeholder="Ví dụ: Senior iOS Developer..."
+                value={customTarget}
+                onChange={e => { setCustomTarget(e.target.value); setSelectedTarget(''); }}
+              />
+              <div className="lp-modal-actions">
+                <button className="lp-modal-cancel" onClick={() => setShowTargetModal(false)}>Huỷ</button>
+                <button
+                  className="lp-modal-confirm"
+                  onClick={handleGenerateRoadmap}
+                  disabled={!selectedTarget && !customTarget.trim()}
+                >
+                  <FaWandMagicSparkles style={{ marginRight: 6 }} />
+                  Tạo lộ trình AI
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── DELETE CONFIRM MODAL ── */}
+        {showDeleteConfirm && (
+          <div className="lp-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="lp-modal lp-modal-sm" onClick={e => e.stopPropagation()}>
+              <div className="lp-modal-header">
+                <div className="lp-modal-title" style={{ color: '#ef4444' }}>
+                  <FaTrash style={{ marginRight: 8 }} /> Xoá lộ trình hiện tại?
+                </div>
+              </div>
+              <p className="lp-modal-sub">Thao tác này sẽ xoá vĩnh viễn lộ trình <strong>"{roadmap?.title}"</strong> và toàn bộ tiến độ của bạn. Sau đó bạn có thể tạo lộ trình mới với mục tiêu khác.</p>
+              <div className="lp-modal-actions">
+                <button className="lp-modal-cancel" onClick={() => setShowDeleteConfirm(false)}>Huỷ</button>
+                <button className="lp-modal-delete" onClick={handleDeleteRoadmap}>
+                  <FaTrash style={{ marginRight: 6 }} /> Xoá lộ trình
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── HERO CARD ── */}
         <div className="lp-hero-card">
           <div className="lp-hero-body">
             <div className="lp-hero-badge">
               <FaWandMagicSparkles style={{ fontSize: '14px', marginRight: '6px' }} />
               LỘ TRÌNH AI CÁ NHÂN HÓA
             </div>
-            <h1 className="lp-hero-title">Mục tiêu: <span>Chuyên viên phân tích dữ liệu cấp cao</span></h1>
-            <p className="lp-hero-sub">Hành trình 3 tháng được thiết kế riêng để bạn chinh phục các kỹ năng còn thiếu và bứt phá sự nghiệp.</p>
+            <h1 className="lp-hero-title">
+              Mục tiêu: <span>{loading ? 'Đang tải...' : roadmap ? roadmap.title : 'Chưa có lộ trình'}</span>
+            </h1>
+            <p className="lp-hero-sub">
+              {roadmap
+                ? `Hành trình ${roadmap.total_months} tháng được thiết kế riêng để bạn chinh phục các kỹ năng còn thiếu và bứt phá sự nghiệp.`
+                : 'Hãy tạo lộ trình học tập AI cá nhân hoá dựa trên kỹ năng và mục tiêu nghề nghiệp của bạn.'}
+            </p>
             <div className="lp-hero-actions">
-              <button className="lp-btn-primary">
-                <FaDownload style={{ marginRight: '6px' }} />
-                Xuất lộ trình PDF
+              <button className="lp-btn-primary" disabled={!roadmap}>
+                <FaDownload style={{ marginRight: '6px' }} /> Xuất lộ trình PDF
               </button>
-              <button className="lp-btn-outline">Tùy chỉnh lộ trình</button>
+              {roadmap ? (
+                <button className="lp-btn-danger" onClick={() => setShowDeleteConfirm(true)}>
+                  <FaTrash style={{ marginRight: '6px' }} /> Xoá & Tạo lại
+                </button>
+              ) : (
+                <button className="lp-btn-outline" onClick={() => setShowTargetModal(true)} disabled={generating}>
+                  <FaWandMagicSparkles style={{ marginRight: '6px' }} />
+                  {generating ? 'Đang tạo...' : 'Tạo lộ trình AI'}
+                </button>
+              )}
             </div>
           </div>
-
           <div className="lp-hero-progress">
             <div className="lp-circle-wrap">
               <svg width="150" height="150" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42 * (completionRate / 100)} ${2 * Math.PI * 42}`} transform="rotate(-90 50 50)" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="10" strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 42 * (completionRate / 100)} ${2 * Math.PI * 42}`}
+                  transform="rotate(-90 50 50)" />
               </svg>
               <div className="lp-circle-inner">
                 <span className="lp-circle-pct">{completionRate}%</span>
                 <span className="lp-circle-label">HOÀN TẤT</span>
               </div>
             </div>
-            <div className="lp-hero-badge-bottom">+15% tuần này</div>
+            <div className="lp-hero-badge-bottom">
+              {roadmap ? `${roadmap.total_months} tháng học tập` : 'Chưa có lộ trình'}
+            </div>
           </div>
         </div>
 
-        {/* Journey Timeline */}
+        {/* ── JOURNEY TIMELINE ── */}
         <div className="lp-journey-card">
           <div className="lp-journey-header">
             <div className="lp-journey-header-left">
@@ -128,134 +273,195 @@ export default function LearningPath() {
               </div>
               <div>
                 <h2 className="lp-journey-title">Hành trình chinh phục</h2>
-                <p className="lp-journey-sub">Các cột mốc chiến lược tiếp theo của bạn</p>
+                <p className="lp-journey-sub">Nhấn vào từng tháng để xem chi tiết nội dung học</p>
               </div>
             </div>
             <div className="lp-journey-date">
               <FaCalendarDay style={{ marginRight: '6px' }} />
-              Tháng 6, 2026
+              {new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
             </div>
           </div>
 
           <div className="lp-timeline">
-            {/* Step 1 */}
-            <div className="lp-timeline-step">
-              <div className="lp-timeline-dot done">
-                <FaCheck style={{ color: 'white', fontSize: '14px' }} />
-              </div>
-              <p className="lp-step-month active-label">THÁNG 1</p>
-              <p className="lp-step-name active-label" style={{ color: '#111827' }}>Nền tảng</p>
-              <p className="lp-step-desc">SQL, Thống kê nâng cao &amp; Xử lý dữ liệu</p>
-            </div>
-            <div className="lp-timeline-connector" style={{ background: 'var(--primary-color, #3b5bdb)' }} />
+            {loading ? (
+              <div className="lp-timeline-empty">Đang tải lộ trình...</div>
+            ) : roadmap?.goals?.length > 0 ? (
+              roadmap.goals.map((g, idx) => {
+                const parsedCourses = getParsedCourses(g);
+                const isExpanded = expandedGoal === g.goal_id;
+                const dotClass = g.status === 'completed' ? 'done' : g.status === 'in_progress' ? 'active' : 'upcoming';
+                return (
+                  <React.Fragment key={g.goal_id || idx}>
+                    <div className="lp-timeline-step-wrapper">
+                      <div
+                        className={`lp-timeline-step ${isExpanded ? 'expanded' : ''}`}
+                        onClick={() => setExpandedGoal(isExpanded ? null : g.goal_id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className={`lp-timeline-dot ${dotClass}`}>
+                          {g.status === 'completed' ? <FaCheck style={{ color: 'white', fontSize: '14px' }} /> :
+                           g.status === 'in_progress' ? <FaBolt style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '14px' }} /> :
+                           <FaLock style={{ color: '#d1d5db', fontSize: '12px' }} />}
+                        </div>
+                        <p className={`lp-step-month ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
+                          THÁNG {g.target_month}
+                        </p>
+                        <p className={`lp-step-name ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
+                          {g.skill_name || 'Kỹ năng mới'}
+                        </p>
+                        <p className="lp-step-desc">{parsedCourses.length} khóa học</p>
+                        <div className="lp-step-expand-icon">
+                          {isExpanded ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                        </div>
+                      </div>
 
-            {/* Step 2 (Active) */}
-            <div className="lp-timeline-step">
-              <div className="lp-timeline-dot active">
-                <FaBolt style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '14px' }} />
-              </div>
-              <p className="lp-step-month active-label">THÁNG 2 (HIỆN TẠI)</p>
-              <p className="lp-step-name active-label">Trực quan hóa</p>
-              <p className="lp-step-desc">Power BI, Tableau &amp; Kể chuyện qua dữ liệu</p>
-            </div>
-            <div className="lp-timeline-connector" style={{ background: '#e5e7eb' }} />
+                      {/* ── DETAIL PANEL ── */}
+                      {isExpanded && (
+                        <div className="lp-goal-detail">
+                          <div className="lp-goal-detail-header">
+                            <span className={`lp-goal-status-badge ${dotClass}`}>
+                              {g.status === 'completed' ? '✅ Hoàn thành' :
+                               g.status === 'in_progress' ? '🔥 Đang học' : '🔒 Chưa mở khóa'}
+                            </span>
+                            <span className="lp-goal-progress">{g.progress_percentage || 0}% tiến độ</span>
+                          </div>
+                          <h4 className="lp-goal-detail-title">Nội dung học Tháng {g.target_month}: {g.skill_name}</h4>
+                          <div className="lp-goal-courses">
+                            {parsedCourses.length > 0 ? parsedCourses.map((c, ci) => (
+                              <div key={ci} className="lp-goal-course-item">
+                                <div className="lp-goal-course-num">{ci + 1}</div>
+                                <div className="lp-goal-course-info">
+                                  <p className="lp-goal-course-name">{c.name}</p>
+                                  <p className="lp-goal-course-platform">
+                                    <span className="lp-platform-tag">{c.platform}</span>
+                                  </p>
+                                </div>
+                                <button className="lp-goal-course-btn">Học ngay →</button>
+                              </div>
+                            )) : (
+                              <p style={{ color: '#9ca3af', fontSize: 14 }}>Chưa có khóa học cụ thể.</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-            {/* Step 3 (Upcoming) */}
-            <div className="lp-timeline-step">
-              <div className="lp-timeline-dot upcoming">
-                <FaLock style={{ color: '#d1d5db', fontSize: '12px' }} />
+                    {idx < roadmap.goals.length - 1 && (
+                      <div className="lp-timeline-connector"
+                        style={{ background: g.status === 'completed' ? 'var(--primary-color, #3b5bdb)' : '#e5e7eb' }} />
+                    )}
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <div className="lp-timeline-empty">
+                <FaRoute style={{ fontSize: 32, color: '#d1d5db', marginBottom: 12 }} />
+                <p>Chưa có lộ trình cụ thể.</p>
+                <button className="lp-btn-outline" style={{ marginTop: 12 }} onClick={() => setShowTargetModal(true)}>
+                  <FaWandMagicSparkles style={{ marginRight: 6 }} /> Tạo lộ trình AI ngay
+                </button>
               </div>
-              <p className="lp-step-month">THÁNG 3</p>
-              <p className="lp-step-name">Học máy</p>
-              <p className="lp-step-desc">Cơ bản về Scikit-Learn &amp; Dự báo</p>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* 2-Col Content */}
+        {/* ── 2-COL ── */}
         <div className="lp-two-col">
-          {/* Main Left - Resources */}
+          {/* LEFT – Courses */}
           <div className="lp-resources-section">
             <div className="lp-section-header">
               <div className="lp-section-header-left">
                 <FaBookOpen style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
-                <h3 className="lp-section-title">Tài nguyên học tập tháng 6</h3>
+                <h3 className="lp-section-title">
+                  Tài nguyên học tập{roadmap ? ` — ${roadmap.total_months} tháng` : ''}
+                </h3>
               </div>
-              <button className="lp-see-all">Xem tất cả</button>
             </div>
 
-            <div className="lp-courses-grid">
-              {courses.map(c => (
-                <div key={c.id} className="lp-course-card">
-                  <div className="lp-course-card-top">
-                    <div className="lp-course-icon">{c.icon}</div>
-                    <span className={`lp-course-badge ${c.badgeClass}`}>{c.type}</span>
-                  </div>
-                  <h4 className="lp-course-name">{c.title}</h4>
-                  <p className="lp-course-desc">{c.desc}</p>
-                  <div className="lp-course-meta">
-                    <div className="lp-course-meta-item">
-                      <FaClock style={{ marginRight: '6px' }} />
-                      {c.hours} GIỜ
+            {courses.length > 0 ? (
+              <div className="lp-courses-grid">
+                {courses.map(c => (
+                  <div key={c.id} className="lp-course-card">
+                    <div className="lp-course-card-top">
+                      <div className="lp-course-icon">{c.icon}</div>
+                      <span className={`lp-course-badge ${c.badgeClass}`}>{c.type}</span>
                     </div>
-                    <div className="lp-course-level">
-                      <FaStar style={{ marginRight: '4px', color: 'currentColor' }} />
-                      {c.level}
+                    <div className="lp-course-month-tag">Tháng {c.goalMonth}</div>
+                    <h4 className="lp-course-name">{c.title}</h4>
+                    <p className="lp-course-desc">{c.desc}</p>
+                    <div className="lp-course-meta">
+                      <div className="lp-course-meta-item">
+                        <FaClock style={{ marginRight: '6px' }} />{c.hours} GIỜ
+                      </div>
+                      <div className="lp-course-level">
+                        <FaStar style={{ marginRight: '4px' }} />{c.level}
+                      </div>
                     </div>
+                    <button className="lp-course-btn">Bắt đầu học ngay</button>
                   </div>
-                  <button className="lp-course-btn">Bắt đầu học ngay</button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="lp-empty-courses">
+                <p>Chưa có tài nguyên học tập. Hãy tạo lộ trình AI để nhận gợi ý khóa học!</p>
+              </div>
+            )}
 
+            {/* AI Insight */}
             <div className="lp-skill-gap-box">
-              <h4 className="lp-skill-gap-title">Phân tích lỗ hổng kỹ năng của AI</h4>
-              <p className="lp-skill-gap-desc">Tập trung vào <span>Công thức DAX</span> trong tuần này có thể rút ngắn lộ trình của bạn thêm 15%.</p>
-              <button className="lp-skill-gap-link">
-                Làm bài kiểm tra ngay
+              <h4 className="lp-skill-gap-title">
+                <FaWandMagicSparkles style={{ marginRight: 6, color: 'var(--primary-color, #3b5bdb)' }} />
+                Phân tích lộ trình bằng AI
+              </h4>
+              <p className="lp-skill-gap-desc">{aiInsight}</p>
+              <button className="lp-skill-gap-link" onClick={generateAIInsight} disabled={generatingInsight || !roadmap}>
+                {generatingInsight ? 'Đang phân tích...' : 'Lấy gợi ý AI mới'}
                 <FaArrowRight style={{ marginLeft: '6px' }} />
               </button>
             </div>
           </div>
 
-          {/* Sidebar Right - Analysis & Sync */}
+          {/* RIGHT – Sidebar */}
           <div className="lp-sidebar">
             <div className="lp-skill-card">
               <h3 className="lp-skill-card-title">
                 <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
                 Phân tích kỹ năng
               </h3>
-
               <div className="lp-skill-rows">
-                {skills.map(s => (
+                {skills.length > 0 ? skills.map(s => (
                   <div key={s.name} className="lp-skill-row">
                     <div className="lp-skill-row-header">
                       <span className="lp-skill-row-name">{s.name}</span>
-                      <span className={`lp-skill-row-pct ${s.target ? 'has-target' : ''}`}>
-                        {s.target ? <>{s.pct}% / <span>{s.target}%</span></> : `${s.pct}%`}
-                      </span>
+                      <span className="lp-skill-row-pct">{s.pct}%</span>
                     </div>
                     <div className="lp-skill-track">
                       <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
-                      {s.target && (
-                        <div className="lp-skill-target-marker" style={{ left: `${s.target}%` }} />
-                      )}
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p style={{ color: '#9ca3af', fontSize: 13 }}>Chưa có dữ liệu kỹ năng.</p>
+                )}
               </div>
 
               <div className="lp-readiness">
                 <div className="lp-readiness-circle">
                   <svg width="110" height="110" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="12" />
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" strokeWidth="12" />
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="12" strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 44 * (completionRate / 100)} ${2 * Math.PI * 44}`}
+                      transform="rotate(-90 50 50)" />
                   </svg>
                   <div className="lp-readiness-inner">
                     <span className="lp-readiness-pct">{completionRate}%</span>
                     <span className="lp-readiness-sub">Sẵn sàng<br />nghề nghiệp</span>
                   </div>
                 </div>
-                <p className="lp-readiness-desc">Bạn chỉ còn <span>5 cột mốc</span> để hoàn thiện bộ kỹ năng Senior.</p>
+                <p className="lp-readiness-desc">
+                  {roadmap
+                    ? <>Lộ trình <span>{roadmap.title}</span> đang tiến triển tốt!</>
+                    : 'Tạo lộ trình để bắt đầu theo dõi tiến độ.'}
+                </p>
               </div>
             </div>
 
@@ -269,7 +475,6 @@ export default function LearningPath() {
             </div>
           </div>
         </div>
-
       </div>
     </DashboardLayout>
   );

@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import { updateUser, changePassword, getUser, CURRENT_USER_ID, uploadAvatar, getLoginSessions, getLoginHistory, revokeOtherSessions } from '../../services/api';
+import { updateUser, changePassword, CURRENT_USER_ID, uploadAvatar, getLoginSessions, revokeOtherSessions } from '../../services/api';
 import './Settings.css';
 import {
-  FaUser, FaPalette, FaBell, FaShieldHalved, FaLock,
+  FaUser, FaPalette, FaBell, FaShieldHalved,
   FaEye, FaLink, FaGlobe, FaCircleInfo,
   FaSun, FaMoon, FaDesktop, FaGoogle, FaGithub,
   FaLinkedin, FaTrashCan, FaDownload, FaKey,
-  FaClockRotateLeft, FaMobileScreen, FaRightFromBracket,
+  FaMobileScreen, FaRightFromBracket,
   FaCheck, FaXmark
 } from 'react-icons/fa6';
 
@@ -317,7 +317,6 @@ function TabSecurity() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   const [sessions, setSessions] = useState([]);
-  const [history, setHistory] = useState([]);
   
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
@@ -325,10 +324,6 @@ function TabSecurity() {
     
     getLoginSessions(userId).then(res => {
       if(res.success) setSessions(res.data);
-    }).catch(console.error);
-
-    getLoginHistory(userId).then(res => {
-      if(res.success) setHistory(res.data);
     }).catch(console.error);
   }, []);
 
@@ -488,23 +483,7 @@ function TabSecurity() {
         </div>
       </Section>
 
-      <Section title="Lịch sử đăng nhập">
-        <div className="stg-history-list">
-          {history.map((h, i) => (
-            <div key={i} className="stg-history-item">
-              <FaClockRotateLeft className="stg-history-icon" />
-              <div className="stg-session-info">
-                <span className="stg-session-device">{h.time}</span>
-                <span className="stg-session-meta">IP: {h.ip_address} · {h.device_info || 'Unknown Device'}</span>
-              </div>
-              <span className={`stg-badge ${h.status === 'Thành công' ? 'stg-badge--green' : 'stg-badge--red'}`}>
-                {h.status}
-              </span>
-            </div>
-          ))}
-          {history.length === 0 && <div className="stg-info-box">Chưa có thông tin lịch sử đăng nhập</div>}
-        </div>
-      </Section>
+
     </>
   );
 }

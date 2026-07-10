@@ -678,3 +678,181 @@ body.dark-theme .lp-sync-btn:hover { background: #1a1c23; }
 body.dark-theme .lp-skill-track { background: #343842; }
 body.dark-theme .lp-readiness-pct { color: #f1f5f9; }
 body.dark-theme .lp-course-icon { background: #1a1d24; }
+
+/* ── NEW: Modal ── */
+.lp-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 20px;
+}
+.lp-modal {
+  background: #fff; border-radius: 16px;
+  padding: 28px; max-width: 600px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  animation: lp-modal-in 0.2s ease;
+}
+.lp-modal-sm { max-width: 420px; }
+@keyframes lp-modal-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.lp-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.lp-modal-title {
+  font-size: 16px; font-weight: 700; color: #111827;
+  display: flex; align-items: center;
+}
+.lp-modal-close {
+  background: none; border: none; cursor: pointer;
+  color: #9ca3af; font-size: 16px; padding: 4px;
+}
+.lp-modal-sub { font-size: 13px; color: #6b7280; margin: 0 0 20px 0; line-height: 1.55; }
+.lp-modal-divider {
+  text-align: center; font-size: 12px; color: #9ca3af;
+  margin: 16px 0; position: relative;
+}
+.lp-modal-divider::before, .lp-modal-divider::after {
+  content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #e5e7eb;
+}
+.lp-modal-divider::before { left: 0; }
+.lp-modal-divider::after { right: 0; }
+.lp-target-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.lp-target-btn {
+  padding: 9px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+  border: 1.5px solid #e5e7eb; background: #f9fafb; color: #374151;
+  cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center;
+}
+.lp-target-btn:hover { border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
+.lp-target-btn.selected {
+  border-color: var(--primary-color, #3b5bdb); background: #eff2ff;
+  color: var(--primary-color, #3b5bdb); font-weight: 700;
+}
+.lp-custom-target-input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 13px; font-family: inherit; outline: none; box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.lp-custom-target-input:focus { border-color: var(--primary-color, #3b5bdb); }
+.lp-modal-actions {
+  display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+}
+.lp-modal-cancel {
+  padding: 10px 20px; background: #f3f4f6; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit;
+}
+.lp-modal-confirm {
+  padding: 10px 24px; background: var(--primary-color, #3b5bdb); border: none;
+  border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff;
+  cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px;
+  transition: opacity 0.15s;
+}
+.lp-modal-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+.lp-modal-confirm:not(:disabled):hover { opacity: 0.9; }
+.lp-modal-delete {
+  padding: 10px 20px; background: #ef4444; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; gap: 6px;
+}
+.lp-modal-delete:hover { background: #dc2626; }
+
+/* ── NEW: Delete btn ── */
+.lp-btn-danger {
+  padding: 10px 20px; background: #fff; border: 1.5px solid #fca5a5;
+  border-radius: 8px; font-size: 13px; font-weight: 600; color: #ef4444;
+  cursor: pointer; display: flex; align-items: center; gap: 7px; font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+.lp-btn-danger:hover { background: #fef2f2; }
+
+/* ── NEW: Timeline step wrapper + expand ── */
+.lp-timeline-step-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.lp-timeline-step { position: relative; width: 100%; }
+.lp-timeline-step.expanded .lp-timeline-dot.active { box-shadow: 0 0 0 8px rgba(59,91,219,0.15); }
+.lp-step-expand-icon {
+  position: absolute; bottom: -2px; right: 4px;
+  color: #d1d5db; font-size: 10px;
+}
+
+/* ── NEW: Goal detail panel ── */
+.lp-goal-detail {
+  background: #f8faff; border: 1px solid #c7d2fe;
+  border-radius: 12px; padding: 16px 18px; margin-top: 10px;
+  width: 100%; box-sizing: border-box;
+  animation: lp-slide-in 0.2s ease;
+}
+@keyframes lp-slide-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.lp-goal-detail-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.lp-goal-status-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+}
+.lp-goal-status-badge.done { background: #d1fae5; color: #059669; }
+.lp-goal-status-badge.active { background: #eff2ff; color: var(--primary-color, #3b5bdb); }
+.lp-goal-status-badge.upcoming { background: #f3f4f6; color: #6b7280; }
+.lp-goal-progress { font-size: 12px; font-weight: 600; color: var(--primary-color, #3b5bdb); }
+
+.lp-goal-detail-title {
+  font-size: 13.5px; font-weight: 700; color: #111827; margin: 0 0 12px 0;
+}
+.lp-goal-courses { display: flex; flex-direction: column; gap: 8px; }
+.lp-goal-course-item {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid #e9eaf0; border-radius: 8px;
+  padding: 10px 14px;
+}
+.lp-goal-course-num {
+  width: 24px; height: 24px; background: var(--primary-color, #3b5bdb);
+  color: #fff; border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.lp-goal-course-info { flex: 1; }
+.lp-goal-course-name { font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 3px 0; }
+.lp-goal-course-platform { margin: 0; }
+.lp-platform-tag {
+  font-size: 11px; background: #eff2ff; color: var(--primary-color, #3b5bdb);
+  padding: 2px 8px; border-radius: 99px; font-weight: 600;
+}
+.lp-goal-course-btn {
+  padding: 5px 12px; background: var(--primary-color, #3b5bdb); color: #fff;
+  border: none; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.lp-goal-course-btn:hover { opacity: 0.85; }
+
+/* ── NEW: Empty states ── */
+.lp-timeline-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 40px 20px; color: #9ca3af;
+  text-align: center; font-size: 14px;
+}
+.lp-empty-courses {
+  background: #f9fafb; border: 1.5px dashed #e5e7eb; border-radius: 12px;
+  padding: 30px; text-align: center; color: #9ca3af; font-size: 13.5px;
+}
+
+/* ── NEW: Course month tag ── */
+.lp-course-month-tag {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: #9ca3af; letter-spacing: 0.4px; margin-bottom: 6px;
+}
+
+/* ── Dark theme additions ── */
+body.dark-theme .lp-modal { background: #22252e; }
+body.dark-theme .lp-modal-title { color: #f1f5f9; }
+body.dark-theme .lp-modal-sub { color: #8f95a3; }
+body.dark-theme .lp-target-btn { background: #1a1c23; border-color: #343842; color: #d1d5db; }
+body.dark-theme .lp-target-btn.selected { background: #1e2240; border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
+body.dark-theme .lp-custom-target-input { background: #1a1c23; border-color: #343842; color: #f1f5f9; }
+body.dark-theme .lp-modal-cancel { background: #1a1c23; color: #d1d5db; }
+body.dark-theme .lp-goal-detail { background: #1e2240; border-color: #3b5bdb55; }
+body.dark-theme .lp-goal-detail-title { color: #f1f5f9; }
+body.dark-theme .lp-goal-course-item { background: #22252e; border-color: #343842; }
+body.dark-theme .lp-goal-course-name { color: #f1f5f9; }
+body.dark-theme .lp-btn-danger { background: #22252e; border-color: #fca5a5; }
+body.dark-theme .lp-empty-courses { background: #1a1c23; border-color: #343842; }

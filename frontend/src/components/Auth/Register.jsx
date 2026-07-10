@@ -20,8 +20,17 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    if (!fullname || !email || !password || !confirm) {
+    if (!fullname.trim() || !email.trim() || !password || !confirm) {
       setError('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Địa chỉ email không hợp lệ.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Mật khẩu phải có ít nhất 8 ký tự.');
       return;
     }
     if (password !== confirm) {
@@ -34,7 +43,7 @@ export default function Register() {
       const res = await fetch('http://localhost:5000/api/register/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: email.trim() })
       });
       const data = await res.json();
       if (data.success) {
@@ -55,7 +64,7 @@ export default function Register() {
       const res = await fetch('http://localhost:5000/api/register/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp: otpCode, password, full_name: fullname, role })
+        body: JSON.stringify({ email: email.trim(), otp: otpCode, password, full_name: fullname.trim(), role })
       });
       const data = await res.json();
       if (data.success) {
@@ -133,6 +142,29 @@ export default function Register() {
 
             <h1 className="auth-form-title reg-role-title">Bắt đầu hành trình của bạn</h1>
             <p className="auth-form-subtitle reg-role-subtitle">Chọn vai trò phù hợp nhất với mục tiêu của bạn.</p>
+
+            {/* Back to home */}
+            <div style={{ marginBottom: '8px' }}>
+              <Link
+                to="/"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  color: '#6b7280',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#3b5bdb'}
+                onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Quay lại trang chủ
+              </Link>
+            </div>
 
             {/* Role cards */}
             <div className="reg-roles">
@@ -235,6 +267,29 @@ export default function Register() {
 
           <h1 className="auth-form-title">Tạo tài khoản mới</h1>
           <p className="auth-form-subtitle">Bắt đầu hành trình phát triển sự nghiệp của bạn</p>
+
+          {/* Back to home */}
+          <div style={{ marginBottom: '4px' }}>
+            <Link
+              to="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                color: '#6b7280',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#3b5bdb'}
+              onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Quay lại trang chủ
+            </Link>
+          </div>
 
           {error && (
             <div className="auth-error-msg">
