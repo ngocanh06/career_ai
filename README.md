@@ -22,10 +22,14 @@ Các tính năng nổi bật:
 
 ## 📦 Yêu cầu & Các thư viện cần cài đặt (Dependencies)
 
-Để chạy được dự án này, bạn cần cài đặt Node.js (dành cho Frontend) và Python 3 (dành cho Backend), cùng với hệ quản trị CSDL MySQL.
+Để chạy được dự án này, bạn cần cài đặt Node.js (dành cho Frontend và NodeJS Backend tùy chọn) và Python 3 (dành cho Python Backend), cùng với hệ quản trị CSDL MySQL.
 
-### 1. Cài đặt Backend (Python / Flask)
-Di chuyển vào thư mục `backend` và cài đặt các thư viện sau thông qua `pip`:
+### 1. Cài đặt Backend
+
+Dự án có hai phiên bản Backend (Python và Node.js). Phiên bản chính đang được sử dụng là Python.
+
+**Cách 1: Python / Flask (Đang dùng chính)**
+Di chuyển vào thư mục `backend` và chạy lệnh cài đặt trực tiếp các thư viện thông qua `pip`:
 
 ```bash
 cd backend
@@ -34,25 +38,49 @@ pip install flask-cors
 pip install pymysql
 pip install python-dotenv
 pip install groq
+pip install openai
 pip install pdfplumber
 pip install python-docx
 ```
 
-*Lưu ý:* Cần cấu hình file `.env` tại thư mục backend chứa thông tin kết nối CSDL và `GROQ_API_KEY`.
+*Phân tích các thư viện Python:*
+- `flask`, `flask-cors`: Xây dựng web server và cấu hình CORS để kết nối với frontend.
+- `pymysql`: Kết nối và thao tác với Database MySQL.
+- `python-dotenv`: Quản lý các biến môi trường (environment variables) qua file `.env`.
+- `groq`, `openai`: Sử dụng thư viện OpenAI client để giao tiếp với API của Groq (chạy model Llama 3) cho các tính năng phân tích CV và hướng nghiệp.
+- `pdfplumber`, `python-docx`: Đọc và trích xuất văn bản từ các tệp CV do người dùng tải lên (hỗ trợ .pdf và .docx).
+
+**Cách 2: Node.js / Express (Tùy chọn/Dự phòng)**
+Nếu sử dụng server Node.js (`server.js`), di chuyển vào thư mục `backend` và cài đặt qua `npm`:
+
+```bash
+cd backend
+npm install
+```
+
+*Phân tích các thư viện Node.js:*
+- `express`, `cors`, `dotenv`: Framework xây dựng API và xử lý middleware cơ bản.
+- `mysql2`: Thư viện kết nối MySQL hiệu năng cao cho Node.js.
+- `nodemon`: Tự động reload server trong quá trình phát triển (Dev).
+
+*Lưu ý chung:* Bạn phải tạo và cấu hình file `.env` tại thư mục backend chứa thông tin kết nối Database và `GROQ_API_KEY`.
 
 ### 2. Cài đặt Frontend (ReactJS)
-Di chuyển vào thư mục `frontend` và chạy lệnh cài đặt qua `npm`:
+Di chuyển vào thư mục `frontend` và chạy lệnh cài đặt để tự động tải toàn bộ các packages:
 
 ```bash
 cd frontend
 npm install
 ```
 
-Các package chính mà dự án đang sử dụng bao gồm (sẽ tự động tải qua `npm install`):
-- `react`, `react-dom`, `react-scripts`: Core của ReactJS.
-- `react-router-dom`: Quản lý điều hướng các trang (routing).
-- `react-icons`, `lucide-react`, `@fortawesome/...`: Các thư viện cung cấp Icon UI đẹp mắt.
-- `html2pdf.js`: Hỗ trợ xuất file PDF trực tiếp từ HTML trong chức năng xây dựng Portfolio.
+*Phân tích các thư viện Frontend đang sử dụng:*
+- **Core React:** `react`, `react-dom`, `react-scripts`, `web-vitals`.
+- **Routing:** `react-router-dom` (Quản lý các luồng chuyển trang trong ứng dụng).
+- **UI & Icons:** 
+  - `react-icons`, `lucide-react`: Kho icon đa dạng.
+  - Các package FontAwesome (`@fortawesome/fontawesome-free`, `@fortawesome/react-fontawesome`,...): Thêm lựa chọn icon chuyên nghiệp cho giao diện.
+- **Tính năng nổi bật:** `html2pdf.js` (Hỗ trợ chuyển đổi nhanh giao diện HTML thành file PDF, dùng chính trong chức năng xuất Portfolio).
+- **Kiểm thử (Testing):** `@testing-library/react`, `@testing-library/jest-dom`,... (Phục vụ quá trình phát triển và kiểm tra component).
 
 ---
 
