@@ -574,7 +574,7 @@ export default function CareerOrientation() {
                   </div>
                   <div className="co-msg-content-wrapper">
                     <span className="co-msg-sender-name">
-                      {m.sender === 'assistant' ? 'Assistant' : (JSON.parse(localStorage.getItem('career_user'))?.full_name?.split(' ').pop() || 'Bạn')}
+                      {m.sender === 'assistant' ? 'Assistant' : (() => { try { return JSON.parse(localStorage.getItem('career_user'))?.full_name?.split(' ').pop() || 'Bạn'; } catch { return 'Bạn'; } })()}
                       {m.sender === 'assistant' && (
                         <span className="co-verif-badge">
                           <FaCircleCheck />

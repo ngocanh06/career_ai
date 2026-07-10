@@ -20,8 +20,17 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    if (!fullname || !email || !password || !confirm) {
+    if (!fullname.trim() || !email.trim() || !password || !confirm) {
       setError('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Địa chỉ email không hợp lệ.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Mật khẩu phải có ít nhất 8 ký tự.');
       return;
     }
     if (password !== confirm) {
@@ -34,7 +43,7 @@ export default function Register() {
       const res = await fetch('http://localhost:5000/api/register/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: email.trim() })
       });
       const data = await res.json();
       if (data.success) {
@@ -55,7 +64,7 @@ export default function Register() {
       const res = await fetch('http://localhost:5000/api/register/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp: otpCode, password, full_name: fullname, role })
+        body: JSON.stringify({ email: email.trim(), otp: otpCode, password, full_name: fullname.trim(), role })
       });
       const data = await res.json();
       if (data.success) {
