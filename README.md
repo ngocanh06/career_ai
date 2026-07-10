@@ -63,14 +63,15 @@ npm install
 - `mysql2`: Thư viện kết nối MySQL hiệu năng cao cho Node.js.
 - `nodemon`: Tự động reload server trong quá trình phát triển (Dev).
 
-*Lưu ý chung:* Bạn phải tạo và cấu hình file `.env` tại thư mục backend chứa thông tin kết nối Database và `GROQ_API_KEY`.
+*Lưu ý chung:* File `.env` chứa các API KEY đã bị ẩn khỏi Git (nằm trong `.gitignore` để bảo mật). Vì vậy, khi team pull code về, mọi người phải tự copy file `.env.example` thành `.env` tại thư mục backend và điền các thông tin kết nối Database cùng các `API_KEY` (như `GROQ_API_KEY`, `OPENAI_API_KEY`,...) thì mới chạy được tính năng AI.
 
 ### 2. Cài đặt Frontend (ReactJS)
-Di chuyển vào thư mục `frontend` và chạy lệnh cài đặt để tự động tải toàn bộ các packages:
+Di chuyển vào thư mục `frontend` và chạy lệnh cài đặt các package cơ bản, sau đó cài thêm thủ công thư viện `html2pdf.js` (nếu hệ thống không tự động tải):
 
 ```bash
 cd frontend
 npm install
+npm install html2pdf.js
 ```
 
 *Phân tích các thư viện Frontend đang sử dụng:*
