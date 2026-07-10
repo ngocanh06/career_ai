@@ -79,15 +79,17 @@ def get_dashboard(user_id):
             # 7. Kỹ năng từ CV
             missing_skills = []
             strong_skills  = []
-            if cv and cv.get('analysis_result'):
-                try:
+            if cv:
+                for field in ['analysis_result', 'improvement_suggestions']:
+                    if isinstance(cv.get(field), str):
+                        try:
+                            cv[field] = json_lib.loads(cv[field])
+                        except Exception:
+                            pass
+                if cv.get('analysis_result'):
                     analysis = cv['analysis_result']
-                    if isinstance(analysis, str):
-                        analysis = json_lib.loads(analysis)
                     missing_skills = analysis.get('weaknesses', [])[:4]
                     strong_skills  = analysis.get('strengths',  [])[:3]
-                except Exception:
-                    pass
 
             # 8. User skills từ bảng userskill
             cursor.execute(

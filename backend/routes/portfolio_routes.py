@@ -174,13 +174,19 @@ from utils.ai import call_openai_json
 def extract_text_from_file_local(filepath, file_type):
     text = ""
     try:
-        if file_type == 'application/pdf':
+        ftype = (file_type or "").lower()
+        if ftype in ['application/pdf', 'pdf']:
             with pdfplumber.open(filepath) as pdf:
                 for page in pdf.pages:
                     extracted = page.extract_text()
                     if extracted:
                         text += extracted + "\n"
-        elif file_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+        elif ftype in [
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc',
+            'docx'
+        ]:
             doc = docx.Document(filepath)
             for para in doc.paragraphs:
                 text += para.text + "\n"

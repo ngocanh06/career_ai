@@ -14,13 +14,19 @@ cv_bp = Blueprint('cv', __name__)
 def extract_text_from_file(filepath, file_type):
     text = ""
     try:
-        if file_type == 'application/pdf':
+        ftype = (file_type or "").lower()
+        if ftype in ['application/pdf', 'pdf']:
             with pdfplumber.open(filepath) as pdf:
                 for page in pdf.pages:
                     extracted = page.extract_text()
                     if extracted:
                         text += extracted + "\n"
-        elif file_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+        elif ftype in [
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc',
+            'docx'
+        ]:
             doc = docx.Document(filepath)
             for para in doc.paragraphs:
                 text += para.text + "\n"
@@ -82,6 +88,15 @@ def get_cv(user_id):
         conn.close()
         if not cv:
             return jsonify({'success': False, 'message': 'Chưa có dữ liệu CV'}), 404
+            
+        # Parse JSON fields if returned as string
+        for field in ['analysis_result', 'improvement_suggestions']:
+            if isinstance(cv.get(field), str):
+                try:
+                    cv[field] = json.loads(cv[field])
+                except Exception:
+                    pass
+                    
         return jsonify({'success': True, 'data': cv})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -133,8 +148,8 @@ def upload_cv():
         # Phân tích bằng OpenAI
         ai_result = analyze_cv_with_openai(cv_text)
         
-        # Nếu AI lỗi, fallback tạo ngẫu nhiên
-        if not ai_result:
+        # Nếu AI lỗi hoặc trả về không phải dict, fallback tạo ngẫu nhiên
+        if not ai_result or not isinstance(ai_result, dict):
             ai_result = {
                 "ats_score": random.randint(62, 91),
                 "analysis_result": {
@@ -154,8 +169,17 @@ def upload_cv():
         # Lưu vào DB
         conn = get_db()
         with conn.cursor() as cursor:
+            # Lấy CV cũ để xóa file vật lý tránh rác server
             cursor.execute("SELECT cv_id, file_path FROM cv WHERE user_id = %s ORDER BY upload_date DESC LIMIT 1", (user_id,))
             old = cursor.fetchone()
+            if old and old['file_path']:
+                try:
+                    old_filename = old['file_path'].split('/static/uploads/')[-1]
+                    old_filepath = os.path.join(upload_dir, old_filename)
+                    if os.path.exists(old_filepath):
+                        os.remove(old_filepath)
+                except Exception as ex:
+                    print(f"Lỗi khi xóa file CV cũ: {ex}")
 
             cursor.execute(
                 "INSERT INTO cv (user_id, file_path, file_type, ats_score, "
