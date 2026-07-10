@@ -4,107 +4,148 @@
 // Thay đổi BASE_URL nếu backend chạy ở cổng khác.
 // ─────────────────────────────────────────────────────────────
 
-const BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
-// ID người dùng hiện tại đang đăng nhập (tạm thời hardcode)
-// Sau này sẽ lấy từ Auth context / localStorage
-export const CURRENT_USER_ID = 19;
+export const getBackendOrigin = () => {
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch (_) {
+    return 'http://localhost:5000';
+  }
+};
 
-async function fetchJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message || 'API error');
+export const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem('career_user');
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    return user && typeof user === 'object' ? user : null;
+  } catch (_) {
+    return null;
+  }
+};
+
+export const getCurrentUserId = () => {
+  const user = getCurrentUser();
+  const userId = user?.user_id;
+  return typeof userId === 'number' ? userId : null;
+};
+
+function normalizeApiErrorMessage(err) {
+  if (!err) return 'Có lỗi xảy ra';
+  if (typeof err === 'string') return err;
+  if (err instanceof Error && err.message) return err.message;
+  return 'Có lỗi xảy ra';
+}
+
+async function requestJson(path, init) {
+  const url = `${API_BASE_URL}${path}`;
+  const res = await fetch(url, init);
+
+  let json = null;
+  try {
+    json = await res.json();
+  } catch (_) {
+    // ignore
+  }
+
+  if (!res.ok) {
+    const message = json?.message || `HTTP error ${res.status}`;
+    throw new Error(message);
+  }
+  if (!json?.success) throw new Error(json?.message || 'API error');
+  return json;
+}
+
+async function fetchData(path) {
+  const json = await requestJson(path);
   return json.data;
 }
 
 // ── User ────────────────────────────────────────────────────
 export const getUser = (userId) =>
-  fetchJson(`${BASE_URL}/user/${userId}`);
+  fetchData(`/user/${userId}`);
 
 export const updateUser = async (userId, data) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
+  try {
+    return await requestJson(`/user/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    throw new Error(normalizeApiErrorMessage(err));
+  }
 };
 
 export const changePassword = async (userId, data) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}/password`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
+  try {
+    return await requestJson(`/user/${userId}/password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    throw new Error(normalizeApiErrorMessage(err));
+  }
 };
 
 export const uploadAvatar = async (userId, file) => {
   const formData = new FormData();
   formData.append('avatar', file);
-  const res = await fetch(`${BASE_URL}/user/${userId}/avatar`, {
-    method: 'POST',
-    body: formData,
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
+  try {
+    return await requestJson(`/user/${userId}/avatar`, {
+      method: 'POST',
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error(normalizeApiErrorMessage(err));
+  }
 };
 
 export const getLoginSessions = async (userId) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}/sessions`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
+  try {
+    return await requestJson(`/user/${userId}/sessions`);
+  } catch (err) {
+    throw new Error(normalizeApiErrorMessage(err));
+  }
 };
 
-export const getLoginHistory = async (userId) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}/login_history`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
-};
 
 export const revokeOtherSessions = async (userId) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}/sessions`, {
-    method: 'DELETE',
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message);
-  return json;
+  try {
+    return await requestJson(`/user/${userId}/sessions`, { method: 'DELETE' });
+  } catch (err) {
+    throw new Error(normalizeApiErrorMessage(err));
+  }
 };
 
 // ── Career Orientation ───────────────────────────────────────
 export const getCareers = (userId) =>
-  fetchJson(`${BASE_URL}/career/${userId}`);
+  fetchData(`/career/${userId}`);
 
 // ── Learning Path ────────────────────────────────────────────
 export const getRoadmap = (userId) =>
-  fetchJson(`${BASE_URL}/roadmap/${userId}`);
+  fetchData(`/roadmap/${userId}`);
 
 // ── CV Analysis ──────────────────────────────────────────────
 export const getCV = (userId) =>
-  fetchJson(`${BASE_URL}/cv/${userId}`);
+  fetchData(`/cv/${userId}`);
 
 // ── Skills ───────────────────────────────────────────────────
 export const getSkills = (userId) =>
-  fetchJson(`${BASE_URL}/skills/${userId}`);
+  fetchData(`/skills/${userId}`);
 
 // ── Portfolio ────────────────────────────────────────────────
 export const getPortfolio = (userId) =>
-  fetchJson(`${BASE_URL}/portfolio/${userId}`);
+  fetchData(`/portfolio/${userId}`);
 
 export const getExperience = (userId) =>
-  fetchJson(`${BASE_URL}/experience/${userId}`);
+  fetchData(`/experience/${userId}`);
 
 export const getCertificates = (userId) =>
-  fetchJson(`${BASE_URL}/certificate/${userId}`);
+  fetchData(`/certificate/${userId}`);
 
 export const getEducation = (userId) =>
-  fetchJson(`${BASE_URL}/education/${userId}`);
+  fetchData(`/education/${userId}`);
 

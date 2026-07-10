@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Landing.css';
 import rightImage from '../../assets/images/right.png';
 import logoPinterest from '../../assets/images/logo/logo-pinterest.png';
@@ -13,7 +13,65 @@ import logoMacys from '../../assets/images/logo/logo-macys.png';
 import logoWalmart from '../../assets/images/logo/logo-walmart.png';
 import logoMain from '../../assets/images/logo/logo-career.png';
 
+/* ── Modal yêu cầu đăng nhập ── */
+function AuthRequiredModal({ featureName, onClose }) {
+  const navigate = useNavigate();
+
+  // Đóng modal khi click ra ngoài overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div className="auth-modal-overlay" onClick={handleOverlayClick}>
+      <div className="auth-modal-box">
+        {/* Icon khóa */}
+        <div className="auth-modal-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0458E6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+
+        {/* Nội dung */}
+        <h2 className="auth-modal-title">Yêu cầu đăng nhập</h2>
+        <p className="auth-modal-desc">
+          Bạn cần đăng nhập để sử dụng chức năng
+          {featureName ? <> <strong>"{featureName}"</strong></> : ''}.
+          <br />
+          Hãy đăng nhập hoặc tạo tài khoản miễn phí ngay!
+        </p>
+
+        {/* Buttons */}
+        <div className="auth-modal-actions">
+          <button
+            className="auth-modal-btn-login"
+            onClick={() => navigate('/login')}
+          >
+            Đăng nhập
+          </button>
+          <button
+            className="auth-modal-btn-register"
+            onClick={() => navigate('/register')}
+          >
+            Tạo tài khoản
+          </button>
+        </div>
+
+        {/* Đóng */}
+        <button className="auth-modal-close" onClick={onClose} aria-label="Đóng">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
+  const navigate = useNavigate();
   const companies = [
     { name: 'Pinterest', logo: logoPinterest, alt: 'Pinterest logo' },
     { name: 'Spotify', logo: logoSpotify, alt: 'Spotify logo' },
@@ -27,8 +85,46 @@ export default function Landing() {
     { name: 'Main', logo: logoMain, alt: 'Main logo' },
   ];
 
+  // State quản lý modal yêu cầu đăng nhập
+  const [modal, setModal] = useState(null); // null | { featureName: string }
+
+  const requireLogin = (featureName) => {
+    let userStr = localStorage.getItem('career_user');
+    let isLoggedIn = false;
+    
+    if (userStr && userStr !== 'null' && userStr !== 'undefined' && userStr.trim() !== '') {
+       try {
+           const parsed = JSON.parse(userStr);
+           if (parsed) isLoggedIn = true;
+       } catch (e) {
+           // If it's not valid JSON but truthy, we might still treat it as invalid 
+           // to be safe, but let's just clear it to reset state.
+           localStorage.removeItem('career_user');
+       }
+    }
+
+    if (isLoggedIn) {
+      // Đã đăng nhập, điều hướng tương ứng thay vì không làm gì
+      if (featureName === 'Hồ sơ') navigate('/profile');
+      else if (featureName === 'Nghề nghiệp') navigate('/career');
+      else if (featureName === 'Công cụ') navigate('/dashboard');
+      else if (featureName === 'Lộ trình học tập') navigate('/learning-path');
+      return true;
+    }
+    
+    setModal({ featureName });
+    return false;
+  };
+
   return (
     <div className="landing">
+      {/* Modal yêu cầu đăng nhập */}
+      {modal && (
+        <AuthRequiredModal
+          featureName={modal.featureName}
+          onClose={() => setModal(null)}
+        />
+      )}
       {/* HEADER / NAVBAR */}
       <header className="header">
         <div className="header-container">
@@ -38,10 +134,10 @@ export default function Landing() {
           </div>
           <nav className="nav">
             <Link to="/" className="active">Trang chủ</Link>
-            <Link to="/profile">Hồ sơ</Link>
-            <Link to="/career">Nghề nghiệp</Link>
-            <Link to="/tools">Công cụ</Link>
-            <Link to="/learning">Lộ trình học tập</Link>
+            <button className="nav-btn-link" onClick={() => requireLogin('Hồ sơ')}>Hồ sơ</button>
+            <button className="nav-btn-link" onClick={() => requireLogin('Nghề nghiệp')}>Nghề nghiệp</button>
+            <button className="nav-btn-link" onClick={() => requireLogin('Công cụ')}>Công cụ</button>
+            <button className="nav-btn-link" onClick={() => requireLogin('Lộ trình học tập')}>Lộ trình học tập</button>
           </nav>
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
