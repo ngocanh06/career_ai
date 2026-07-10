@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import { updateUser, changePassword, CURRENT_USER_ID, uploadAvatar, getLoginSessions, revokeOtherSessions } from '../../services/api';
+import { updateUser, changePassword, uploadAvatar, getLoginSessions, revokeOtherSessions } from '../../services/api';
 import './Settings.css';
 import {
   FaUser, FaPalette, FaBell, FaShieldHalved,
@@ -66,7 +66,7 @@ function Section({ title, children }) {
 ══════════════════════════════════════════════════ */
 function TabGeneral() {
   const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-  const userId = user.user_id || CURRENT_USER_ID;
+  const userId = user?.user_id;
   const [name, setName] = useState(user.full_name || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || '');
   const [saved, setSaved] = useState(false);
@@ -75,6 +75,11 @@ function TabGeneral() {
   const fileInputRef = useRef(null);
 
   const handleAvatarChange = async (e) => {
+    if (!userId) {
+      setError('Bạn cần đăng nhập để thực hiện thao tác này');
+      return;
+    }
+
     const file = e.target.files[0];
     if (!file) return;
     
@@ -99,6 +104,11 @@ function TabGeneral() {
   };
 
   const handleSave = async () => {
+    if (!userId) {
+      setError('Bạn cần đăng nhập để thực hiện thao tác này');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -320,7 +330,8 @@ function TabSecurity() {
   
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
     
     getLoginSessions(userId).then(res => {
       if(res.success) setSessions(res.data);
@@ -330,7 +341,8 @@ function TabSecurity() {
   const handleRevokeSessions = async () => {
     if(!window.confirm('Bạn có chắc muốn đăng xuất khỏi tất cả các thiết bị khác không?')) return;
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
     try {
       await revokeOtherSessions(userId);
       const res = await getLoginSessions(userId);
@@ -352,7 +364,8 @@ function TabSecurity() {
     setPasswordSuccess(false);
     
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
 
     try {
       await changePassword(userId, { 
