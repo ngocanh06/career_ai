@@ -157,6 +157,7 @@ def get_portfolio_insight():
     prompt = f"""
 Bạn là một AI phân tích Portfolio chuyên nghiệp.
 Dựa vào danh sách kỹ năng và dự án sau, hãy phân tích và đưa ra 1 câu gợi ý ngắn (dưới 30 chữ) để người dùng cải thiện Portfolio, kèm theo một điểm số ấn tượng (từ 1 đến 100).
+YÊU CẦU: Phản hồi hoàn toàn bằng TIẾNG VIỆT CÓ DẤU.
 Kỹ năng: {', '.join(skills)}
 Dự án: {', '.join([p.get('title', '') for p in projects])}
 Trả về JSON format: {{"insight": "<câu gợi ý>", "score": <số nguyên từ 1-100>}}

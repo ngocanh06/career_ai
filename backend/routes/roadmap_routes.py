@@ -68,37 +68,37 @@ def generate_roadmap():
         target_career = data.get('target_career', '')
 
         prompt = f"""
-Ban la AI co van nghe nghiep. Dua vao thong tin sau cua nguoi dung:
-- Gioi thieu (Bio): {bio}
-- Ky nang hien tai: {', '.join(skills)}
-- Muc tieu nghe nghiep muon huong toi: {target_career if target_career else 'Tu xac dinh dua tren profile'}
+Bạn là AI cố vấn nghề nghiệp. Dựa vào thông tin sau của người dùng:
+- Giới thiệu (Bio): {bio}
+- Kỹ năng hiện tại: {', '.join(skills)}
+- Mục tiêu nghề nghiệp muốn hướng tới: {target_career if target_career else 'Tự xác định dựa trên profile'}
 
-Hay tao ra mot lo trinh hoc tap 3 thang de giup ho dat duoc muc tieu tren.
-Tra ve JSON theo format:
+Hãy tạo ra một lộ trình học tập 3 tháng để giúp họ đạt được mục tiêu trên. YÊU CẦU: Phản hồi hoàn toàn bằng TIẾNG VIỆT CÓ DẤU, riêng TÊN NGHỀ NGHIỆP (title) bắt buộc sử dụng TIẾNG ANH.
+Trả về JSON theo format:
 {{
-  "title": "<Muc tieu nghe nghiep. Vi du: Chuyen gia Phan tich Du lieu>",
+  "title": "<Tên nghề nghiệp bằng tiếng Anh. Ví dụ: Data Analyst, Backend Developer>",
   "total_months": 3,
   "goals": [
     {{
       "target_month": 1,
-      "skill_name": "<Ten ky nang can hoc>",
+      "skill_name": "<Tên kỹ năng cần học>",
       "courses": [
-        {{"name": "<Ten khoa hoc 1>", "platform": "<Nen tang>"}},
-        {{"name": "<Ten khoa hoc 2>", "platform": "<Nen tang>"}}
+        {{"name": "<Tên khóa học 1>", "platform": "<Nền tảng>"}},
+        {{"name": "<Tên khóa học 2>", "platform": "<Nền tảng>"}}
       ]
     }},
     {{
       "target_month": 2,
-      "skill_name": "<Ten ky nang can hoc>",
+      "skill_name": "<Tên kỹ năng cần học>",
       "courses": [
-        {{"name": "<Ten khoa hoc 1>", "platform": "<Nen tang>"}}
+        {{"name": "<Tên khóa học 1>", "platform": "<Nền tảng>"}}
       ]
     }},
     {{
       "target_month": 3,
-      "skill_name": "<Ten ky nang can hoc>",
+      "skill_name": "<Tên kỹ năng cần học>",
       "courses": [
-        {{"name": "<Ten khoa hoc 1>", "platform": "<Nen tang>"}}
+        {{"name": "<Tên khóa học 1>", "platform": "<Nền tảng>"}}
       ]
     }}
   ]
@@ -106,7 +106,7 @@ Tra ve JSON theo format:
 """
         result = call_openai_json(prompt)
         if not result or 'goals' not in result:
-            return jsonify({'success': False, 'message': 'Loi tao lo trinh tu AI'}), 500
+            return jsonify({'success': False, 'message': 'Lỗi tạo lộ trình từ AI'}), 500
 
         # Lưu DB - roadmap.status enum: 'not_started','in_progress','completed'
         # goal.status enum: 'pending','in_progress','completed'
@@ -164,18 +164,18 @@ def generate_roadmap_insight():
                 skill_names.append(str(s))
 
         prompt = f"""
-Ban la AI co van nghe nghiep. Dua vao:
-- Muc tieu: {roadmap.get('title')}
-- Tien do: {roadmap.get('completion_rate')}%
-- Ky nang dang co: {', '.join(skill_names)}
+Bạn là AI cố vấn nghề nghiệp. Dựa vào:
+- Mục tiêu: {roadmap.get('title')}
+- Tiến độ: {roadmap.get('completion_rate')}%
+- Kỹ năng đang có: {', '.join(skill_names)}
 
-Hay dua ra mot phan tich/loi khuyen ngan (duoi 35 tu) ve buoc di tiep theo.
-Tra ve JSON format: {{"insight": "<noi dung>"}}
+Hãy đưa ra một phân tích/lời khuyên ngắn (dưới 35 từ) về bước đi tiếp theo. YÊU CẦU: Phản hồi hoàn toàn bằng TIẾNG VIỆT CÓ DẤU.
+Trả về JSON format: {{"insight": "<nội dung>"}}
 """
         result = call_openai_json(prompt)
         if result and 'insight' in result:
             return jsonify({'success': True, 'data': result['insight']})
-        return jsonify({'success': False, 'message': 'AI error'}), 500
+        return jsonify({'success': False, 'message': 'Lỗi gọi AI'}), 500
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

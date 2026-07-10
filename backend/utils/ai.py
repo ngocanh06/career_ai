@@ -12,7 +12,7 @@ def get_groq_client():
         base_url="https://api.groq.com/openai/v1"
     )
 
-def call_openai_json(prompt, system_prompt="You are a helpful assistant that outputs only valid JSON."):
+def call_openai_json(prompt, system_prompt="You are a helpful assistant that outputs only valid JSON.", model="llama-3.1-8b-instant"):
     client = get_groq_client()
     if not client:
         print("Error: GROQ_API_KEY not found")
@@ -20,7 +20,7 @@ def call_openai_json(prompt, system_prompt="You are a helpful assistant that out
     
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}

@@ -6,9 +6,6 @@ __pycache__/
 *.pyc
 
 # Node.js (không cần thiết cho backend Python)
-node_modules/
-package-lock.json
-.env
 # Environment variables (BẢO MẬT - không đẩy lên git)
 
 

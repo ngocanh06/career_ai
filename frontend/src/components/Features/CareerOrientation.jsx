@@ -46,13 +46,21 @@ export default function CareerOrientation() {
         const mapped = json.data.map((c, i) => {
           const pct = Math.round(c.match_percentage);
           const lvlKey = pct >= 90 ? 'high' : pct >= 80 ? 'medium' : 'low';
+          let parsedSkills = [];
+          try {
+            parsedSkills = c.skills ? JSON.parse(c.skills) : [];
+          } catch(e) {}
+          
           return {
             title: c.job_title,
             match: pct,
             level: CAREER_LVL_MAP[lvlKey].label,
             levelClass: CAREER_LVL_MAP[lvlKey].cls,
             desc: c.job_description || '',
-            skills: [],
+            skills: parsedSkills,
+            salary: c.salary || 'Đang cập nhật',
+            potential: c.potential || (pct / 10).toFixed(1),
+            trend_analysis: c.trend_analysis || '',
             badge: CAREER_BADGE[i] || null,
             badgeClass: CAREER_BADGE_CLS[i] || null,
             icon: CAREER_ICONS[i] || <IconBriefcase />,
@@ -95,21 +103,23 @@ export default function CareerOrientation() {
         title: careers[0].title,
         badge: careers[0].badge || "Lựa chọn tốt nhất",
         badgeClass: careers[0].badgeClass || "blue",
-        skills: ["Tư duy phân tích", "Chuyên môn sâu", "Khả năng ứng biến"],
-        salary: "15M - 35M",
-        potential: (careers[0].match / 10).toFixed(1),
+        skills: careers[0].skills?.length ? careers[0].skills : ["Tư duy phân tích", "Chuyên môn sâu"],
+        salary: careers[0].salary !== 'Đang cập nhật' ? careers[0].salary : "15M - 35M",
+        potential: careers[0].potential,
         pct: careers[0].match,
-        colorClass: careers[0].iconClass || "blue"
+        colorClass: careers[0].iconClass || "blue",
+        trend_analysis: careers[0].trend_analysis || "Đang có xu hướng tăng trưởng cực kỳ mạnh mẽ."
       },
       right: {
         title: careers[1].title,
         badge: careers[1].badge || "Phù hợp cao",
         badgeClass: careers[1].badgeClass || "green",
-        skills: ["Tư duy hệ thống", "Giải quyết vấn đề", "Giao tiếp"],
-        salary: "12M - 30M",
-        potential: (careers[1].match / 10).toFixed(1),
+        skills: careers[1].skills?.length ? careers[1].skills : ["Tư duy hệ thống", "Giải quyết vấn đề"],
+        salary: careers[1].salary !== 'Đang cập nhật' ? careers[1].salary : "12M - 30M",
+        potential: careers[1].potential,
         pct: careers[1].match,
-        colorClass: careers[1].iconClass || "teal"
+        colorClass: careers[1].iconClass || "teal",
+        trend_analysis: careers[1].trend_analysis || "Nhu cầu luôn ổn định ở mức cao."
       }
     },
     careers.length >= 3 ? {
@@ -117,27 +127,29 @@ export default function CareerOrientation() {
         title: careers[1].title,
         badge: careers[1].badge || "Phù hợp cao",
         badgeClass: careers[1].badgeClass || "green",
-        skills: ["Tư duy hệ thống", "Giải quyết vấn đề", "Giao tiếp"],
-        salary: "12M - 30M",
-        potential: (careers[1].match / 10).toFixed(1),
+        skills: careers[1].skills?.length ? careers[1].skills : ["Tư duy hệ thống", "Giải quyết vấn đề"],
+        salary: careers[1].salary !== 'Đang cập nhật' ? careers[1].salary : "12M - 30M",
+        potential: careers[1].potential,
         pct: careers[1].match,
-        colorClass: careers[1].iconClass || "green"
+        colorClass: careers[1].iconClass || "green",
+        trend_analysis: careers[1].trend_analysis || "Nhu cầu luôn ổn định ở mức cao."
       },
       right: {
         title: careers[2].title,
         badge: careers[2].badge || "Đang phát triển",
         badgeClass: careers[2].badgeClass || "purple",
-        skills: ["Nghiên cứu", "Tư duy sáng tạo", "Kỹ thuật chuyên ngành"],
-        salary: "10M - 25M",
-        potential: (careers[2].match / 10).toFixed(1),
+        skills: careers[2].skills?.length ? careers[2].skills : ["Nghiên cứu", "Tư duy sáng tạo"],
+        salary: careers[2].salary !== 'Đang cập nhật' ? careers[2].salary : "10M - 25M",
+        potential: careers[2].potential,
         pct: careers[2].match,
-        colorClass: careers[2].iconClass || "purple"
+        colorClass: careers[2].iconClass || "purple",
+        trend_analysis: careers[2].trend_analysis || "Có tiềm năng phát triển trong tương lai."
       }
     } : null
   ].filter(Boolean) : [
     {
-      left: { title: "Đang tải...", badge: "...", badgeClass: "blue", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "blue" },
-      right: { title: "Đang tải...", badge: "...", badgeClass: "green", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "teal" }
+      left: { title: "Đang tải...", badge: "...", badgeClass: "blue", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "blue", trend_analysis: "" },
+      right: { title: "Đang tải...", badge: "...", badgeClass: "green", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "teal", trend_analysis: "" }
     }
   ];
 
@@ -321,7 +333,7 @@ export default function CareerOrientation() {
                 </div>
 
                 <button className="co-card-btn" onClick={() => {
-                  window.location.href = '/learning-path';
+                  window.location.href = `/learning-path?target=${encodeURIComponent(career.title)}`;
                 }}>Chi tiết lộ trình học tập</button>
               </div>
             ))}
@@ -457,9 +469,9 @@ export default function CareerOrientation() {
                   <div className="co-da-block">
                     <p className="co-da-label">Tương lai & Xu hướng</p>
                     <p className="co-da-text">
-                      <strong>{currentPair.left.title}:</strong> Đang có xu hướng tăng trưởng cực kỳ mạnh mẽ, đặc biệt khi dữ liệu lớn (Big Data) trở thành cốt lõi của doanh nghiệp. Bạn sẽ có lợi thế tuyệt đối trong dài hạn, tuy nhiên mức độ cạnh tranh cũng khá cao.
+                      <strong>{currentPair.left.title}:</strong> {currentPair.left.trend_analysis}
                       <br /><br />
-                      <strong>{currentPair.right.title}:</strong> Nhu cầu luôn ổn định ở mức cao. Doanh nghiệp nào cũng cần người phân tích và hiểu hệ thống để cải thiện hiệu suất. Rủi ro tự động hóa thấp do tính chất tư duy chiến lược và quản lý con người.
+                      <strong>{currentPair.right.title}:</strong> {currentPair.right.trend_analysis}
                     </p>
                   </div>
 

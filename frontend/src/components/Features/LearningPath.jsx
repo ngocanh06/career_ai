@@ -80,10 +80,8 @@ export default function LearningPath() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchRoadmap(); }, []);
-
-  const handleGenerateRoadmap = async () => {
-    const target = selectedTarget || customTarget;
+  const handleGenerateRoadmap = async (overrideTarget = null) => {
+    const target = (typeof overrideTarget === 'string' ? overrideTarget : null) || selectedTarget || customTarget;
     if (!target) { setShowTargetModal(true); return; }
     setShowTargetModal(false);
     setGenerating(true);
@@ -101,6 +99,18 @@ export default function LearningPath() {
     setSelectedTarget('');
     setCustomTarget('');
   };
+
+  useEffect(() => { 
+    const queryParams = new URLSearchParams(window.location.search);
+    const target = queryParams.get('target');
+    if (target) {
+      window.history.replaceState({}, document.title, "/learning-path");
+      handleGenerateRoadmap(target);
+    } else {
+      fetchRoadmap(); 
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDeleteRoadmap = async () => {
     if (!roadmap) return;

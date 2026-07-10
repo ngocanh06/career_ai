@@ -71,6 +71,7 @@ function AuthRequiredModal({ featureName, onClose }) {
 }
 
 export default function Landing() {
+  const navigate = useNavigate();
   const companies = [
     { name: 'Pinterest', logo: logoPinterest, alt: 'Pinterest logo' },
     { name: 'Spotify', logo: logoSpotify, alt: 'Spotify logo' },
@@ -88,8 +89,29 @@ export default function Landing() {
   const [modal, setModal] = useState(null); // null | { featureName: string }
 
   const requireLogin = (featureName) => {
-    const user = localStorage.getItem('career_user');
-    if (user) return true; // Đã đăng nhập, cho qua
+    let userStr = localStorage.getItem('career_user');
+    let isLoggedIn = false;
+    
+    if (userStr && userStr !== 'null' && userStr !== 'undefined' && userStr.trim() !== '') {
+       try {
+           const parsed = JSON.parse(userStr);
+           if (parsed) isLoggedIn = true;
+       } catch (e) {
+           // If it's not valid JSON but truthy, we might still treat it as invalid 
+           // to be safe, but let's just clear it to reset state.
+           localStorage.removeItem('career_user');
+       }
+    }
+
+    if (isLoggedIn) {
+      // Đã đăng nhập, điều hướng tương ứng thay vì không làm gì
+      if (featureName === 'Hồ sơ') navigate('/profile');
+      else if (featureName === 'Nghề nghiệp') navigate('/career');
+      else if (featureName === 'Công cụ') navigate('/dashboard');
+      else if (featureName === 'Lộ trình học tập') navigate('/learning-path');
+      return true;
+    }
+    
     setModal({ featureName });
     return false;
   };
