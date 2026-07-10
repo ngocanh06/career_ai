@@ -1,112 +1,332 @@
-# CareerAI - Trợ lý Ảo Hướng nghiệp & Tuyển dụng AI
+# CareerAI — Nền tảng Hướng nghiệp & Phát triển Sự nghiệp bằng AI
+
+> Trợ lý AI đồng hành cùng sinh viên và người đi làm trong việc định hướng sự nghiệp, tối ưu hóa hồ sơ và lên kế hoạch học tập cá nhân hóa.
+
+---
 
 ## 🌟 Giới thiệu tổng quan
-**CareerAI** là một nền tảng hỗ trợ sinh viên và người đi làm trong việc định hướng sự nghiệp, tối ưu hóa hồ sơ và lên kế hoạch học tập cá nhân hóa thông qua sức mạnh của Trí tuệ Nhân tạo (Generative AI). Thay vì những lời khuyên chung chung, CareerAI sẽ đọc và thấu hiểu hồ sơ thực tế của bạn để đưa ra những phân tích sâu sắc nhất.
 
-Các tính năng nổi bật:
-- **Phân tích CV (AI CV Analysis):** Tự động đọc file CV (PDF/Docx), đánh giá "Điểm ATS" và phân tích chi tiết điểm mạnh/điểm yếu của ứng viên so với thị trường.
-- **Định hướng Nghề nghiệp (Career Orientation):** AI đề xuất 3 nghề nghiệp phù hợp nhất dựa trên kỹ năng của người dùng. Cho phép so sánh chi tiết giữa các ngành nghề (mức lương, kỹ năng cần thiết, đánh giá AI).
-- **Lộ trình học tập (Learning Path):** Tạo lộ trình học tập tự động chi tiết theo từng tháng để đạt được vị trí công việc mơ ước.
-- **Xây dựng Portfolio (Portfolio Builder):** Tự động bóc tách kỹ năng, dự án từ CV để khởi tạo nhanh một Portfolio chuyên nghiệp. Cung cấp tính năng tải về định dạng PDF vô cùng tiện lợi.
-- **Quản lý tài khoản (Auth & Dashboard):** Hệ thống đăng nhập/đăng ký với đầy đủ tính năng cập nhật thông tin cá nhân.
+**CareerAI** là ứng dụng web full-stack tích hợp Generative AI giúp người dùng:
+- Phân tích CV thông minh và chấm điểm ATS
+- Nhận đề xuất nghề nghiệp phù hợp từ AI
+- Xây dựng lộ trình học tập cá nhân hóa
+- Tự động tạo Portfolio chuyên nghiệp từ CV
+- Trao đổi trực tiếp với AI về chiến lược sự nghiệp
+
+---
+
+## ✨ Tính năng chính
+
+| Tính năng | Mô tả |
+|---|---|
+| 🔐 **Xác thực người dùng** | Đăng ký/đăng nhập, xác thực OTP qua email, quên mật khẩu, bảo vệ route |
+| 📄 **Phân tích CV AI** | Upload CV (PDF/DOCX), AI chấm điểm ATS, phân tích điểm mạnh/yếu, gợi ý cải thiện |
+| 🎯 **Định hướng nghề nghiệp** | AI gợi ý 3 nghề phù hợp nhất, so sánh mức lương/kỹ năng/tiềm năng, chatbot tư vấn |
+| 🗺️ **Lộ trình học tập** | Tạo roadmap tự động chi tiết theo tháng để đạt vị trí công việc mơ ước |
+| 💼 **Portfolio Builder** | Bóc tách kỹ năng/dự án từ CV, xây dựng Portfolio trực tuyến, xuất PDF |
+| 👤 **Quản lý hồ sơ** | Cập nhật thông tin cá nhân, đổi mật khẩu, upload avatar, quản lý phiên đăng nhập |
+| ⚙️ **Cài đặt** | Tuỳ chỉnh giao diện (màu sắc, font, dark mode, compact mode) |
 
 ---
 
 ## 🛠️ Công nghệ sử dụng
-- **Frontend:** ReactJS, CSS3 (Vanilla), React Router DOM, Lucide React, HTML2PDF.
-- **Backend:** Python (Flask), PyMySQL.
-- **Database:** MySQL.
-- **AI Integration:** Groq API (sử dụng model Llama 3) / OpenAI API (nếu cần).
+
+### Frontend
+| Thư viện | Phiên bản | Mục đích |
+|---|---|---|
+| `react` | ^18 | UI framework chính |
+| `react-dom` | ^18 | Render DOM |
+| `react-router-dom` | ^6 | Client-side routing & bảo vệ route |
+| `react-icons` | latest | Bộ icon đa dạng (FontAwesome, Feather...) |
+| `lucide-react` | latest | Icon bổ sung phong cách hiện đại |
+| `html2pdf.js` | latest | Xuất Portfolio sang file PDF |
+| `@fortawesome/fontawesome-free` | latest | Bộ icon FontAwesome |
+| `react-scripts` | ^5 | Build toolchain (Create React App) |
+
+### Backend
+| Thư viện | Mục đích |
+|---|---|
+| `flask` | Web server & API framework |
+| `flask-cors` | Cấu hình CORS để kết nối với frontend |
+| `pymysql` | Kết nối và thao tác với MySQL |
+| `python-dotenv` | Quản lý biến môi trường qua file `.env` |
+| `groq` | Gọi Groq API (model llama-3.3-70b-versatile) cho tính năng AI |
+| `openai` | Tương thích OpenAI API (dự phòng) |
+| `pdfplumber` | Đọc và trích xuất text từ file CV `.pdf` |
+| `python-docx` | Đọc và trích xuất text từ file CV `.docx` |
+
+### Database & Infrastructure
+- **Database:** MySQL (chạy qua XAMPP hoặc MySQL Server)
+- **AI Model:** Groq API — `llama-3.3-70b-versatile`
+- **Email (OTP):** Gmail SMTP (port 465, SSL)
 
 ---
 
-## 📦 Yêu cầu & Các thư viện cần cài đặt (Dependencies)
+## 📁 Cấu trúc thư mục
 
-Để chạy được dự án này, bạn cần cài đặt Node.js (dành cho Frontend và NodeJS Backend tùy chọn) và Python 3 (dành cho Python Backend), cùng với hệ quản trị CSDL MySQL.
+```
+career_ai/
+├── backend/                     # Python/Flask API Server
+│   ├── app.py                   # Entry point — khởi tạo Flask, đăng ký blueprint
+│   ├── requirements.txt         # Danh sách thư viện Python
+│   ├── .env                     # Biến môi trường (KHÔNG push lên git)
+│   ├── .env.example             # Template biến môi trường cho team
+│   ├── routes/                  # Các module API Blueprint
+│   │   ├── auth_routes.py       # Đăng ký, đăng nhập, OTP, quên mật khẩu
+│   │   ├── user_routes.py       # Hồ sơ, đổi mật khẩu, avatar, sessions
+│   │   ├── cv_routes.py         # Upload CV, phân tích AI
+│   │   ├── career_routes.py     # Gợi ý nghề nghiệp, chatbot hướng nghiệp
+│   │   ├── roadmap_routes.py    # Tạo lộ trình học tập AI
+│   │   ├── portfolio_routes.py  # Portfolio, kinh nghiệm, chứng chỉ, học vấn
+│   │   ├── dashboard_routes.py  # Dữ liệu tổng quan dashboard
+│   │   └── db_routes.py         # Tiện ích kiểm tra kết nối DB
+│   ├── utils/
+│   │   ├── ai.py                # Hàm gọi Groq/OpenAI API
+│   │   ├── db.py                # Kết nối MySQL pool
+│   │   └── email.py             # Gửi OTP qua Gmail SMTP
+│   └── static/uploads/          # Thư mục chứa file CV & avatar user (không push lên git)
+│
+├── frontend/                    # ReactJS Application
+│   ├── public/
+│   │   ├── index.html
+│   │   └── logo.png
+│   ├── src/
+│   │   ├── App.js               # Router chính, cấu hình route & PrivateRoute
+│   │   ├── index.css            # CSS global
+│   │   ├── services/
+│   │   │   └── api.js           # Lớp gọi API trung tâm (BASE_URL, fetch wrappers)
+│   │   ├── components/
+│   │   │   ├── Auth/            # Login, Register (multi-step + OTP), ForgotPassword, PrivateRoute
+│   │   │   ├── Landing/         # Trang chủ public (unlogged)
+│   │   │   ├── DashboardLogged/ # Layout dashboard: Sidebar, Topbar, DashboardHome
+│   │   │   └── Features/        # Các tính năng chính
+│   │   │       ├── AiCvAnalysis.jsx
+│   │   │       ├── CareerOrientation.jsx
+│   │   │       ├── LearningPath.jsx
+│   │   │       ├── PortfolioBuilder.jsx
+│   │   │       ├── MyProfile.jsx
+│   │   │       └── Settings.jsx
+│   │   └── assets/              # Ảnh, logo
+│   └── package.json
+│
+├── .gitignore                   # Ignore toàn project (node_modules, .venv, uploads, .env...)
+└── README.md
+```
 
-### 1. Cài đặt Backend
+---
 
-Dự án có hai phiên bản Backend (Python và Node.js). Phiên bản chính đang được sử dụng là Python.
+## ⚙️ Cấu hình biến môi trường
 
-**Cách 1: Python / Flask (Đang dùng chính)**
-Di chuyển vào thư mục `backend` và chạy lệnh cài đặt trực tiếp các thư viện thông qua `pip`:
+Sau khi clone repo về, tạo file `.env` trong thư mục `backend/` từ template:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Sau đó điền đầy đủ thông tin vào `backend/.env`:
+
+```env
+# Server
+PORT=5000
+
+# MySQL Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=career_ai
+
+# Email SMTP (Gmail) — dùng để gửi OTP
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password   # Dùng App Password, không phải mật khẩu thường
+
+# AI API Keys — chỉ cần ít nhất một trong các key sau
+GROQ_API_KEY=your_groq_api_key      # Khuyến nghị — miễn phí tại console.groq.com
+OPENAI_API_KEY=                     # Tùy chọn
+GEMINI_API_KEY=                     # Tùy chọn
+DEEPSEEK_API_KEY=                   # Tùy chọn
+```
+
+> **Lưu ý:** File `.env` chứa thông tin bảo mật — **KHÔNG bao giờ commit lên git**.
+
+---
+
+## 🚀 Hướng dẫn cài đặt & khởi chạy
+
+### Yêu cầu hệ thống
+- **Python** ≥ 3.9
+- **Node.js** ≥ 16.x & npm ≥ 8.x
+- **MySQL** ≥ 8.0 (hoặc XAMPP)
+
+---
+
+### Bước 1: Clone repository
+
+```bash
+git clone <repository-url>
+cd career_ai
+```
+
+---
+
+### Bước 2: Thiết lập Database
+
+1. Bật MySQL Server (XAMPP hoặc MySQL standalone)
+2. Tạo database mới:
+```sql
+CREATE DATABASE career_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+3. Import file SQL schema (nếu có) hoặc để Flask tự tạo bảng khi chạy lần đầu
+
+---
+
+### Bước 3: Cài đặt Backend (Python/Flask)
 
 ```bash
 cd backend
-pip install flask
-pip install flask-cors
-pip install pymysql
-pip install python-dotenv
-pip install groq
-pip install openai
-pip install pdfplumber
-pip install python-docx
+
+# Tạo virtual environment (khuyến nghị)
+python -m venv .venv
+
+# Kích hoạt venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Cài đặt thư viện
+pip install -r requirements.txt
+
+# Cấu hình biến môi trường
+cp .env.example .env
+# Mở .env và điền thông tin DB + API keys
+
+# Khởi chạy server
+python app.py
 ```
 
-*Phân tích các thư viện Python:*
-- `flask`, `flask-cors`: Xây dựng web server và cấu hình CORS để kết nối với frontend.
-- `pymysql`: Kết nối và thao tác với Database MySQL.
-- `python-dotenv`: Quản lý các biến môi trường (environment variables) qua file `.env`.
-- `groq`, `openai`: Sử dụng thư viện OpenAI client để giao tiếp với API của Groq (chạy model Llama 3) cho các tính năng phân tích CV và hướng nghiệp.
-- `pdfplumber`, `python-docx`: Đọc và trích xuất văn bản từ các tệp CV do người dùng tải lên (hỗ trợ .pdf và .docx).
+✅ Backend sẽ chạy tại: `http://localhost:5000`
 
-**Cách 2: Node.js / Express (Tùy chọn/Dự phòng)**
-Nếu sử dụng server Node.js (`server.js`), di chuyển vào thư mục `backend` và cài đặt qua `npm`:
+---
 
-```bash
-cd backend
-npm install
-```
+### Bước 4: Cài đặt Frontend (ReactJS)
 
-*Phân tích các thư viện Node.js:*
-- `express`, `cors`, `dotenv`: Framework xây dựng API và xử lý middleware cơ bản.
-- `mysql2`: Thư viện kết nối MySQL hiệu năng cao cho Node.js.
-- `nodemon`: Tự động reload server trong quá trình phát triển (Dev).
-
-*Lưu ý chung:* File `.env` chứa các API KEY đã bị ẩn khỏi Git (nằm trong `.gitignore` để bảo mật). Vì vậy, khi team pull code về, mọi người phải tự copy file `.env.example` thành `.env` tại thư mục backend và điền các thông tin kết nối Database cùng các `API_KEY` (như `GROQ_API_KEY`, `OPENAI_API_KEY`,...) thì mới chạy được tính năng AI.
-
-### 2. Cài đặt Frontend (ReactJS)
-Di chuyển vào thư mục `frontend` và chạy lệnh cài đặt các package cơ bản, sau đó cài thêm thủ công thư viện `html2pdf.js` (nếu hệ thống không tự động tải):
+Mở **terminal mới** (giữ backend đang chạy):
 
 ```bash
 cd frontend
+
+# Cài đặt toàn bộ dependencies
 npm install
-npm install html2pdf.js
-```
 
-*Phân tích các thư viện Frontend đang sử dụng:*
-- **Core React:** `react`, `react-dom`, `react-scripts`, `web-vitals`.
-- **Routing:** `react-router-dom` (Quản lý các luồng chuyển trang trong ứng dụng).
-- **UI & Icons:** 
-  - `react-icons`, `lucide-react`: Kho icon đa dạng.
-  - Các package FontAwesome (`@fortawesome/fontawesome-free`, `@fortawesome/react-fontawesome`,...): Thêm lựa chọn icon chuyên nghiệp cho giao diện.
-- **Tính năng nổi bật:** `html2pdf.js` (Hỗ trợ chuyển đổi nhanh giao diện HTML thành file PDF, dùng chính trong chức năng xuất Portfolio).
-- **Kiểm thử (Testing):** `@testing-library/react`, `@testing-library/jest-dom`,... (Phục vụ quá trình phát triển và kiểm tra component).
-
----
-
-## 🚀 Hướng dẫn khởi chạy dự án
-
-**Bước 1: Khởi động Database**
-- Bật XAMPP (hoặc MySQL Server của bạn), đảm bảo MySQL đang chạy ở cổng 3306.
-- Tạo database `career_ai` và import cấu trúc bảng (table) vào database.
-
-**Bước 2: Khởi chạy Backend**
-Mở terminal, di chuyển vào thư mục `backend`:
-```bash
-python app.py
-```
-*(Server Flask sẽ mặc định chạy ở cổng `http://localhost:5000`)*
-
-**Bước 3: Khởi chạy Frontend**
-Mở một terminal khác, di chuyển vào thư mục `frontend`:
-```bash
+# Khởi chạy dev server
 npm start
 ```
-*(Giao diện web sẽ tự động mở ở cổng `http://localhost:3000`)*
+
+✅ Frontend sẽ tự mở tại: `http://localhost:3000`
 
 ---
 
-## 🌳 Cấu trúc thư mục (Branching Strategy)
-- `main`: Nhánh chính chứa code đã hoàn chỉnh.
-- `feature/*`: Các nhánh con phát triển từng tính năng riêng biệt (như `feature/baotoan`, `feature/auth`, `feature/portfolio-builder`, v.v...).
+### Tóm tắt nhanh (sau khi đã cài đặt lần đầu)
+
+```bash
+# Terminal 1 — Backend
+cd backend && .venv\Scripts\activate && python app.py
+
+# Terminal 2 — Frontend
+cd frontend && npm start
+```
+
+---
+
+## 🗺️ Các route Frontend
+
+| Route | Component | Yêu cầu đăng nhập |
+|---|---|---|
+| `/` | Landing | ❌ |
+| `/login` | Login | ❌ |
+| `/register` | Register (3 bước) | ❌ |
+| `/forgot-password` | ForgotPassword | ❌ |
+| `/dashboard` | DashboardHome | ✅ |
+| `/ai-cv` | AiCvAnalysis | ✅ |
+| `/portfolio` | PortfolioBuilder | ✅ |
+| `/career` | CareerOrientation | ✅ |
+| `/learning-path` | LearningPath | ✅ |
+| `/profile` | MyProfile | ✅ |
+| `/settings` | Settings | ✅ |
+
+---
+
+## 📡 API Endpoints chính
+
+Tất cả endpoint có tiền tố `/api`.
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `POST` | `/api/login` | Đăng nhập |
+| `POST` | `/api/register/request-otp` | Gửi OTP đăng ký |
+| `POST` | `/api/register/verify-otp` | Xác thực OTP & tạo tài khoản |
+| `POST` | `/api/forgot-password/request-otp` | Gửi OTP quên mật khẩu |
+| `POST` | `/api/forgot-password/reset` | Đặt lại mật khẩu |
+| `GET` | `/api/user/:id` | Lấy thông tin user |
+| `PUT` | `/api/user/:id` | Cập nhật hồ sơ |
+| `PUT` | `/api/user/:id/password` | Đổi mật khẩu |
+| `POST` | `/api/user/:id/avatar` | Upload avatar |
+| `POST` | `/api/cv/upload` | Upload & phân tích CV bằng AI |
+| `GET` | `/api/career/:id` | Lấy danh sách nghề nghiệp gợi ý |
+| `POST` | `/api/career/generate` | AI tạo gợi ý nghề nghiệp mới |
+| `POST` | `/api/career/chat` | Chat với AI hướng nghiệp |
+| `GET` | `/api/roadmap/:id` | Lấy lộ trình học tập |
+| `POST` | `/api/roadmap/generate` | AI tạo lộ trình học tập |
+| `GET` | `/api/portfolio/:id` | Lấy dữ liệu Portfolio |
+
+---
+
+## 🌳 Chiến lược phân nhánh Git
+
+```
+main                          ← Nhánh chính, code đã ổn định
+└── feature/auth              ← Xác thực người dùng
+└── feature/baotoan           ← Tính năng cá nhân (đang phát triển)
+└── feature/portfolio-builder ← Portfolio & CV Builder
+└── feature/career            ← Định hướng nghề nghiệp
+└── feature/learning-path     ← Lộ trình học tập
+```
+
+**Quy tắc:**
+- Không commit trực tiếp lên `main`
+- Tạo nhánh `feature/<tên>` cho từng tính năng
+- Mở Pull Request để merge vào `main`
+
+---
+
+## ❗ Lưu ý quan trọng cho team
+
+1. **KHÔNG commit file `.env`** — chứa API key và mật khẩu DB
+2. **KHÔNG commit `node_modules/`** — chạy `npm install` sau khi pull
+3. **KHÔNG commit `backend/static/uploads/`** — chứa CV/ảnh của user (dữ liệu nhạy cảm)
+4. **KHÔNG commit `.venv/`** — chạy `pip install -r requirements.txt` sau khi pull
+5. Mỗi khi pull code mới, kiểm tra xem có thay đổi `requirements.txt` hoặc `package.json` không rồi chạy lại lệnh install
+
+---
+
+## 📝 File `requirements.txt`
+
+```
+flask
+flask-cors
+pymysql
+python-dotenv
+groq
+openai
+pdfplumber
+python-docx
+```
+
+> Nếu file `requirements.txt` chưa tồn tại, chạy: `pip freeze > requirements.txt` sau khi cài đặt thủ công.
+
+---
+
+*© 2026 CareerAI Platform — AI-Powered Career Development*
