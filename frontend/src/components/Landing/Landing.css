@@ -28,7 +28,7 @@
 .header-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem 2rem; /* Làm mỏng header lại gọn gàng */
+  padding: 1rem 2rem; 
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -37,20 +37,16 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px; /* Tăng nhẹ khoảng cách giữa ảnh và chữ */
+  text-decoration: none; /* Tránh bị gạch chân nếu sau này bọc thẻ Link */
 }
 
-.logo-box {
-  width: 32px;
-  height: 32px;
-  background-color: #0458E6; /* Màu xanh chuẩn Figma */
-  border-radius: 8px;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
+.landing-logo-img {
+  height: 50px; /* Chiều cao vừa vặn với font-size 22px của chữ */
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
 }
 
 .logo span {
@@ -58,6 +54,7 @@
   font-size: 22px;
   font-weight: 700;
   color: #0458E6;
+  line-height: 1; /* Đảm bảo chữ căn giữa tuyệt đối theo trục dọc với logo */
 }
 
 .nav {
@@ -1155,3 +1152,161 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============ NAV BUTTON LINK (thay thế Link cần auth) ============ */
+.nav-btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s;
+  line-height: inherit;
+}
+
+.nav-btn-link:hover {
+  color: #0458E6;
+}
+
+/* ============ MODAL YÊU CẦU ĐĂNG NHẬP ============ */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.auth-modal-box {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px 36px 32px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 32px 80px -12px rgba(15, 23, 42, 0.25);
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* Icon khóa */
+.auth-modal-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  border: 3px solid #bfdbfe;
+}
+
+/* Tiêu đề */
+.auth-modal-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+/* Mô tả */
+.auth-modal-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.auth-modal-desc strong {
+  color: #0458E6;
+  font-weight: 600;
+}
+
+/* Nút hành động */
+.auth-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.auth-modal-btn-login {
+  background: #0458E6;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -4px rgba(4, 88, 230, 0.35);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.auth-modal-btn-login:hover {
+  background: #0347c5;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -4px rgba(4, 88, 230, 0.4);
+}
+
+.auth-modal-btn-register {
+  background: transparent;
+  color: #0458E6;
+  border: 1.5px solid #0458E6;
+  padding: 0.75rem 1.8rem;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.auth-modal-btn-register:hover {
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+/* Nút đóng (X) */
+.auth-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-modal-close:hover {
+  background: #f1f5f9;
+}

@@ -1,0 +1,31 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# ── Environment variables (BẢO MẬT - không đẩy lên git) ──
+.env
+.env.*
+.env.backup
+
+# ── Node (backend dùng Node cho một số script) ────────────
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# ── User uploads (dữ liệu nhạy cảm) ──────────────────────
+static/uploads/*
+!static/uploads/.gitkeep
+
+# ── Scratch / debug files ─────────────────────────────────
+scratch/
+check_schema.py
+create_otp_table.py
+get_schema.py
+inspect_db.py
+
+# ── Misc ──────────────────────────────────────────────────
+.DS_Store
+*.log

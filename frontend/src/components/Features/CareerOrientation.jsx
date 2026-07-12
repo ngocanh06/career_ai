@@ -1,77 +1,22 @@
+import Topbar from "../DashboardLogged/Topbar";
 import React, { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import Topbar from '../DashboardLogged/Topbar';
 import './CareerOrientation.css';
+import { BarChart as IconChart, Briefcase as IconBriefcase, Cloud as IconCloud } from "lucide-react";
 
-// SVG Icons
-const IconSparkle = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="co-section-icon">
-    <polygon points="12 2 15 9 22 12 15 15 12 22 9 15 2 12 9 9 12 2"/>
-  </svg>
-);
-
-const IconChart = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10"/>
-    <line x1="12" y1="20" x2="12" y2="4"/>
-    <line x1="6" y1="20" x2="6" y2="14"/>
-  </svg>
-);
-
-const IconBriefcase = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-  </svg>
-);
-
-const IconCloud = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
-  </svg>
-);
-
-const IconTrend = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="co-section-icon">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-    <polyline points="17 6 23 6 23 12"/>
-  </svg>
-);
-
-const IconSwap = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 1l4 4-4 4"/>
-    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <path d="M7 23l-4-4 4-4"/>
-    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-  </svg>
-);
-
-const IconMessage = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
-
-const IconVerify = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-  </svg>
-);
-
-const IconSend = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="22" y1="2" x2="11" y2="13"/>
-    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-);
-
-const IconLightbulb = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 18h6m-3-15a7 7 0 0 1 7 7c0 2.5-2 4.85-3 6h-8c-1-1.15-3-3.5-3-6a7 7 0 0 1 7-7z"/>
-    <line x1="12" y1="21" x2="12" y2="23"/>
-  </svg>
-);
+// Import FontAwesome Icons
+import {
+  FaWandMagicSparkles,
+  FaChartLine,
+  FaBriefcase,
+  FaCloud,
+  FaArrowTrendUp,
+  FaRightLeft,
+  FaCommentDots,
+  FaCircleCheck,
+  FaPaperPlane,
+  FaLightbulb
+} from "react-icons/fa6";
 
 export default function CareerOrientation() {
   const [activeTab, setActiveTab] = useState('side-by-side');
@@ -79,90 +24,132 @@ export default function CareerOrientation() {
   const [inputVal, setInputVal] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Suggested careers data
-  const careers = [
-    {
-      title: "Senior Data Analyst",
-      match: 94,
-      level: "Rất cao",
-      levelClass: "green",
-      desc: "Phân tích dữ liệu kinh doanh & dự báo thị trường",
-      skills: ["Python", "PowerBI", "SQL"],
-      badge: "AI gợi ý",
-      badgeClass: "blue",
-      icon: <IconChart />,
-      iconClass: "blue"
-    },
-    {
-      title: "Product Owner",
-      match: 87,
-      level: "Cao",
-      levelClass: "blue",
-      desc: "Quản lý vòng đời sản phẩm số & UX Strategy",
-      skills: ["Agile", "Scrum", "Strategy"],
-      badge: "Hot Trend",
-      badgeClass: "green",
-      icon: <IconBriefcase />,
-      iconClass: "green"
-    },
-    {
-      title: "Cloud Solutions Architect",
-      match: 82,
-      level: "Trung bình",
-      levelClass: "orange",
-      desc: "Thiết kế hạ tầng điện toán đám mây cho doanh nghiệp",
-      skills: ["AWS", "Docker", "K8s"],
-      badge: null,
-      icon: <IconCloud />,
-      iconClass: "purple"
+  // ── API state ──────────────────────────────────────────────
+  const [careers, setCareers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Icon + style map dựa theo thứ tự vị trí
+  const CAREER_ICONS = [<IconChart />, <IconBriefcase />, <IconCloud />];
+  const CAREER_ICON_CLS = ['blue', 'green', 'purple'];
+  const CAREER_LVL_MAP = { high: { label: 'Rất cao', cls: 'green' }, medium: { label: 'Cao', cls: 'blue' }, low: { label: 'Trung bình', cls: 'orange' } };
+  const CAREER_BADGE = ['AI gợi ý', 'Hot Trend', null];
+  const CAREER_BADGE_CLS = ['blue', 'green', null];
+
+  const fetchCareers = () => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+    setLoading(true);
+    fetch(`http://localhost:5000/api/career/${userId}`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.success) throw new Error(json.message);
+        const mapped = json.data.map((c, i) => {
+          const pct = Math.round(c.match_percentage);
+          const lvlKey = pct >= 90 ? 'high' : pct >= 80 ? 'medium' : 'low';
+          let parsedSkills = [];
+          try {
+            parsedSkills = c.skills ? JSON.parse(c.skills) : [];
+          } catch(e) {}
+          
+          return {
+            title: c.job_title,
+            match: pct,
+            level: CAREER_LVL_MAP[lvlKey].label,
+            levelClass: CAREER_LVL_MAP[lvlKey].cls,
+            desc: c.job_description || '',
+            skills: parsedSkills,
+            salary: c.salary || 'Đang cập nhật',
+            potential: c.potential || (pct / 10).toFixed(1),
+            trend_analysis: c.trend_analysis || '',
+            badge: CAREER_BADGE[i] || null,
+            badgeClass: CAREER_BADGE_CLS[i] || null,
+            icon: CAREER_ICONS[i] || <IconBriefcase />,
+            iconClass: CAREER_ICON_CLS[i] || 'blue',
+          };
+        });
+        setCareers(mapped);
+      })
+      .catch(() => { })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchCareers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const generateCareers = async () => {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    const userId = user ? user.user_id : 19;
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/career/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+      });
+      await res.json();
+      fetchCareers();
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
     }
-  ];
+  };
 
   // Comparison role options (toggled with the Swap button)
-  const comparisonPairs = [
+  const comparisonPairs = careers.length >= 2 ? [
     {
       left: {
-        title: "Data Analyst",
-        badge: "Top Choice",
-        badgeClass: "blue",
-        skills: ["Phân tích", "Excel", "Thống kê"],
-        salary: "15M - 35M",
-        potential: 8.5,
-        pct: 85,
-        colorClass: "blue"
+        title: careers[0].title,
+        badge: careers[0].badge || "Lựa chọn tốt nhất",
+        badgeClass: careers[0].badgeClass || "blue",
+        skills: careers[0].skills?.length ? careers[0].skills : ["Tư duy phân tích", "Chuyên môn sâu"],
+        salary: careers[0].salary !== 'Đang cập nhật' ? careers[0].salary : "15M - 35M",
+        potential: careers[0].potential,
+        pct: careers[0].match,
+        colorClass: careers[0].iconClass || "blue",
+        trend_analysis: careers[0].trend_analysis || "Đang có xu hướng tăng trưởng cực kỳ mạnh mẽ."
       },
       right: {
-        title: "Business Analyst",
-        badge: "Strategic",
-        badgeClass: "green",
-        skills: ["Giao tiếp", "Agile", "UML"],
-        salary: "18M - 40M",
-        potential: 7.8,
-        pct: 78,
-        colorClass: "teal"
+        title: careers[1].title,
+        badge: careers[1].badge || "Phù hợp cao",
+        badgeClass: careers[1].badgeClass || "green",
+        skills: careers[1].skills?.length ? careers[1].skills : ["Tư duy hệ thống", "Giải quyết vấn đề"],
+        salary: careers[1].salary !== 'Đang cập nhật' ? careers[1].salary : "12M - 30M",
+        potential: careers[1].potential,
+        pct: careers[1].match,
+        colorClass: careers[1].iconClass || "teal",
+        trend_analysis: careers[1].trend_analysis || "Nhu cầu luôn ổn định ở mức cao."
       }
     },
-    {
+    careers.length >= 3 ? {
       left: {
-        title: "Data Engineer",
-        badge: "Hot Growth",
-        badgeClass: "blue",
-        skills: ["Python", "Spark", "Hadoop"],
-        salary: "22M - 45M",
-        potential: 9.0,
-        pct: 90,
-        colorClass: "blue"
+        title: careers[1].title,
+        badge: careers[1].badge || "Phù hợp cao",
+        badgeClass: careers[1].badgeClass || "green",
+        skills: careers[1].skills?.length ? careers[1].skills : ["Tư duy hệ thống", "Giải quyết vấn đề"],
+        salary: careers[1].salary !== 'Đang cập nhật' ? careers[1].salary : "12M - 30M",
+        potential: careers[1].potential,
+        pct: careers[1].match,
+        colorClass: careers[1].iconClass || "green",
+        trend_analysis: careers[1].trend_analysis || "Nhu cầu luôn ổn định ở mức cao."
       },
       right: {
-        title: "Cloud Architect",
-        badge: "High Demand",
-        badgeClass: "green",
-        skills: ["AWS", "Docker", "Terraform"],
-        salary: "30M - 60M",
-        potential: 9.2,
-        pct: 92,
-        colorClass: "teal"
+        title: careers[2].title,
+        badge: careers[2].badge || "Đang phát triển",
+        badgeClass: careers[2].badgeClass || "purple",
+        skills: careers[2].skills?.length ? careers[2].skills : ["Nghiên cứu", "Tư duy sáng tạo"],
+        salary: careers[2].salary !== 'Đang cập nhật' ? careers[2].salary : "10M - 25M",
+        potential: careers[2].potential,
+        pct: careers[2].match,
+        colorClass: careers[2].iconClass || "purple",
+        trend_analysis: careers[2].trend_analysis || "Có tiềm năng phát triển trong tương lai."
       }
+    } : null
+  ].filter(Boolean) : [
+    {
+      left: { title: "Đang tải...", badge: "...", badgeClass: "blue", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "blue", trend_analysis: "" },
+      right: { title: "Đang tải...", badge: "...", badgeClass: "green", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "teal", trend_analysis: "" }
     }
   ];
 
@@ -212,58 +199,105 @@ export default function CareerOrientation() {
   }, [messages]);
 
   // Handle custom text submit
-  const handleSendText = (text) => {
+  const handleSendText = async (text) => {
     if (!text.trim()) return;
 
     const userMsgId = Date.now();
-    const newUserMsg = { id: userMsgId, sender: 'user', text };
+    const newUserMsg = { id: userMsgId, role: 'user', sender: 'user', text, content: text };
     const loadingMsgId = userMsgId + 1;
     const newLoadingMsg = { id: loadingMsgId, sender: 'assistant', isAnalyzing: true };
 
-    setMessages(prev => [...prev, newUserMsg, newLoadingMsg]);
+    const newMessages = [...messages, newUserMsg];
+    setMessages([...newMessages, newLoadingMsg]);
     setInputVal('');
 
-    // Predefined answers based on prompt keywords
-    let responseText = "Cảm ơn bạn đã hỏi! Với năng lực hiện tại của bạn, chuyên gia khuyên bạn nên tập trung củng cố kỹ năng SQL nâng cao và học thêm các mô hình học máy cơ bản để tăng khả năng cạnh tranh.";
-    
-    if (text.toLowerCase().includes("senior") || text.toLowerCase().includes("2 năm")) {
-      responseText = "Để lên Senior DA trong 2 năm, bạn cần: 1. Nắm vững phân tích dữ liệu lớn & tối ưu SQL nâng cao. 2. Làm chủ ít nhất một công cụ BI (Power BI/Tableau) và viết công thức DAX phức tạp. 3. Nâng cao kỹ năng Business Domain để đưa ra đề xuất kinh doanh thực tế chứ không chỉ làm báo cáo.";
-    } else if (text.toLowerCase().includes("chứng chỉ") || text.toLowerCase().includes("ai")) {
-      responseText = "Các chứng chỉ AI giá trị nhất bao gồm: 1. TensorFlow Developer Certificate (Google). 2. AWS Certified Machine Learning - Specialty. 3. Azure AI Engineer Associate (Microsoft). Ngoài ra, các khóa học chuyên sâu về LLMs và Prompt Engineering cũng rất được săn đón.";
-    }
-
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:5000/api/career/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
+          id: loadingMsgId,
+          role: 'assistant',
+          sender: 'assistant',
+          text: json.data,
+          content: json.data
+        } : m));
+      } else {
+        setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
+          id: loadingMsgId,
+          role: 'assistant',
+          sender: 'assistant',
+          text: "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.",
+          content: "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau."
+        } : m));
+      }
+    } catch (e) {
       setMessages(prev => prev.map(m => m.id === loadingMsgId ? {
         id: loadingMsgId,
+        role: 'assistant',
         sender: 'assistant',
-        text: responseText
+        text: "Xin lỗi, đã xảy ra lỗi kết nối.",
+        content: "Xin lỗi, đã xảy ra lỗi kết nối."
       } : m));
-    }, 1200);
+    }
   };
 
   const handleSwapRoles = () => {
-    setCompareIndex(prev => (prev + 1) % comparisonPairs.length);
+    setCompareIndex(prev => {
+      const nextIndex = (prev + 1) % comparisonPairs.length;
+      return Number.isNaN(nextIndex) ? 0 : nextIndex;
+    });
+  };
+
+  const renderMessageText = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      const parts = line.split(/(\*\*.*?\*\*)/g);
+      const renderedLine = parts.map((part, j) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={j}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+      return (
+        <React.Fragment key={i}>
+          {renderedLine}
+          {i < lines.length - 1 && <br />}
+        </React.Fragment>
+      );
+    });
   };
 
   return (
     <DashboardLayout>
-      <Topbar user={{ name: 'Ngọc Anh' }} />
-      
+
       <div className="co-page">
         {/* ================= SECTION 1: RECOMMENDATIONS ================= */}
         <div>
           <div className="co-section-header">
             <div className="co-section-title-wrapper">
-              <IconSparkle />
+              <FaWandMagicSparkles className="co-section-icon" />
               <h2 className="co-section-title">Đề xuất Nghề nghiệp Phù hợp</h2>
             </div>
-            <a href="#xem-tat-ca" className="co-link-action" onClick={(e) => e.preventDefault()}>
-              Xem tất cả →
-            </a>
+            <button className="co-btn-outline" onClick={generateCareers} disabled={loading} style={{
+              background: 'white', border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer'
+            }}>
+              {loading ? "Đang tạo..." : "Phân tích bằng AI"}
+            </button>
           </div>
 
           <div className="co-career-grid">
-            {careers.map((career, i) => (
+            {loading && (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#6b7280', fontSize: '14px' }}>
+                Đang tải dữ liệu nghề nghiệp...
+              </div>
+            )}
+            {!loading && careers.map((career, i) => (
               <div key={i} className="co-career-card">
                 <div className="co-card-top">
                   <div className={`co-card-icon-container ${career.iconClass}`}>
@@ -298,7 +332,9 @@ export default function CareerOrientation() {
                   ))}
                 </div>
 
-                <button className="co-card-btn">Chi tiết lộ trình</button>
+                <button className="co-card-btn" onClick={() => {
+                  window.location.href = `/learning-path?target=${encodeURIComponent(career.title)}`;
+                }}>Chi tiết lộ trình học tập</button>
               </div>
             ))}
           </div>
@@ -310,7 +346,7 @@ export default function CareerOrientation() {
           <div className="co-box-card">
             <div className="co-section-header">
               <div className="co-section-title-wrapper">
-                <IconSparkle />
+                <FaWandMagicSparkles className="co-section-icon" />
                 <h2 className="co-section-title">So sánh Nghề nghiệp</h2>
               </div>
               <div className="co-tabs-container">
@@ -336,7 +372,7 @@ export default function CareerOrientation() {
                   <div className="co-compare-col highlighted">
                     <div className="co-compare-header">
                       <div className="co-card-icon-container blue" style={{ width: '32px', height: '32px' }}>
-                        <IconChart />
+                        <FaChartLine />
                       </div>
                       <div>
                         <h3 className="co-compare-title">{currentPair.left.title}</h3>
@@ -378,7 +414,7 @@ export default function CareerOrientation() {
                   <div className="co-compare-col">
                     <div className="co-compare-header">
                       <div className="co-card-icon-container green" style={{ width: '32px', height: '32px' }}>
-                        <IconBriefcase />
+                        <FaBriefcase />
                       </div>
                       <div>
                         <h3 className="co-compare-title">{currentPair.right.title}</h3>
@@ -418,17 +454,41 @@ export default function CareerOrientation() {
                 </div>
 
                 <button className="co-compare-swap-btn" onClick={handleSwapRoles}>
-                  <IconSwap />
+                  <FaRightLeft style={{ marginRight: '6px' }} />
                   Thay đổi vai trò so sánh
                 </button>
               </>
             ) : (
-              <div style={{ marginTop: '20px', padding: '30px 10px', textAlign: 'center', color: '#64748b' }}>
-                <IconLightbulb />
-                <h4 style={{ margin: '12px 0 6px 0', color: '#111827' }}>Phân tích sâu định hướng nghề nghiệp</h4>
-                <p style={{ fontSize: '13px', margin: '0', lineHeight: '1.5' }}>
-                  AI đang quét thị trường và phân tích cơ hội phát triển dài hạn. Tính năng báo cáo chi tiết đang được đồng bộ dữ liệu thực tế.
-                </p>
+              <div className="co-deep-analysis">
+                <div className="co-da-header">
+                  <FaWandMagicSparkles style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: 18 }} />
+                  <h4 style={{ margin: 0, color: '#111827', fontSize: 15 }}>Phân tích AI: {currentPair.left.title} vs {currentPair.right.title}</h4>
+                </div>
+                
+                <div className="co-da-content">
+                  <div className="co-da-block">
+                    <p className="co-da-label">Tương lai & Xu hướng</p>
+                    <p className="co-da-text">
+                      <strong>{currentPair.left.title}:</strong> {currentPair.left.trend_analysis}
+                      <br /><br />
+                      <strong>{currentPair.right.title}:</strong> {currentPair.right.trend_analysis}
+                    </p>
+                  </div>
+
+                  <div className="co-da-block">
+                    <p className="co-da-label">Khoảng cách kỹ năng hiện tại</p>
+                    <p className="co-da-text">
+                      Bạn đang có lợi thế mạnh về tư duy phân tích, đây là gốc rễ của cả 2 mảng. Tuy nhiên, nếu chọn <strong>{currentPair.left.title}</strong>, bạn cần học sâu hơn về công cụ kỹ thuật (SQL, Python). Còn với <strong>{currentPair.right.title}</strong>, bạn nên trau dồi khả năng thuyết trình, quản lý dự án (Agile/Scrum) và thiết kế hệ thống.
+                    </p>
+                  </div>
+                  
+                  <div className="co-da-block" style={{ border: 'none', paddingBottom: 0, marginBottom: 0 }}>
+                    <p className="co-da-label">AI Khuyến nghị cho bạn</p>
+                    <p className="co-da-text" style={{ color: 'var(--primary-color, #3b5bdb)', fontWeight: 500 }}>
+                      Dựa trên Bio của bạn, {currentPair.left.title} có vẻ là lựa chọn phù hợp nhất với quỹ đạo phát triển ngắn hạn. Bạn có thể đạt mức năng lực chuyên môn sau khoảng 3 - 6 tháng học tập cường độ cao.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -438,7 +498,7 @@ export default function CareerOrientation() {
             <div className="co-box-card" style={{ flex: '1' }}>
               <div className="co-section-header" style={{ marginBottom: '4px' }}>
                 <div className="co-section-title-wrapper">
-                  <IconTrend />
+                  <FaArrowTrendUp className="co-section-icon" />
                   <h2 className="co-section-title">Xu hướng tại VN</h2>
                 </div>
               </div>
@@ -461,7 +521,7 @@ export default function CareerOrientation() {
             <div className="co-tip-card">
               <div className="co-tip-header">
                 <div className="co-tip-title-row">
-                  <IconSparkle />
+                  <FaWandMagicSparkles />
                   <span>AI Tip</span>
                 </div>
                 <span className="co-tip-badge">Gợi ý</span>
@@ -479,7 +539,7 @@ export default function CareerOrientation() {
           <div className="co-chat-left-panel">
             <div className="co-chat-intro">
               <div className="co-chat-icon-container">
-                <IconMessage />
+                <FaCommentDots style={{ fontSize: '20px' }} />
               </div>
               <h3 className="co-chat-title">Trò chuyện cùng Chuyên gia AI</h3>
               <p className="co-chat-subtitle">
@@ -514,14 +574,14 @@ export default function CareerOrientation() {
                   </div>
                   <div className="co-msg-content-wrapper">
                     <span className="co-msg-sender-name">
-                      {m.sender === 'assistant' ? 'Assistant' : 'Ngọc Anh'}
+                      {m.sender === 'assistant' ? 'Assistant' : (() => { try { return JSON.parse(localStorage.getItem('career_user'))?.full_name?.split(' ').pop() || 'Bạn'; } catch { return 'Bạn'; } })()}
                       {m.sender === 'assistant' && (
                         <span className="co-verif-badge">
-                          <IconVerify />
+                          <FaCircleCheck />
                         </span>
                       )}
                     </span>
-                    
+
                     {m.isAnalyzing ? (
                       <div className="co-chat-bubble analyzing">
                         <span>ĐANG PHÂN TÍCH</span>
@@ -529,7 +589,7 @@ export default function CareerOrientation() {
                       </div>
                     ) : (
                       <div className={`co-chat-bubble ${m.sender === 'assistant' ? 'assistant' : 'user'}`}>
-                        {m.text}
+                        {renderMessageText(m.text)}
                       </div>
                     )}
                   </div>
@@ -553,7 +613,7 @@ export default function CareerOrientation() {
                 onChange={(e) => setInputVal(e.target.value)}
               />
               <button type="submit" className="co-chat-send-btn">
-                <IconSend />
+                <FaPaperPlane />
               </button>
             </form>
           </div>
