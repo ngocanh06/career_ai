@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './LearningPath.css';
+import html2pdf from 'html2pdf.js';
 import {
   FaWandMagicSparkles, FaDownload, FaRoute, FaCalendarDay,
   FaCheck, FaBolt, FaLock, FaBookOpen, FaClock, FaStar,
@@ -64,6 +65,7 @@ export default function LearningPath() {
                 badgeClass: BADGES[ci % BADGES.length],
                 icon: ICONS[gi % ICONS.length],
                 goalMonth: g.target_month,
+                completed: c.completed,
               }));
             });
           setCourses(mapped);
@@ -140,6 +142,115 @@ export default function LearningPath() {
       if (json.success) setAiInsight(json.data);
     } catch (e) { console.error(e); }
     setGeneratingInsight(false);
+  };
+
+  const handleToggleCourse = async (goal, courseIndex) => {
+    let parsedCourses = [];
+    try { parsedCourses = JSON.parse(goal.suggested_courses) || []; } catch { parsedCourses = []; }
+    
+    if (parsedCourses.length === 0) return;
+    
+    // Toggle completed state
+    parsedCourses[courseIndex].completed = !parsedCourses[courseIndex].completed;
+    
+    // Calculate new goal progress and status
+    const total = parsedCourses.length;
+    const completedCount = parsedCourses.filter(c => c.completed).length;
+    const pct = Math.round((completedCount / total) * 100);
+    const newStatus = pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : 'pending';
+    
+    // Optimistically update frontend state
+    const updatedGoals = roadmap.goals.map(g => {
+      if (g.goal_id === goal.goal_id) {
+        return {
+          ...g,
+          suggested_courses: JSON.stringify(parsedCourses),
+          progress_percentage: pct,
+          status: newStatus
+        };
+      }
+      return g;
+    });
+    
+    const totalProgress = updatedGoals.reduce((sum, g) => sum + (g.progress_percentage || 0), 0);
+    const newCompletionRate = Math.round(totalProgress / updatedGoals.length);
+    
+    setRoadmap({
+      ...roadmap,
+      completion_rate: newCompletionRate,
+      goals: updatedGoals
+    });
+    
+    // Update courses list
+    const ICONS = ['📊', '📉', '🤖', '☁️', '🎯', '🔥'];
+    const TYPES = ['ĐỀ XUẤT', 'THỰC TẾ', 'CƠ BẢN', 'NÂNG CAO'];
+    const BADGES = ['lp-badge-recommend', 'lp-badge-practice', 'lp-badge-recommend', 'lp-badge-practice'];
+    const LEVELS = ['NÂNG CAO', 'TRUNG CẤP', 'CƠ BẢN', 'NÂNG CAO'];
+    const mapped = updatedGoals.flatMap((g, gi) => {
+      let parsed = [];
+      try { parsed = JSON.parse(g.suggested_courses); } catch { parsed = []; }
+      return parsed.map((c, ci) => ({
+        id: gi * 10 + ci,
+        title: c.name,
+        desc: `${c.platform} — ${g.skill_name || ''}`,
+        hours: 8 + gi * 4 + ci * 2,
+        level: LEVELS[gi % LEVELS.length] || 'TRUNG CẤP',
+        type: TYPES[ci % TYPES.length],
+        badgeClass: BADGES[ci % BADGES.length],
+        icon: ICONS[gi % ICONS.length],
+        goalMonth: g.target_month,
+        completed: c.completed
+      }));
+    });
+    setCourses(mapped);
+    
+    // Call backend
+    try {
+      await fetch(`http://localhost:5000/api/roadmap/goal/${goal.goal_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggested_courses: parsedCourses })
+      });
+    } catch (e) {
+      console.error(e);
+      // Revert if error occurs
+      fetchRoadmap();
+    }
+  };
+
+  const handleSyncSkills = async () => {
+    if (!roadmap || !roadmap.goals) return;
+    const uniqueSkills = [...new Set(roadmap.goals.map(g => g.skill_name).filter(Boolean))];
+    if (uniqueSkills.length === 0) return;
+    
+    const userId = getUser();
+    try {
+      const res = await fetch('http://localhost:5000/api/roadmap/sync-skills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, skills: uniqueSkills })
+      });
+      const json = await res.json();
+      alert(json.message);
+      fetchRoadmap();
+    } catch (e) {
+      console.error(e);
+      alert('Đồng bộ kỹ năng thất bại.');
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('learning-path-print-content');
+    if (element) {
+      const slug = roadmap ? `lp-${roadmap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'learning-path';
+      html2pdf().set({
+        margin: [0.4, 0.4, 0.4, 0.4],
+        filename: `LearningPath_${slug}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      }).from(element).save();
+    }
   };
 
   const completionRate = roadmap ? Math.round(roadmap.completion_rate) : 0;
@@ -230,7 +341,7 @@ export default function LearningPath() {
                 : 'Hãy tạo lộ trình học tập AI cá nhân hoá dựa trên kỹ năng và mục tiêu nghề nghiệp của bạn.'}
             </p>
             <div className="lp-hero-actions">
-              <button className="lp-btn-primary" disabled={!roadmap}>
+              <button className="lp-btn-primary" disabled={!roadmap} onClick={handleDownloadPDF}>
                 <FaDownload style={{ marginRight: '6px' }} /> Xuất lộ trình PDF
               </button>
               {roadmap ? (
@@ -264,214 +375,224 @@ export default function LearningPath() {
           </div>
         </div>
 
-        {/* ── JOURNEY TIMELINE ── */}
-        <div className="lp-journey-card">
-          <div className="lp-journey-header">
-            <div className="lp-journey-header-left">
-              <div className="lp-journey-icon">
-                <FaRoute style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
+        {/* ── PRINT CONTENT CONTAINER ── */}
+        <div id="learning-path-print-content">
+          {/* ── JOURNEY TIMELINE ── */}
+          <div className="lp-journey-card">
+            <div className="lp-journey-header">
+              <div className="lp-journey-header-left">
+                <div className="lp-journey-icon">
+                  <FaRoute style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
+                </div>
+                <div>
+                  <h2 className="lp-journey-title">Hành trình chinh phục</h2>
+                  <p className="lp-journey-sub">Nhấn vào từng tháng để xem chi tiết nội dung học và đánh dấu tiến độ</p>
+                </div>
               </div>
-              <div>
-                <h2 className="lp-journey-title">Hành trình chinh phục</h2>
-                <p className="lp-journey-sub">Nhấn vào từng tháng để xem chi tiết nội dung học</p>
+              <div className="lp-journey-date">
+                <FaCalendarDay style={{ marginRight: '6px' }} />
+                {new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
               </div>
             </div>
-            <div className="lp-journey-date">
-              <FaCalendarDay style={{ marginRight: '6px' }} />
-              {new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+
+            <div className="lp-timeline">
+              {loading ? (
+                <div className="lp-timeline-empty">Đang tải lộ trình...</div>
+              ) : roadmap?.goals?.length > 0 ? (
+                roadmap.goals.map((g, idx) => {
+                  const parsedCourses = getParsedCourses(g);
+                  const isExpanded = expandedGoal === g.goal_id;
+                  const dotClass = g.status === 'completed' ? 'done' : g.status === 'in_progress' ? 'active' : 'upcoming';
+                  return (
+                    <React.Fragment key={g.goal_id || idx}>
+                      <div className="lp-timeline-step-wrapper">
+                        <div
+                          className={`lp-timeline-step ${isExpanded ? 'expanded' : ''}`}
+                          onClick={() => setExpandedGoal(isExpanded ? null : g.goal_id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className={`lp-timeline-dot ${dotClass}`}>
+                            {g.status === 'completed' ? <FaCheck style={{ color: 'white', fontSize: '14px' }} /> :
+                             g.status === 'in_progress' ? <FaBolt style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '14px' }} /> :
+                             <FaLock style={{ color: '#d1d5db', fontSize: '12px' }} />}
+                          </div>
+                          <p className={`lp-step-month ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
+                            THÁNG {g.target_month}
+                          </p>
+                          <p className={`lp-step-name ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
+                            {g.skill_name || 'Kỹ năng mới'}
+                          </p>
+                          <p className="lp-step-desc">{parsedCourses.length} khóa học</p>
+                          <div className="lp-step-expand-icon">
+                            {isExpanded ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                          </div>
+                        </div>
+
+                        {/* ── DETAIL PANEL ── */}
+                        {isExpanded && (
+                          <div className="lp-goal-detail">
+                            <div className="lp-goal-detail-header">
+                              <span className={`lp-goal-status-badge ${dotClass}`}>
+                                {g.status === 'completed' ? '✅ Hoàn thành' :
+                                 g.status === 'in_progress' ? '🔥 Đang học' : '🔒 Chưa mở khóa'}
+                              </span>
+                              <span className="lp-goal-progress">{g.progress_percentage || 0}% tiến độ</span>
+                            </div>
+                            <h4 className="lp-goal-detail-title">Nội dung học Tháng {g.target_month}: {g.skill_name}</h4>
+                            <div className="lp-goal-courses">
+                              {parsedCourses.length > 0 ? parsedCourses.map((c, ci) => (
+                                <div key={ci} className={`lp-goal-course-item ${c.completed ? 'completed' : ''}`}>
+                                  <div className="lp-goal-course-num-check">
+                                    <input
+                                      type="checkbox"
+                                      checked={!!c.completed}
+                                      onChange={(e) => { e.stopPropagation(); handleToggleCourse(g, ci); }}
+                                      className="lp-course-checkbox"
+                                    />
+                                  </div>
+                                  <div className="lp-goal-course-info">
+                                    <p className={`lp-goal-course-name ${c.completed ? 'line-through-text' : ''}`}>{c.name}</p>
+                                    <p className="lp-goal-course-platform">
+                                      <span className="lp-platform-tag">{c.platform}</span>
+                                    </p>
+                                  </div>
+                                  <button className="lp-goal-course-btn" onClick={() => window.open(`https://www.coursera.org/search?query=${encodeURIComponent(c.name)}`, '_blank')}>Học ngay →</button>
+                                </div>
+                              )) : (
+                                <p style={{ color: '#9ca3af', fontSize: 14 }}>Chưa có khóa học cụ thể.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {idx < roadmap.goals.length - 1 && (
+                        <div className="lp-timeline-connector"
+                          style={{ background: g.status === 'completed' ? 'var(--primary-color, #3b5bdb)' : '#e5e7eb' }} />
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <div className="lp-timeline-empty">
+                  <FaRoute style={{ fontSize: 32, color: '#d1d5db', marginBottom: 12 }} />
+                  <p>Chưa có lộ trình cụ thể.</p>
+                  <button className="lp-btn-outline" style={{ marginTop: 12 }} onClick={() => setShowTargetModal(true)}>
+                    <FaWandMagicSparkles style={{ marginRight: 6 }} /> Tạo lộ trình AI ngay
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="lp-timeline">
-            {loading ? (
-              <div className="lp-timeline-empty">Đang tải lộ trình...</div>
-            ) : roadmap?.goals?.length > 0 ? (
-              roadmap.goals.map((g, idx) => {
-                const parsedCourses = getParsedCourses(g);
-                const isExpanded = expandedGoal === g.goal_id;
-                const dotClass = g.status === 'completed' ? 'done' : g.status === 'in_progress' ? 'active' : 'upcoming';
-                return (
-                  <React.Fragment key={g.goal_id || idx}>
-                    <div className="lp-timeline-step-wrapper">
-                      <div
-                        className={`lp-timeline-step ${isExpanded ? 'expanded' : ''}`}
-                        onClick={() => setExpandedGoal(isExpanded ? null : g.goal_id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className={`lp-timeline-dot ${dotClass}`}>
-                          {g.status === 'completed' ? <FaCheck style={{ color: 'white', fontSize: '14px' }} /> :
-                           g.status === 'in_progress' ? <FaBolt style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '14px' }} /> :
-                           <FaLock style={{ color: '#d1d5db', fontSize: '12px' }} />}
+          {/* ── 2-COL ── */}
+          <div className="lp-two-col">
+            {/* LEFT – Courses */}
+            <div className="lp-resources-section">
+              <div className="lp-section-header">
+                <div className="lp-section-header-left">
+                  <FaBookOpen style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
+                  <h3 className="lp-section-title">
+                    Tài nguyên học tập{roadmap ? ` — ${roadmap.total_months} tháng` : ''}
+                  </h3>
+                </div>
+              </div>
+
+              {courses.length > 0 ? (
+                <div className="lp-courses-grid">
+                  {courses.map(c => (
+                    <div key={c.id} className={`lp-course-card ${c.completed ? 'completed' : ''}`}>
+                      <div className="lp-course-card-top">
+                        <div className="lp-course-icon">{c.completed ? <FaCheck style={{ color: 'var(--primary-color, #3b5bdb)' }} /> : c.icon}</div>
+                        <span className={`lp-course-badge ${c.badgeClass}`}>{c.type}</span>
+                      </div>
+                      <div className="lp-course-month-tag">Tháng {c.goalMonth}</div>
+                      <h4 className="lp-course-name">{c.title}</h4>
+                      <p className="lp-course-desc">{c.desc}</p>
+                      <div className="lp-course-meta">
+                        <div className="lp-course-meta-item">
+                          <FaClock style={{ marginRight: '6px' }} />{c.hours} GIỜ
                         </div>
-                        <p className={`lp-step-month ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
-                          THÁNG {g.target_month}
-                        </p>
-                        <p className={`lp-step-name ${dotClass !== 'upcoming' ? 'active-label' : ''}`}>
-                          {g.skill_name || 'Kỹ năng mới'}
-                        </p>
-                        <p className="lp-step-desc">{parsedCourses.length} khóa học</p>
-                        <div className="lp-step-expand-icon">
-                          {isExpanded ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                        <div className="lp-course-level">
+                          <FaStar style={{ marginRight: '4px' }} />{c.level}
                         </div>
                       </div>
-
-                      {/* ── DETAIL PANEL ── */}
-                      {isExpanded && (
-                        <div className="lp-goal-detail">
-                          <div className="lp-goal-detail-header">
-                            <span className={`lp-goal-status-badge ${dotClass}`}>
-                              {g.status === 'completed' ? '✅ Hoàn thành' :
-                               g.status === 'in_progress' ? '🔥 Đang học' : '🔒 Chưa mở khóa'}
-                            </span>
-                            <span className="lp-goal-progress">{g.progress_percentage || 0}% tiến độ</span>
-                          </div>
-                          <h4 className="lp-goal-detail-title">Nội dung học Tháng {g.target_month}: {g.skill_name}</h4>
-                          <div className="lp-goal-courses">
-                            {parsedCourses.length > 0 ? parsedCourses.map((c, ci) => (
-                              <div key={ci} className="lp-goal-course-item">
-                                <div className="lp-goal-course-num">{ci + 1}</div>
-                                <div className="lp-goal-course-info">
-                                  <p className="lp-goal-course-name">{c.name}</p>
-                                  <p className="lp-goal-course-platform">
-                                    <span className="lp-platform-tag">{c.platform}</span>
-                                  </p>
-                                </div>
-                                <button className="lp-goal-course-btn">Học ngay →</button>
-                              </div>
-                            )) : (
-                              <p style={{ color: '#9ca3af', fontSize: 14 }}>Chưa có khóa học cụ thể.</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      <button className="lp-course-btn" onClick={() => window.open(`https://www.coursera.org/search?query=${encodeURIComponent(c.title)}`, '_blank')}>Bắt đầu học ngay</button>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="lp-empty-courses">
+                  <p>Chưa có tài nguyên học tập. Hãy tạo lộ trình AI để nhận gợi ý khóa học!</p>
+                </div>
+              )}
 
-                    {idx < roadmap.goals.length - 1 && (
-                      <div className="lp-timeline-connector"
-                        style={{ background: g.status === 'completed' ? 'var(--primary-color, #3b5bdb)' : '#e5e7eb' }} />
-                    )}
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              <div className="lp-timeline-empty">
-                <FaRoute style={{ fontSize: 32, color: '#d1d5db', marginBottom: 12 }} />
-                <p>Chưa có lộ trình cụ thể.</p>
-                <button className="lp-btn-outline" style={{ marginTop: 12 }} onClick={() => setShowTargetModal(true)}>
-                  <FaWandMagicSparkles style={{ marginRight: 6 }} /> Tạo lộ trình AI ngay
+              {/* AI Insight */}
+              <div className="lp-skill-gap-box">
+                <h4 className="lp-skill-gap-title">
+                  <FaWandMagicSparkles style={{ marginRight: 6, color: 'var(--primary-color, #3b5bdb)' }} />
+                  Phân tích lộ trình bằng AI
+                </h4>
+                <p className="lp-skill-gap-desc">{aiInsight}</p>
+                <button className="lp-skill-gap-link" onClick={generateAIInsight} disabled={generatingInsight || !roadmap}>
+                  {generatingInsight ? 'Đang phân tích...' : 'Lấy gợi ý AI mới'}
+                  <FaArrowRight style={{ marginLeft: '6px' }} />
                 </button>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* ── 2-COL ── */}
-        <div className="lp-two-col">
-          {/* LEFT – Courses */}
-          <div className="lp-resources-section">
-            <div className="lp-section-header">
-              <div className="lp-section-header-left">
-                <FaBookOpen style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '18px' }} />
-                <h3 className="lp-section-title">
-                  Tài nguyên học tập{roadmap ? ` — ${roadmap.total_months} tháng` : ''}
+            {/* RIGHT – Sidebar */}
+            <div className="lp-sidebar">
+              <div className="lp-skill-card">
+                <h3 className="lp-skill-card-title">
+                  <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
+                  Phân tích kỹ năng
                 </h3>
-              </div>
-            </div>
-
-            {courses.length > 0 ? (
-              <div className="lp-courses-grid">
-                {courses.map(c => (
-                  <div key={c.id} className="lp-course-card">
-                    <div className="lp-course-card-top">
-                      <div className="lp-course-icon">{c.icon}</div>
-                      <span className={`lp-course-badge ${c.badgeClass}`}>{c.type}</span>
-                    </div>
-                    <div className="lp-course-month-tag">Tháng {c.goalMonth}</div>
-                    <h4 className="lp-course-name">{c.title}</h4>
-                    <p className="lp-course-desc">{c.desc}</p>
-                    <div className="lp-course-meta">
-                      <div className="lp-course-meta-item">
-                        <FaClock style={{ marginRight: '6px' }} />{c.hours} GIỜ
+                <div className="lp-skill-rows">
+                  {skills.length > 0 ? skills.map(s => (
+                    <div key={s.name} className="lp-skill-row">
+                      <div className="lp-skill-row-header">
+                        <span className="lp-skill-row-name">{s.name}</span>
+                        <span className="lp-skill-row-pct">{s.pct}%</span>
                       </div>
-                      <div className="lp-course-level">
-                        <FaStar style={{ marginRight: '4px' }} />{c.level}
+                      <div className="lp-skill-track">
+                        <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
                       </div>
                     </div>
-                    <button className="lp-course-btn">Bắt đầu học ngay</button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="lp-empty-courses">
-                <p>Chưa có tài nguyên học tập. Hãy tạo lộ trình AI để nhận gợi ý khóa học!</p>
-              </div>
-            )}
-
-            {/* AI Insight */}
-            <div className="lp-skill-gap-box">
-              <h4 className="lp-skill-gap-title">
-                <FaWandMagicSparkles style={{ marginRight: 6, color: 'var(--primary-color, #3b5bdb)' }} />
-                Phân tích lộ trình bằng AI
-              </h4>
-              <p className="lp-skill-gap-desc">{aiInsight}</p>
-              <button className="lp-skill-gap-link" onClick={generateAIInsight} disabled={generatingInsight || !roadmap}>
-                {generatingInsight ? 'Đang phân tích...' : 'Lấy gợi ý AI mới'}
-                <FaArrowRight style={{ marginLeft: '6px' }} />
-              </button>
-            </div>
-          </div>
-
-          {/* RIGHT – Sidebar */}
-          <div className="lp-sidebar">
-            <div className="lp-skill-card">
-              <h3 className="lp-skill-card-title">
-                <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
-                Phân tích kỹ năng
-              </h3>
-              <div className="lp-skill-rows">
-                {skills.length > 0 ? skills.map(s => (
-                  <div key={s.name} className="lp-skill-row">
-                    <div className="lp-skill-row-header">
-                      <span className="lp-skill-row-name">{s.name}</span>
-                      <span className="lp-skill-row-pct">{s.pct}%</span>
-                    </div>
-                    <div className="lp-skill-track">
-                      <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
-                    </div>
-                  </div>
-                )) : (
-                  <p style={{ color: '#9ca3af', fontSize: 13 }}>Chưa có dữ liệu kỹ năng.</p>
-                )}
-              </div>
-
-              <div className="lp-readiness">
-                <div className="lp-readiness-circle">
-                  <svg width="110" height="110" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" strokeWidth="12" />
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="12" strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 44 * (completionRate / 100)} ${2 * Math.PI * 44}`}
-                      transform="rotate(-90 50 50)" />
-                  </svg>
-                  <div className="lp-readiness-inner">
-                    <span className="lp-readiness-pct">{completionRate}%</span>
-                    <span className="lp-readiness-sub">Sẵn sàng<br />nghề nghiệp</span>
-                  </div>
+                  )) : (
+                    <p style={{ color: '#9ca3af', fontSize: 13 }}>Chưa có dữ liệu kỹ năng.</p>
+                  )}
                 </div>
-                <p className="lp-readiness-desc">
-                  {roadmap
-                    ? <>Lộ trình <span>{roadmap.title}</span> đang tiến triển tốt!</>
-                    : 'Tạo lộ trình để bắt đầu theo dõi tiến độ.'}
-                </p>
-              </div>
-            </div>
 
-            <div className="lp-sync-card">
-              <div className="lp-sync-icon">
-                <FaFileArrowUp style={{ color: 'white', fontSize: '20px' }} />
+                <div className="lp-readiness">
+                  <div className="lp-readiness-circle">
+                    <svg width="110" height="110" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" strokeWidth="12" />
+                      <circle cx="50" cy="50" r="44" fill="none" stroke="var(--primary-color, #3b5bdb)" strokeWidth="12" strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 44 * (completionRate / 100)} ${2 * Math.PI * 44}`}
+                        transform="rotate(-90 50 50)" />
+                    </svg>
+                    <div className="lp-readiness-inner">
+                      <span className="lp-readiness-pct">{completionRate}%</span>
+                      <span className="lp-readiness-sub">Sẵn sàng<br />nghề nghiệp</span>
+                    </div>
+                  </div>
+                  <p className="lp-readiness-desc">
+                    {roadmap
+                      ? <>Lộ trình <span>{roadmap.title}</span> đang tiến triển tốt!</>
+                      : 'Tạo lộ trình để bắt đầu theo dõi tiến độ.'}
+                  </p>
+                </div>
               </div>
-              <h3 className="lp-sync-title">Đồng bộ kỹ năng vào CV</h3>
-              <p className="lp-sync-desc">Tự động cập nhật các chứng chỉ và kỹ năng mới vào hồ sơ chuyên môn của bạn.</p>
-              <button className="lp-sync-btn">Cập nhật CV ngay</button>
+
+              <div className="lp-sync-card">
+                <div className="lp-sync-icon">
+                  <FaFileArrowUp style={{ color: 'white', fontSize: '20px' }} />
+                </div>
+                <h3 className="lp-sync-title">Đồng bộ kỹ năng vào CV</h3>
+                <p className="lp-sync-desc">Tự động cập nhật các chứng chỉ và kỹ năng mới vào hồ sơ chuyên môn của bạn.</p>
+                <button className="lp-sync-btn" onClick={handleSyncSkills}>Cập nhật CV ngay</button>
+              </div>
             </div>
           </div>
         </div>
