@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from utils.db import get_db
+import json
 
 career_bp = Blueprint('career', __name__)
 

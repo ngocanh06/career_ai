@@ -15,7 +15,8 @@ import {
   FaCommentDots,
   FaCircleCheck,
   FaPaperPlane,
-  FaLightbulb
+  FaLightbulb,
+  FaCircleExclamation
 } from "react-icons/fa6";
 
 export default function CareerOrientation() {
@@ -27,6 +28,7 @@ export default function CareerOrientation() {
   // ── API state ──────────────────────────────────────────────
   const [careers, setCareers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [generateError, setGenerateError] = useState('');
 
   // Icon + style map dựa theo thứ tự vị trí
   const CAREER_ICONS = [<IconChart />, <IconBriefcase />, <IconCloud />];
@@ -75,26 +77,26 @@ export default function CareerOrientation() {
 
   const generateCareers = async () => {
     const user = JSON.parse(localStorage.getItem('career_user'));
-    const userId = user ? user.user_id : 19;
+    const userId = user ? user.user_id : null;
+    if (!userId) { setGenerateError('Không tìm thấy thông tin người dùng.'); return; }
     setLoading(true);
+    setGenerateError('');
     try {
-      // Lấy kỹ năng từ portfolio (userskill table)
-      let portfolioSkills = [];
-      try {
-        const skillsRes = await fetch(`http://localhost:5000/api/skills/${userId}`);
-        const skillsJson = await skillsRes.json();
-        if (skillsJson.success) portfolioSkills = skillsJson.data.map(s => s.skill_name);
-      } catch {}
-
       const res = await fetch('http://localhost:5000/api/career/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, portfolio_skills: portfolioSkills })
+        body: JSON.stringify({ user_id: userId })
       });
-      await res.json();
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || `Lỗi server: ${res.status}`);
+      }
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || 'AI không tạo được đề xuất');
       fetchCareers();
     } catch (e) {
-      console.error(e);
+      console.error('generateCareers error:', e);
+      setGenerateError(e.message || 'Có lỗi xảy ra, vui lòng thử lại.');
       setLoading(false);
     }
   };
@@ -165,14 +167,9 @@ export default function CareerOrientation() {
         trend_analysis: careers[2].trend_analysis || "Có tiềm năng phát triển trong tương lai."
       }
     } : null
-  ].filter(Boolean) : [
-    {
-      left: { title: "Đang tải...", badge: "...", badgeClass: "blue", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "blue", trend_analysis: "" },
-      right: { title: "Đang tải...", badge: "...", badgeClass: "green", skills: [], salary: "...", potential: 0, pct: 0, colorClass: "teal", trend_analysis: "" }
-    }
-  ];
+  ].filter(Boolean) : [];
 
-  const currentPair = comparisonPairs[compareIndex];
+  const currentPair = comparisonPairs[compareIndex] || null;
 
   // VN Market Trends
   const trends = [
@@ -311,11 +308,29 @@ export default function CareerOrientation() {
           </div>
 
           <div className="co-career-grid">
+            {generateError && (
+              <div style={{ gridColumn: '1/-1', background: '#fee2e2', border: '1px solid #f87171', color: '#b91c1c', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaCircleExclamation />
+                {generateError}
+              </div>
+            )}
+            
             {loading && (
               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#6b7280', fontSize: '14px' }}>
                 Đang tải dữ liệu nghề nghiệp...
               </div>
             )}
+            
+            {!loading && careers.length === 0 && (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: 40, marginBottom: 16 }}>🚀</div>
+                <h3 style={{ margin: '0 0 8px 0', color: '#111827', fontSize: '18px' }}>Chưa có đề xuất nghề nghiệp</h3>
+                <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
+                  Hệ thống cần phân tích thông tin của bạn. Hãy nhấn nút <strong>"Phân tích bằng AI"</strong> để tạo lộ trình phát triển.
+                </p>
+              </div>
+            )}
+            
             {!loading && careers.map((career, i) => (
               <div key={i} className="co-career-card">
                 <div className="co-card-top">
@@ -386,6 +401,35 @@ export default function CareerOrientation() {
 
             {activeTab === 'side-by-side' ? (
               <>
+                {/* ── Loading state ── */}
+                {loading && (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', color: '#6b7280' }}>
+                    <div style={{ fontSize: 28, marginBottom: 12, animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</div>
+                    <p style={{ margin: 0, fontWeight: 600, color: '#374151' }}>AI đang phân tích nghề nghiệp phù hợp...</p>
+                    <p style={{ margin: '6px 0 0', fontSize: 13 }}>Quá trình này có thể mất vài giây</p>
+                  </div>
+                )}
+
+                {/* ── Empty state (not loading, no careers) ── */}
+                {!loading && careers.length < 2 && (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6b7280' }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
+                    <p style={{ margin: 0, fontWeight: 600, color: '#374151', fontSize: 15 }}>Chưa có dữ liệu so sánh</p>
+                    <p style={{ margin: '8px 0 16px', fontSize: 13, lineHeight: 1.6 }}>
+                      Nhấn <strong>"Phân tích bằng AI"</strong> ở trên để tạo đề xuất<br/>nghề nghiệp phù hợp với kỹ năng của bạn.
+                    </p>
+                    <button
+                      onClick={generateCareers}
+                      disabled={loading}
+                      style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Phân tích ngay
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Actual comparison ── */}
+                {!loading && currentPair && (
                 <div className="co-comparison-wrapper">
                   {/* Left Role Column */}
                   <div className="co-compare-col highlighted">
@@ -471,43 +515,48 @@ export default function CareerOrientation() {
                     </div>
                   </div>
                 </div>
+                )}
 
-                <button className="co-compare-swap-btn" onClick={handleSwapRoles}>
-                  <FaRightLeft style={{ marginRight: '6px' }} />
-                  Thay đổi vai trò so sánh
-                </button>
+                {/* Swap button only shown when there are multiple pairs */}
+                {!loading && currentPair && comparisonPairs.length > 1 && (
+                  <button className="co-compare-swap-btn" onClick={handleSwapRoles}>
+                    <FaRightLeft style={{ marginRight: '6px' }} />
+                    Thay đổi vai trò so sánh
+                  </button>
+                )}
               </>
-            ) : (
+            ) : currentPair ? (
               <div className="co-deep-analysis">
                 <div className="co-da-header">
                   <FaWandMagicSparkles style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: 18 }} />
                   <h4 style={{ margin: 0, color: '#111827', fontSize: 15 }}>Phân tích AI: {currentPair.left.title} vs {currentPair.right.title}</h4>
                 </div>
-                
                 <div className="co-da-content">
                   <div className="co-da-block">
-                    <p className="co-da-label">Tương lai & Xu hướng</p>
+                    <p className="co-da-label">Tương lai &amp; Xu hướng</p>
                     <p className="co-da-text">
                       <strong>{currentPair.left.title}:</strong> {currentPair.left.trend_analysis}
                       <br /><br />
                       <strong>{currentPair.right.title}:</strong> {currentPair.right.trend_analysis}
                     </p>
                   </div>
-
                   <div className="co-da-block">
                     <p className="co-da-label">Khoảng cách kỹ năng hiện tại</p>
                     <p className="co-da-text">
-                      Bạn đang có lợi thế mạnh về tư duy phân tích, đây là gốc rễ của cả 2 mảng. Tuy nhiên, nếu chọn <strong>{currentPair.left.title}</strong>, bạn cần học sâu hơn về công cụ kỹ thuật (SQL, Python). Còn với <strong>{currentPair.right.title}</strong>, bạn nên trau dồi khả năng thuyết trình, quản lý dự án (Agile/Scrum) và thiết kế hệ thống.
+                      Bạn đang có lợi thế mạnh về tư duy phân tích. Nếu chọn <strong>{currentPair.left.title}</strong>, bạn cần học sâu hơn về công cụ kỹ thuật (SQL, Python). Còn với <strong>{currentPair.right.title}</strong>, bạn nên trau dồi khả năng thuyết trình, quản lý dự án (Agile/Scrum).
                     </p>
                   </div>
-                  
                   <div className="co-da-block" style={{ border: 'none', paddingBottom: 0, marginBottom: 0 }}>
                     <p className="co-da-label">AI Khuyến nghị cho bạn</p>
                     <p className="co-da-text" style={{ color: 'var(--primary-color, #3b5bdb)', fontWeight: 500 }}>
-                      Dựa trên Bio của bạn, {currentPair.left.title} có vẻ là lựa chọn phù hợp nhất với quỹ đạo phát triển ngắn hạn. Bạn có thể đạt mức năng lực chuyên môn sau khoảng 3 - 6 tháng học tập cường độ cao.
+                      Dựa trên kỹ năng của bạn, <strong>{currentPair.left.title}</strong> có vẻ phù hợp nhất. Bạn có thể đạt mức năng lực chuyên môn sau khoảng 3–6 tháng học tập.
                     </p>
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: 14 }}>
+                Chưa có dữ liệu để phân tích. Hãy nhấn <strong>"Phân tích bằng AI"</strong> trước.
               </div>
             )}
           </div>
