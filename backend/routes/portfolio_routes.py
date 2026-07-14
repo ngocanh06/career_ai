@@ -214,9 +214,12 @@ def extract_portfolio_from_cv(user_id):
             return jsonify({'success': False, 'message': 'CV quá ngắn hoặc không đọc được'})
             
         prompt = f"""
-Trích xuất các thông tin chuyên môn từ CV sau để xây dựng Portfolio.
+Trích xuất các thông tin cá nhân và chuyên môn từ CV sau để xây dựng Portfolio.
 Hãy trả về một JSON có cấu trúc sau:
 {{
+  "title": "Chức danh/vị trí công việc mong muốn (ví dụ: Frontend Developer, Data Analyst, MIS Student)",
+  "phone": "Số điện thoại liên hệ",
+  "address": "Địa chỉ liên hệ hoặc thành phố/quốc gia cư trú",
   "skills": ["kỹ năng 1", "kỹ năng 2"],
   "projects": [
     {{ "title": "Tên dự án", "desc": "Mô tả ngắn gọn", "tech": "Các công nghệ sử dụng" }}
@@ -232,6 +235,7 @@ CV Text:
         ai_res = call_openai_json(prompt)
         if ai_res:
             return jsonify({'success': True, 'data': ai_res})
+          
         return jsonify({'success': False, 'message': 'Lỗi AI'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -397,4 +401,73 @@ Trả về JSON:
             }
         })
     return jsonify({'success': False, 'message': 'Lỗi gọi AI'})
+
+
+# -------------------------------------------------------
+# API: Lưu bản nháp (Draft) Portfolio của người dùng
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/save-draft', methods=['POST'])
+def save_draft():
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        draft_data = data.get('draft_data')
+
+        if not user_id:
+            return jsonify({'success': False, 'message': 'Thiếu user_id'}), 400
+        if not draft_data:
+            return jsonify({'success': False, 'message': 'Thiếu dữ liệu nháp'}), 400
+
+        draft_str = json.dumps(draft_data, ensure_ascii=False)
+
+        conn = get_db()
+        with conn.cursor() as cursor:
+            # Kiểm tra xem đã có bản ghi portfolio nào cho user này chưa
+            cursor.execute("SELECT portfolio_id FROM portfolio WHERE user_id = %s LIMIT 1", (user_id,))
+            exists = cursor.fetchone()
+
+            if exists:
+                cursor.execute(
+                    "UPDATE portfolio SET content_json = %s, updated_at = NOW() WHERE user_id = %s",
+                    (draft_str, user_id)
+                )
+            else:
+                # Tạo một slug ngẫu nhiên ngắn gọn
+                import random
+                import string
+                random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
+                slug = f"portfolio-{user_id}-{random_suffix}"
+                cursor.execute(
+                    "INSERT INTO portfolio (user_id, slug, title, is_published, content_json, created_at) "
+                    "VALUES (%s, %s, %s, 0, %s, NOW())",
+                    (user_id, slug, 'Hồ sơ năng lực cá nhân', draft_str)
+                )
+            conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Lưu bản nháp thành công!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: Tải bản nháp (Draft) Portfolio của người dùng
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/draft/<int:user_id>', methods=['GET'])
+def get_draft(user_id):
+    try:
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT content_json FROM portfolio WHERE user_id = %s LIMIT 1", (user_id,))
+            row = cursor.fetchone()
+        conn.close()
+
+        if not row or not row['content_json']:
+            return jsonify({'success': False, 'message': 'Chưa có bản nháp nào'}), 404
+
+        # Parse chuỗi JSON ra object trước khi gửi về
+        parsed_data = json.loads(row['content_json'])
+        return jsonify({'success': True, 'data': parsed_data})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
