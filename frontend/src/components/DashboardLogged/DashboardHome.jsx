@@ -438,10 +438,9 @@ export default function DashboardLogged() {
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <button className="home-btn-primary" onClick={() => navigate('/learning-path')}>
-                  <FaPlus style={{ marginRight: 8 }} /> Tạo lộ trình học tập
-                </button>
+              /* Không có roadmap → hướng dẫn nhìn lên nút "Tạo lộ trình" ở header card (tránh lặp CTA) */
+              <div style={{ textAlign: 'center', padding: '28px 0', color: '#94a3b8', fontSize: 14 }}>
+                Nhấn <strong style={{ color: 'var(--primary-color, #3b5bdb)' }}>"Tạo lộ trình"</strong> ở góc trên để bắt đầu.
               </div>
             )}
           </div>

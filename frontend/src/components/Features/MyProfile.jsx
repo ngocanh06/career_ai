@@ -3,7 +3,7 @@ import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import {
   getUser, updateUser, uploadAvatar,
   getCareers, getRoadmap, getSkills,
-  CURRENT_USER_ID
+  getBackendOrigin
 } from '../../services/api';
 import {
   FaCamera, FaUser, FaBriefcase, FaCode, FaGraduationCap,
@@ -16,7 +16,7 @@ import './MyProfile.css';
 const initials = (name) =>
   (name || 'U').trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
-const BACKEND_BASE = 'http://localhost:5000';
+const BACKEND_BASE = getBackendOrigin();
 const toAbsUrl = (url) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
@@ -107,7 +107,7 @@ function EditableField({ label, value, onSave, multiline }) {
 ══════════════════════════════════════════════════ */
 export default function MyProfile() {
   const storedUser = JSON.parse(localStorage.getItem('career_user') || '{}');
-  const userId = storedUser.user_id || CURRENT_USER_ID;
+  const userId = storedUser?.user_id;
 
   const [profile, setProfile] = useState(null);
   const [careers, setCareers] = useState([]);
@@ -120,6 +120,11 @@ export default function MyProfile() {
 
   /* Load data */
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       setLoading(true);
       try {
@@ -139,6 +144,16 @@ export default function MyProfile() {
     };
     load();
   }, [userId]);
+
+  if (!userId) {
+    return (
+      <DashboardLayout>
+        <div className="mp-loading">
+          <p>Bạn cần đăng nhập để xem hồ sơ.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const showSuccess = (msg) => {
     setSuccessMsg(msg);

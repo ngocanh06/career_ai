@@ -321,11 +321,14 @@
 .aicv-cv-preview-box {
   border: 1.5px dashed #e2e8f0;
   border-radius: 12px;
-  padding: 16px;
+  /* Fix II.2: overflow hidden ngăn thanh cuộn đôi khi nhúng iframe PDF */
+  overflow: hidden;
   display: flex;
   justify-content: center;
   background: #f8fafc;
   min-height: 380px;
+  /* Không padding khi có iframe để iframe chiếm full width */
+  padding: 0;
 }
 
 .cv-mock-page {
@@ -838,3 +841,38 @@ body.dark-theme .aicv-upload-dropzone:hover { background: #1e3a5f; }
 body.dark-theme .aicv-upload-dropzone-title { color: #93c5fd; }
 body.dark-theme .aicv-error-banner { background: #3b0000; border-color: #7f1d1d; color: #fca5a5; }
 
+/* ── PDF Preview: loading & error states ── */
+.aicv-pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 300px;
+  width: 100%;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.aicv-pdf-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 300px;
+  width: 100%;
+  padding: 24px;
+}
+
+/* Khi embed PDF (blob), không có padding trên wrapper */
+.aicv-cv-preview-box embed {
+  border-radius: 8px;
+}
+
+/* Khi hiển thị mock hoặc error, thêm padding lại */
+.aicv-cv-preview-box .cv-mock-page,
+.aicv-cv-preview-box .aicv-pdf-loading,
+.aicv-cv-preview-box .aicv-pdf-error {
+  padding: 16px;
+}
