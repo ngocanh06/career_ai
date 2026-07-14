@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import html2pdf from 'html2pdf.js';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './PortfolioBuilder.css';
-import Topbar from "../DashboardLogged/Topbar";
-import { FaPen as EditIcon } from "react-icons/fa6"; // hoặc icon bút chỉnh sửa bạn muốn dùng
 
-// Import toàn bộ FontAwesome Icons
 import {
-  FaPenToSquare,
   FaBolt,
   FaBriefcase,
   FaMedal,
@@ -17,39 +12,38 @@ import {
   FaPlus,
   FaWandMagicSparkles,
   FaLightbulb,
-  FaFloppyDisk,
-  FaUpload,
   FaDesktop,
   FaMobileScreen,
-  FaArrowsRotate,
-  FaEye,
-  FaTableCellsLarge,
-  FaLink,
   FaGlobe,
   FaStar,
-  FaDownload
-} from "react-icons/fa6";
+  FaDownload,
+  FaTrophy,
+  FaChevronDown,
+  FaImage,
+  FaCircleCheck,
+  FaRobot,
+} from 'react-icons/fa6';
 
+/* ────────────────────────── CONSTANTS ────────────────────────── */
 const THEMES = [
   { id: 'modern', name: 'Modern', colors: ['var(--primary-color, #3b5bdb)', '#6b8df7', '#eef0ff'] },
   { id: 'creative', name: 'Creative', colors: ['#7c3aed', '#a78bfa', '#f5f3ff'] },
   { id: 'minimal', name: 'Minimal', colors: ['#111827', '#6b7280', '#f3f4f6'] },
   { id: 'professional', name: 'Professional', colors: ['#0f766e', '#14b8a6', '#f0fdfa'] },
+  { id: 'ocean', name: 'Ocean', colors: ['#0369a1', '#38bdf8', '#f0f9ff'] },
+  { id: 'sunset', name: 'Sunset', colors: ['#dc2626', '#fb923c', '#fff7ed'] },
 ];
 
-const FALLBACK_INFO = {
-  name: '',
-  title: '',
-  bio: '',
-  email: '',
-  linkedin: '',
-};
+const FALLBACK_INFO = { name: '', title: '', bio: '', email: '', linkedin: '' };
 
-const DEFAULT_PROJECTS = [];
+/* ── Fix I.2: URL không lộ tên thật — dùng hash ngắn từ user_id ── */
+function makePortfolioSlug(userId) {
+  // Tạo ID ngắn dạng "p-a3f8" không lộ thông tin người dùng
+  const hash = ((userId * 2654435761) >>> 0).toString(16).slice(0, 4);
+  return `portfolio.ai/u/p-${hash}`;
+}
 
-const DEFAULT_AWARDS = [];
-
-
+/* ────────────────────────── SUB-COMPONENTS ────────────────────────── */
 function Toggle({ checked, onChange }) {
   return (
     <label className="pb-toggle">
@@ -69,8 +63,12 @@ function SectionRow({ dot, title, subtitle, children }) {
           <p className="pb-section-row-title">{title}</p>
           <p className="pb-section-row-sub">{subtitle}</p>
         </div>
-        <button className="pb-section-row-edit" onClick={e => { e.stopPropagation(); setOpen(!open); }}>
-          <FaPenToSquare style={{ fontSize: '14px' }} />
+        <button
+          className={`pb-section-row-edit ${open ? 'open' : ''}`}
+          onClick={e => { e.stopPropagation(); setOpen(!open); }}
+          aria-label={open ? 'Thu gọn' : 'Mở rộng'}
+        >
+          <FaChevronDown style={{ fontSize: '11px', transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
         </button>
       </div>
       {open && <div className="pb-section-row-body">{children}</div>}
@@ -78,8 +76,18 @@ function SectionRow({ dot, title, subtitle, children }) {
   );
 }
 
-function PortfolioPreview({ info, skills, projects, awards, theme }) {
+/* ── Portfolio Preview (bên phải) ── */
+function PortfolioPreview({ info, skills, projects, awards, theme, showScore }) {
   const t = THEMES.find(x => x.id === theme) || THEMES[0];
+
+  // Màu nền gradient cho project thumbnail theo index
+  const thumbGrads = [
+    [`${t.colors[0]}`, `${t.colors[1]}`],
+    ['#7c3aed', '#a78bfa'],
+    ['#0f766e', '#14b8a6'],
+    ['#dc2626', '#fb923c'],
+  ];
+
   return (
     <div className="pf-card">
       {/* Hero */}
@@ -101,13 +109,13 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
               <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
           </div>
-          <h2 className="pf-name">{info.name}</h2>
+          <h2 className="pf-name">{info.name || 'Tên của bạn'}</h2>
           <div className="pf-title-row">
             <div className="pf-title-line" style={{ background: t.colors[0] }} />
-            <span className="pf-title-text" style={{ color: t.colors[0] }}>{info.title}</span>
+            <span className="pf-title-text" style={{ color: t.colors[0] }}>{info.title || 'Chức danh'}</span>
             <div className="pf-title-line" style={{ background: t.colors[0] }} />
           </div>
-          <p className="pf-bio">{info.bio}</p>
+          <p className="pf-bio">{info.bio || 'Giới thiệu bản thân của bạn...'}</p>
           <div className="pf-cta-row">
             <button className="pf-btn pf-btn-primary" style={{ background: t.colors[0] }}>Tải CV (PDF)</button>
             <button className="pf-btn pf-btn-outline">Liên hệ</button>
@@ -122,39 +130,80 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
             Kỹ năng cốt lõi
             <FaBolt style={{ color: t.colors[0], fontSize: '12px', marginLeft: '4px' }} />
           </p>
-          <div className="pf-skill-pills">
-            {skills.map(s => <span key={s} className="pf-skill-pill">{s}</span>)}
-          </div>
+          {skills.length > 0 ? (
+            <div className="pf-skill-pills">
+              {skills.map(s => <span key={s} className="pf-skill-pill">{s}</span>)}
+            </div>
+          ) : (
+            <p className="pf-empty-hint">Thêm kỹ năng của bạn →</p>
+          )}
         </div>
-        <div className="pf-score-card" style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
-          <p className="pf-score-card-label">Chỉ số ấn tượng</p>
-          <div>
-            <div className="pf-score-number">{info.score}%</div>
-            <div className="pf-score-sub">Khả năng phù hợp với JD</div>
+
+        {/* Fix I.1: Chỉ hiển thị score khi có đủ dữ liệu thật */}
+        {showScore ? (
+          <div className="pf-score-card" style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
+            <p className="pf-score-card-label">Chỉ số ấn tượng</p>
+            <div>
+              <div className="pf-score-number">{info.score}%</div>
+              <div className="pf-score-sub">Khả năng phù hợp với JD</div>
+            </div>
+            <div className="pf-score-bar-track">
+              <div className="pf-score-bar-fill" style={{ width: `${info.score}%` }} />
+            </div>
           </div>
-          <div className="pf-score-bar-track">
-            <div className="pf-score-bar-fill" style={{ width: `${info.score}%` }} />
+        ) : (
+          <div className="pf-score-card pf-score-placeholder" style={{ background: `linear-gradient(135deg, ${t.colors[0]}aa, ${t.colors[1]}aa)` }}>
+            <p className="pf-score-card-label">Chỉ số ấn tượng</p>
+            <div className="pf-score-placeholder-content">
+              <FaWandMagicSparkles style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }} />
+              <div className="pf-score-placeholder-text">Thêm kỹ năng &amp; dự án để AI tính điểm</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Projects */}
+      {/* Projects ─ Visual Cards */}
       <div className="pf-section-divider" />
       <div className="pf-section">
         <p className="pf-section-title">Dự án tiêu biểu</p>
-        {projects.map(p => (
-          <div key={p.id} className="pf-project-item" style={{ marginBottom: 10 }}>
-            <div className="pf-project-thumb" style={{ background: t.colors[2] }}>
-              <FaBriefcase style={{ color: t.colors[0], fontSize: '18px' }} />
+        {projects.length > 0 ? projects.map((p, idx) => {
+          const grad = thumbGrads[idx % thumbGrads.length];
+          const techList = p.tech ? p.tech.split(',').map(t => t.trim()).filter(Boolean) : [];
+          return (
+            <div key={p.id} className="pf-project-visual-card">
+              {/* Thumbnail */}
+              <div className="pf-project-thumb-visual" style={{ background: `linear-gradient(135deg, ${grad[0]}, ${grad[1]})` }}>
+                {p.image ? (
+                  <img src={p.image} alt={p.title} />
+                ) : (
+                  <div className="pf-project-thumb-placeholder">
+                    <FaBriefcase style={{ fontSize: 24, marginBottom: 4 }} />
+                    <span>{p.title}</span>
+                  </div>
+                )}
+              </div>
+              {/* Body */}
+              <div className="pf-project-card-body">
+                <p className="pf-project-title">{p.title}</p>
+                <p className="pf-project-desc">{p.desc}</p>
+                {techList.length > 0 && (
+                  <div className="pf-project-tech-tags">
+                    {techList.map(tech => (
+                      <span key={tech} className="pf-tech-tag" style={{ background: t.colors[2], color: t.colors[0] }}>{tech}</span>
+                    ))}
+                  </div>
+                )}
+                {p.link && (
+                  <a href={p.link} className="pf-project-link" style={{ fontSize: 11, color: '#6b7280', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    🔗 {p.link}
+                  </a>
+                )}
+              </div>
             </div>
-            <div className="pf-project-body">
-              <p className="pf-project-title">{p.title}</p>
-              <p className="pf-project-desc">{p.desc}</p>
-              {p.tech && <p className="pf-project-tech" style={{ fontSize: 11, color: t.colors[0], marginTop: 6, fontWeight: 600 }}>Công nghệ: {p.tech}</p>}
-              {p.link && <a href={p.link} className="pf-project-link" style={{ fontSize: 11, color: '#6b7280', marginTop: 4, display: 'inline-block' }}>{p.link}</a>}
-            </div>
-          </div>
-        ))}
+          );
+        }) : (
+          <p className="pf-empty-hint">Thêm dự án đầu tiên của bạn →</p>
+        )}
       </div>
 
       {/* Awards */}
@@ -181,36 +230,39 @@ function PortfolioPreview({ info, skills, projects, awards, theme }) {
   );
 }
 
-function nameToSlug(name) {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .replace(/\s+/g, '');
-}
-
+/* ────────────────────────── MAIN COMPONENT ────────────────────────── */
 export default function PortfolioBuilder() {
   const [theme, setTheme] = useState('modern');
-  const [device, setDevice] = useState('desktop');
+  const [device, setDevice] = useState('desktop'); // 'desktop' | 'mobile'
   const [aiOn, setAiOn] = useState(true);
+  const [showAllThemes, setShowAllThemes] = useState(false);
   const [info, setInfo] = useState(FALLBACK_INFO);
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [projects, setProjects] = useState([]);
   const [awards, setAwards] = useState([]);
-  const [aiInsight, setAiInsight] = useState({ insight: 'Đang phân tích Portfolio của bạn...', score: 95 });
+  const [aiInsight, setAiInsight] = useState({ insight: '', score: 0 });
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [portfolioUrl, setPortfolioUrl] = useState('portfolio.ai/u/p-????');
 
-  // Fetch user profile + skills + experience + certificates từ API
+  /* ── Parse user từ localStorage (safe) ── */
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('career_user'));
-    const userId = user ? user.user_id : 19;
+    let uid = null;
+    try {
+      const u = JSON.parse(localStorage.getItem('career_user'));
+      uid = u?.user_id || null;
+    } catch { uid = null; }
+    setUserId(uid);
+    // Fix I.2: URL dùng hash ngắn, không lộ tên thật
+    if (uid) setPortfolioUrl(makePortfolioSlug(uid));
+  }, []);
 
-    // User profile
+  /* ── Fetch dữ liệu từ API ── */
+  useEffect(() => {
+    if (!userId) return;
+
     fetch(`http://localhost:5000/api/user/${userId}`)
       .then(r => r.json())
       .then(json => {
@@ -218,171 +270,152 @@ export default function PortfolioBuilder() {
         const d = json.data;
         setInfo({
           name: d.full_name || '',
-          title: d.bio && d.bio.includes('||') ? d.bio.split('||')[0] : (d.bio ? d.bio.split('.')[0] : ''),
-          bio: d.bio && d.bio.includes('||') ? d.bio.split('||')[1] : (d.bio || ''),
+          title: d.bio?.includes('||') ? d.bio.split('||')[0] : (d.bio?.split('.')[0] || ''),
+          bio: d.bio?.includes('||') ? d.bio.split('||')[1] : (d.bio || ''),
           email: d.email || '',
           linkedin: '',
         });
-      })
-      .catch(() => { });
+      }).catch(() => { });
 
-    // Skills
     fetch(`http://localhost:5000/api/skills/${userId}`)
       .then(r => r.json())
-      .then(json => {
-        if (!json.success) return;
-        const mapped = json.data.map(s => s.skill_name);
-        setSkills(mapped);
-      })
+      .then(json => { if (json.success) setSkills(json.data.map(s => s.skill_name)); })
       .catch(() => { });
 
-    // Experience -> Projects
     fetch(`http://localhost:5000/api/experience/${userId}`)
       .then(r => r.json())
       .then(json => {
         if (!json.success) return;
-        const mapped = json.data.map(exp => ({
+        setProjects(json.data.map(exp => ({
           id: exp.experience_id,
           title: `${exp.position} - ${exp.company}`,
-          desc: exp.description || ''
-        }));
-        setProjects(mapped);
-      })
-      .catch(() => { });
+          desc: exp.description || '',
+          tech: '',
+          link: '',
+        })));
+      }).catch(() => { });
 
-    // Certificate -> Awards
     fetch(`http://localhost:5000/api/certificate/${userId}`)
       .then(r => r.json())
       .then(json => {
         if (!json.success) return;
-        const mapped = json.data.map(cert => ({
+        setAwards(json.data.map(cert => ({
           id: cert.certificate_id,
           title: cert.name,
-          org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : '')
-        }));
-        setAwards(mapped);
-      })
-      .catch(() => { });
-  }, []);
+          org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : ''),
+        })));
+      }).catch(() => { });
+  }, [userId]);
 
-  // Fetch AI insight when skills or projects change
+  /* ── Fix I.1: Score chỉ được fetch khi có data thật, không hardcode ── */
   useEffect(() => {
-    if (skills.length === 0 && projects.length === 0) return;
-    
+    // Không fetch nếu AI off hoặc chưa có đủ dữ liệu
+    if (!aiOn || (skills.length === 0 && projects.length === 0)) {
+      setAiInsight({ insight: '', score: 0 });
+      return;
+    }
     const timer = setTimeout(() => {
-      setAiInsight(prev => ({ ...prev, insight: "Đang phân tích..." }));
+      setAiInsight(prev => ({ ...prev, insight: 'Đang phân tích...' }));
       fetch('http://localhost:5000/api/portfolio/insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ skills, projects })
+        body: JSON.stringify({ skills, projects }),
       })
-      .then(r => r.json())
-      .then(json => {
-        if (json.success) setAiInsight({ insight: json.data.insight, score: json.data.score || 95 });
-      })
-      .catch(() => setAiInsight(prev => ({ ...prev, insight: "AI hiện không khả dụng." })));
+        .then(r => r.json())
+        .then(json => {
+          if (json.success) setAiInsight({ insight: json.data.insight, score: json.data.score || 0 });
+        })
+        .catch(() => setAiInsight(prev => ({ ...prev, insight: 'AI hiện không khả dụng.' })));
     }, 2000);
     return () => clearTimeout(timer);
-  }, [skills, projects]);
+  }, [skills, projects, aiOn]);
 
+  /* ── Fix II.2: Toggle AI ảnh hưởng thực sự đến UI ── */
+  const handleAiToggle = (val) => {
+    setAiOn(val);
+    if (!val) {
+      setAiInsight({ insight: '', score: 0 });
+    }
+  };
+
+  /* ── Optimize projects bằng AI (chỉ khi aiOn) ── */
   const handleOptimizeProjects = async () => {
-    if (projects.length === 0) return;
+    if (projects.length === 0 || !aiOn) return;
     setIsOptimizing(true);
     const newProjects = [...projects];
-    
     for (let i = 0; i < newProjects.length; i++) {
       if (newProjects[i].desc) {
         try {
           const res = await fetch('http://localhost:5000/api/portfolio/optimize-project', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: newProjects[i].desc })
+            body: JSON.stringify({ description: newProjects[i].desc }),
           });
           const json = await res.json();
-          if (json.success) {
-            newProjects[i].desc = json.data;
-          }
-        } catch (e) {
-          console.error(e);
-        }
+          if (json.success) newProjects[i].desc = json.data;
+        } catch (e) { console.error(e); }
       }
     }
-    
     setProjects(newProjects);
     setIsOptimizing(false);
   };
 
+  /* ── Fix I.3: Auto-fill có confirm dialog khi đang có dữ liệu ── */
   const handleExtractCV = async () => {
+    const hasExistingData = skills.length > 0 || projects.length > 0 || awards.length > 0;
+    if (hasExistingData) {
+      const confirmed = window.confirm(
+        '⚠️ Bạn đang có dữ liệu trong Portfolio.\n\n' +
+        'Tính năng "Auto điền từ CV" sẽ BỔ SUNG thêm dữ liệu từ CV vào các mục hiện tại (không xoá dữ liệu cũ).\n\n' +
+        'Bạn có muốn tiếp tục không?'
+      );
+      if (!confirmed) return;
+    }
+
     setIsExtracting(true);
-    const user = JSON.parse(localStorage.getItem('career_user'));
-    const userId = user ? user.user_id : 19;
     try {
-      const res = await fetch(`http://localhost:5000/api/portfolio/extract-cv/${userId}`, {
-        method: 'POST'
-      });
+      const res = await fetch(`http://localhost:5000/api/portfolio/extract-cv/${userId}`, { method: 'POST' });
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;
         if (d.skills) setSkills(prev => [...new Set([...prev, ...d.skills])]);
-        if (d.projects) {
-          const mappedProjs = d.projects.map((p, i) => ({
-            id: Date.now() + i,
-            title: p.title || 'Dự án mới',
-            desc: p.desc || '',
-            tech: p.tech || ''
-          }));
-          setProjects(prev => [...prev, ...mappedProjs]);
-        }
-        if (d.awards) {
-          const mappedAwards = d.awards.map((a, i) => ({
-            id: Date.now() + 100 + i,
-            title: a.title || 'Giải thưởng',
-            org: a.org || ''
-          }));
-          setAwards(prev => [...prev, ...mappedAwards]);
-        }
-        alert('Đã trích xuất thông tin từ CV thành công!');
+        if (d.projects) setProjects(prev => [...prev, ...d.projects.map((p, i) => ({ id: Date.now() + i, title: p.title || 'Dự án mới', desc: p.desc || '', tech: p.tech || '', link: '' }))]);
+        if (d.awards) setAwards(prev => [...prev, ...d.awards.map((a, i) => ({ id: Date.now() + 100 + i, title: a.title || 'Giải thưởng', org: a.org || '' }))]);
+        alert('✅ Đã trích xuất và bổ sung thông tin từ CV thành công!');
       } else {
-        alert(json.message || 'Lỗi trích xuất CV');
+        alert(json.message || 'Không tìm thấy dữ liệu CV để trích xuất.');
       }
-    } catch (e) {
-      alert('Không thể kết nối máy chủ để trích xuất CV');
+    } catch {
+      alert('Không thể kết nối máy chủ. Vui lòng thử lại.');
     }
     setIsExtracting(false);
   };
 
   const handleSaveProfile = async () => {
-    const user = JSON.parse(localStorage.getItem('career_user'));
-    const userId = user ? user.user_id : 19;
+    if (!userId) return;
     try {
       await fetch(`http://localhost:5000/api/user/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: info.name,
-          bio: `${info.title}||${info.bio}`
-        })
+        body: JSON.stringify({ full_name: info.name, bio: `${info.title}||${info.bio}` }),
       });
-    } catch (e) {
-      console.error('Failed to save profile', e);
-    }
+    } catch (e) { console.error('Failed to save profile', e); }
   };
 
+  /* ── Tải PDF (Fix II.4: nút này ở đúng vị trí — preview header) ── */
   const handleDownloadPDF = () => {
     const element = document.getElementById('portfolio-preview-content');
     if (element) {
-      const opt = {
-        margin:       [0, 0, 0, 0],
-        filename:     `Portfolio_${nameToSlug(info.name) || 'career_ai'}.pdf`,
-        image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
+      const slug = userId ? `p-${((userId * 2654435761) >>> 0).toString(16).slice(0, 4)}` : 'career_ai';
+      html2pdf().set({
+        margin: [0, 0, 0, 0],
+        filename: `Portfolio_${slug}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      }).from(element).save();
     }
   };
-
-  const portfolioUrl = `portfolio.ai/u/${nameToSlug(info.name) || 'tendangnhap'}`;
 
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -391,23 +424,38 @@ export default function PortfolioBuilder() {
     }
   };
 
+  /* Fix I.1: showScore chỉ true khi có đủ dữ liệu thật và AI đang bật */
+  const showScore = aiOn && skills.length > 0 && projects.length > 0 && aiInsight.score > 0;
 
+  /* Fix II.1a: Themes hiển thị — 4 khi thu gọn, tất cả khi mở rộng */
+  const visibleThemes = showAllThemes ? THEMES : THEMES.slice(0, 4);
+
+  /* Fix II.1b: Preview width theo device */
+  const previewMaxWidth = device === 'mobile' ? '375px' : '100%';
+  const previewRadius = device === 'mobile' ? '32px' : '12px';
+  const previewBorder = device === 'mobile' ? '6px solid #1a1a1a' : 'none';
+  const previewShadow = device === 'mobile' ? '0 20px 60px rgba(0,0,0,0.25)' : 'none';
+
+  /* ────────────────────────── RENDER ────────────────────────── */
   return (
     <DashboardLayout>
       <div className="pb-page">
         <div className="pb-main">
 
-          {/* ── LEFT PANEL ── */}
+          {/* ══════════════ LEFT EDITOR ══════════════ */}
           <div className="pb-editor">
 
             {/* Theme selector */}
             <div className="pb-theme-bar">
               <div className="pb-theme-bar-row">
                 <span className="pb-theme-bar-label">Chọn Giao diện</span>
-                <button className="pb-theme-see-all">Xem tất cả</button>
+                {/* Fix II.1a: nút "Xem tất cả" thực sự toggle */}
+                <button className="pb-theme-see-all" onClick={() => setShowAllThemes(v => !v)}>
+                  {showAllThemes ? 'Thu gọn' : `Xem tất cả (${THEMES.length})`}
+                </button>
               </div>
-              <div className="pb-theme-cards">
-                {THEMES.map(t => (
+              <div className={`pb-theme-cards ${showAllThemes ? 'expanded' : ''}`}>
+                {visibleThemes.map(t => (
                   <div key={t.id} className={`pb-theme-card ${theme === t.id ? 'selected' : ''}`} onClick={() => setTheme(t.id)}>
                     <div className="pb-theme-thumb" style={{ background: t.colors[2] }}>
                       <div className="pb-theme-bar-line" style={{ background: t.colors[0] }} />
@@ -428,16 +476,18 @@ export default function PortfolioBuilder() {
             {/* Content header */}
             <div className="pb-content-header-bar">
               <span className="pb-content-header-bar-label">Khối nội dung</span>
+              {/* Fix II.2: Toggle thực sự ảnh hưởng đến AI insight và nút optimize */}
               <div className="pb-ai-toggle-row">
-                Tối ưu AI <Toggle checked={aiOn} onChange={setAiOn} />
+                <span style={{ color: aiOn ? 'var(--primary-color, #3b5bdb)' : '#9ca3af' }}>Tối ưu AI</span>
+                <Toggle checked={aiOn} onChange={handleAiToggle} />
               </div>
             </div>
 
             {/* Section rows */}
             <div className="pb-sections-list">
 
-              {/* Thông tin */}
-              <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={`${info.name} • ${info.title} Data Architect`}>
+              {/* Thông tin cá nhân */}
+              <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={info.name ? `${info.name}${info.title ? ' • ' + info.title : ''}` : 'Chưa có thông tin'}>
                 {['name', 'title', 'email', 'linkedin'].map(f => (
                   <div className="pb-form-group" key={f}>
                     <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>
@@ -451,7 +501,7 @@ export default function PortfolioBuilder() {
               </SectionRow>
 
               {/* Kỹ năng */}
-              <SectionRow dot="#f59e0b" title="Kỹ năng cốt lõi" subtitle={`${skills.length} kỹ năng đã được xác thực`}>
+              <SectionRow dot="#f59e0b" title="Kỹ năng cốt lõi" subtitle={skills.length > 0 ? `${skills.length} kỹ năng đã xác thực` : 'Chưa có kỹ năng — thêm vào ngay!'}>
                 <div className="pb-skills-tags">
                   {skills.map(s => (
                     <div key={s} className="pb-skill-tag">
@@ -469,10 +519,16 @@ export default function PortfolioBuilder() {
               </SectionRow>
 
               {/* Dự án */}
-              <SectionRow dot="#8b5cf6" title="Dự án tiêu biểu" subtitle={`${projects.length} dự án cần tối ưu nội dung`}>
-                <button className="pb-ai-optimize-btn" onClick={handleOptimizeProjects} disabled={isOptimizing}>
+              <SectionRow dot="#8b5cf6" title="Dự án tiêu biểu" subtitle={projects.length > 0 ? `${projects.length} dự án` : 'Chưa có dự án — thêm ngay!'}>
+                {/* Fix II.2: Nút optimize chỉ active khi aiOn = true */}
+                <button
+                  className={`pb-ai-optimize-btn ${!aiOn ? 'disabled' : ''}`}
+                  onClick={handleOptimizeProjects}
+                  disabled={isOptimizing || !aiOn || projects.length === 0}
+                  title={!aiOn ? 'Bật Tối ưu AI để sử dụng tính năng này' : ''}
+                >
                   <FaWandMagicSparkles style={{ marginRight: '6px' }} />
-                  {isOptimizing ? "Đang tối ưu bằng AI..." : "Tối ưu nội dung dự án bằng AI"}
+                  {isOptimizing ? 'Đang tối ưu...' : !aiOn ? 'Tối ưu AI (đang tắt)' : 'Tối ưu mô tả dự án bằng AI'}
                 </button>
                 {projects.map(p => (
                   <div key={p.id} className="pb-proj-card">
@@ -484,25 +540,32 @@ export default function PortfolioBuilder() {
                     </div>
                     <label className="pb-form-label">Tên dự án</label>
                     <input className="pb-form-input" style={{ marginBottom: 10 }} value={p.title} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, title: e.target.value } : x))} />
-                    
-                    <label className="pb-form-label">Công nghệ / Kỹ năng sử dụng</label>
+                    <label className="pb-form-label">Công nghệ / Kỹ năng</label>
                     <input className="pb-form-input" style={{ marginBottom: 10 }} placeholder="React, Node.js, Python..." value={p.tech || ''} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, tech: e.target.value } : x))} />
-                    
                     <label className="pb-form-label">Link dự án (Tuỳ chọn)</label>
                     <input className="pb-form-input" style={{ marginBottom: 10 }} placeholder="https://..." value={p.link || ''} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, link: e.target.value } : x))} />
-                    
                     <label className="pb-form-label">Mô tả chi tiết</label>
-                    <textarea className="pb-form-textarea" style={{ minHeight: 60 }} placeholder="Mô tả công việc bạn đã làm trong dự án này..." value={p.desc} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, desc: e.target.value } : x))} />
+                    <textarea className="pb-form-textarea" style={{ minHeight: 60 }} placeholder="Mô tả theo cấu trúc: Hành động + Công việc + Kết quả đo lường được..." value={p.desc} onChange={e => setProjects(projects.map(x => x.id === p.id ? { ...x, desc: e.target.value } : x))} />
                   </div>
                 ))}
-                <button className="pb-add-item-btn" onClick={() => setProjects([...projects, { id: Date.now(), title: 'Dự án mới', desc: '', tags: [] }])}>
-                  <FaPlus style={{ marginRight: '6px' }} />
-                  Thêm dự án
+                <button className="pb-add-item-btn" onClick={() => setProjects([...projects, { id: Date.now(), title: 'Dự án mới', desc: '', tech: '', link: '' }])}>
+                  <FaPlus style={{ marginRight: '6px' }} /> Thêm dự án
                 </button>
               </SectionRow>
 
-              {/* Thành tựu */}
-              <SectionRow dot="#10b981" title="Thành tựu & Giải thưởng" subtitle={awards[0]?.title || 'Chưa có thành tựu'} editIcon={<EditIcon />}>
+              {/* Thành tựu — Fix II.3: Empty state tích cực */}
+              <SectionRow
+                dot="#10b981"
+                title="Thành tựu & Giải thưởng"
+                subtitle={awards.length > 0 ? awards[0]?.title : 'Thêm thành tựu đầu tiên của bạn!'}
+              >
+                {awards.length === 0 && (
+                  <div className="pb-empty-state-cta">
+                    <FaTrophy style={{ fontSize: 28, color: '#d1d5db', marginBottom: 8 }} />
+                    <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#374151', fontSize: 13 }}>Chứng chỉ, giải thưởng, học bổng...</p>
+                    <p style={{ margin: '0 0 12px', color: '#9ca3af', fontSize: 12 }}>Thêm thành tựu giúp profile của bạn nổi bật hơn 3x so với ứng viên khác</p>
+                  </div>
+                )}
                 {awards.map(a => (
                   <div key={a.id} className="pb-proj-card">
                     <div className="pb-proj-card-head">
@@ -513,78 +576,74 @@ export default function PortfolioBuilder() {
                     </div>
                     <div className="pb-form-group" style={{ marginBottom: 10 }}>
                       <label className="pb-form-label">Tên giải thưởng / Chứng chỉ</label>
-                      <input
-                        className="pb-form-input"
-                        value={a.title}
-                        onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))}
-                      />
+                      <input className="pb-form-input" value={a.title} onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, title: e.target.value } : x))} />
                     </div>
                     <label className="pb-form-label">Tổ chức cấp & Năm nhận</label>
-                    <input
-                      className="pb-form-input"
-                      placeholder="VD: Google - 2025"
-                      value={a.org}
-                      onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))}
-                    />
+                    <input className="pb-form-input" placeholder="VD: Google - 2025" value={a.org} onChange={e => setAwards(awards.map(x => x.id === a.id ? { ...x, org: e.target.value } : x))} />
                   </div>
                 ))}
                 <button className="pb-add-item-btn" onClick={() => setAwards([...awards, { id: Date.now(), title: 'Giải thưởng mới', org: '' }])}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                  Thêm giải thưởng
+                  <FaPlus style={{ marginRight: '6px' }} /> Thêm giải thưởng
                 </button>
               </SectionRow>
             </div>
 
-            {/* AI insight */}
-            <div className="pb-ai-insight">
-              <div className="pb-ai-insight-icon">
-                <FaLightbulb style={{ color: 'white', fontSize: '14px' }} />
+            {/* AI Insight — Fix II.2: chỉ hiện khi aiOn */}
+            {aiOn && aiInsight.insight && (
+              <div className="pb-ai-insight">
+                <div className="pb-ai-insight-icon">
+                  <FaLightbulb style={{ color: 'white', fontSize: '14px' }} />
+                </div>
+                <div>
+                  <p className="pb-ai-insight-label">AI Insight</p>
+                  <p className="pb-ai-insight-text">{aiInsight.insight}</p>
+                </div>
               </div>
-              <div>
-                <p className="pb-ai-insight-label">AI Insight</p>
-                <p className="pb-ai-insight-text">{aiInsight.insight}</p>
+            )}
+            {!aiOn && (
+              <div className="pb-ai-insight pb-ai-off">
+                <div className="pb-ai-insight-icon" style={{ background: '#e5e7eb' }}>
+                  <FaLightbulb style={{ color: '#9ca3af', fontSize: '14px' }} />
+                </div>
+                <div>
+                  <p className="pb-ai-insight-label" style={{ color: '#9ca3af' }}>Tối ưu AI đang tắt</p>
+                  <p className="pb-ai-insight-text" style={{ color: '#9ca3af' }}>Bật toggle "Tối ưu AI" phía trên để nhận phân tích từ AI.</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Actions */}
+            {/* Actions — Fix II.4: Chỉ để "Auto điền từ CV" ở đây, PDF đã chuyển lên preview header */}
             <div className="pb-actions-bar">
-              <button className="pb-btn-save" onClick={handleExtractCV} disabled={isExtracting}>
+              <button className="pb-btn-extract" onClick={handleExtractCV} disabled={isExtracting || !userId}>
                 <FaWandMagicSparkles style={{ marginRight: '6px' }} />
                 {isExtracting ? 'Đang đọc CV...' : 'Auto điền từ CV'}
-              </button>
-              <button className="pb-btn-publish" onClick={handleDownloadPDF}>
-                <FaDownload style={{ marginRight: '6px' }} />
-                Tải về thành PDF
               </button>
             </div>
           </div>
 
-          {/* ── RIGHT PREVIEW ── */}
+          {/* ══════════════ RIGHT PREVIEW ══════════════ */}
           <div className="pb-preview">
-            {/* Toolbar row 1 */}
+
+            {/* Toolbar: Device switch + PDF button (Fix II.4: PDF đúng vị trí) */}
             <div className="pb-preview-toolbar">
+              {/* Fix II.1b: Device switch thực sự thay đổi preview */}
               <div className="pb-device-switch">
-                {[['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([d, label]) => (
-                  <button key={d} className={`pb-device-btn ${device === d ? 'active' : ''}`} onClick={() => setDevice(d)}>
-                    {d === 'desktop' ? <FaDesktop style={{ marginRight: '4px' }} /> : <FaMobileScreen style={{ marginRight: '4px' }} />}
-                    {label}
+                {[['desktop', 'Desktop', <FaDesktop />], ['mobile', 'Mobile', <FaMobileScreen />]].map(([d, label, icon]) => (
+                  <button
+                    key={d}
+                    className={`pb-device-btn ${device === d ? 'active' : ''}`}
+                    onClick={() => setDevice(d)}
+                    aria-label={`Chế độ xem ${label}`}
+                  >
+                    {icon} <span style={{ marginLeft: 4 }}>{label}</span>
                   </button>
                 ))}
               </div>
-              <button className="pb-refresh-btn">
-                <FaArrowsRotate />
-              </button>
-            </div>
 
-            {/* Toolbar row 2 */}
-            <div className="pb-preview-actions-bar">
-              {[
-                { label: 'Chỉ để xem trực tiếp', icon: <FaEye style={{ marginRight: '6px' }} /> },
-                { label: 'Chỉnh sửa bố cục', icon: <FaTableCellsLarge style={{ marginRight: '6px' }} /> },
-                { label: 'Sao chép liên kết', icon: <FaLink style={{ marginRight: '6px' }} /> },
-              ].map(({ label, icon }) => (
-                <button key={label} className="pb-action-btn">{icon}{label}</button>
-              ))}
+              {/* Fix II.4: Nút PDF ở góc trên phải preview — đúng UX flow (publish cuối cùng) */}
+              <button className="pb-btn-pdf" onClick={handleDownloadPDF}>
+                <FaDownload style={{ marginRight: '6px' }} /> Tải PDF
+              </button>
             </div>
 
             {/* URL bar */}
@@ -596,20 +655,47 @@ export default function PortfolioBuilder() {
               </div>
               <div className="pb-url-input">
                 <FaGlobe style={{ color: '#9ca3af', marginRight: '6px' }} />
+                {/* Fix I.2: Hiển thị URL an toàn, không lộ tên thật */}
                 {portfolioUrl}
               </div>
-              <button className="pb-star-btn">
+              <button className="pb-star-btn" title="Lưu trang">
                 <FaStar style={{ color: '#9ca3af' }} />
               </button>
             </div>
 
-            {/* Preview frame */}
+            {/* Preview frame — Fix II.1b: thực sự co giãn theo device */}
             <div className="pb-preview-frame">
-              <div id="portfolio-preview-content" style={{ width: '100%', maxWidth: '640px', margin: '0 auto', background: 'transparent' }}>
-                <PortfolioPreview info={{...info, score: aiInsight.score}} skills={skills} projects={projects} awards={awards} theme={theme} />
+              <div
+                id="portfolio-preview-content"
+                className={`pb-preview-inner ${device}`}
+                style={{
+                  width: '100%',
+                  maxWidth: previewMaxWidth,
+                  margin: '0 auto',
+                  background: 'transparent',
+                  borderRadius: previewRadius,
+                  border: previewBorder,
+                  boxShadow: previewShadow,
+                  transition: 'max-width 0.3s ease, border-radius 0.3s ease',
+                  // Fix: KHÔNG dùng overflow:hidden — sẽ clip nội dung và ẩn scrollbar
+                  // Desktop: overflow visible để pb-preview-frame xử lý scroll
+                  // Mobile: overflow auto để cuộn trong khung phone frame
+                  overflow: device === 'mobile' ? 'auto' : 'visible',
+                  maxHeight: device === 'mobile' ? 'calc(100vh - 220px)' : 'none',
+                }}
+              >
+                <PortfolioPreview
+                  info={{ ...info, score: aiInsight.score }}
+                  skills={skills}
+                  projects={projects}
+                  awards={awards}
+                  theme={theme}
+                  showScore={showScore}
+                />
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </DashboardLayout>

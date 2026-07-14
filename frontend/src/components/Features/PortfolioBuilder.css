@@ -2,6 +2,7 @@
    PORTFOLIO BUILDER PAGE
    ============================================= */
 
+/* Fix: overflow-x hidden nhưng cho phép scroll dọ */
 .pb-page {
   display: flex;
   flex-direction: column;
@@ -17,6 +18,15 @@
   flex: 1;
   overflow: hidden;
   padding-top: 4px;
+  /* Ẩn footer trong workspace portfolio */
+  margin-bottom: 0;
+}
+
+/* Ẩn DashboardFooter trong trang Portfolio Builder */
+.pb-page ~ .dashboard-footer,
+.dashboard-content:has(.pb-page) ~ .dashboard-footer,
+.dashboard-content .pb-page + .dashboard-footer {
+  display: none !important;
 }
 
 /* ═══════════════════════════
@@ -638,14 +648,23 @@
 }
 .pb-star-btn:hover { color: #f59e0b; }
 
-/* Frame */
+/* Frame: scroll container thực sự cho preview nội dung */
 .pb-preview-frame {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px;
   display: flex;
   justify-content: center;
+  align-items: flex-start; /* quan trọng: flex-start để content không bị căng giãn */
+  /* Custom scrollbar đẹp */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
 }
+.pb-preview-frame::-webkit-scrollbar { width: 6px; }
+.pb-preview-frame::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 99px; }
+.pb-preview-frame::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+.pb-preview-frame::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 /* ═══════════════════════════
    PORTFOLIO PREVIEW CARD
@@ -976,7 +995,321 @@ body.dark-theme .pb-add-item-btn:hover, body.dark-theme .pb-add-section-btn:hove
 body.dark-theme .pb-skill-tag { background: #343842; color: #d1d5db; }
 body.dark-theme .pb-device-switch { background: #111216; }
 body.dark-theme .pb-device-btn.active { background: #343842; color: #f1f5f9; }
- 
+
+/* =============================================
+   NEW CLASSES — Refactored PortfolioBuilder
+   ============================================= */
+
+/* Fix II.4: Nút "Auto điền từ CV" (tách khỏi PDF button) */
+.pb-btn-extract {
+  flex: 1;
+  padding: 10px;
+  background: #fff;
+  color: var(--primary-color, #3b5bdb);
+  border: 1.5px solid var(--primary-color, #3b5bdb);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+.pb-btn-extract:hover { background: #eff2ff; }
+.pb-btn-extract:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Fix II.4: Nút PDF ở preview header góc trên phải */
+.pb-btn-pdf {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: linear-gradient(135deg, var(--primary-color, #3b5bdb), #5271f5);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.pb-btn-pdf:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Fix II.2: AI Insight khi toggle tắt */
+.pb-ai-off {
+  opacity: 0.6;
+  background: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Fix II.3: Empty state tích cực cho Awards */
+.pb-empty-state-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 8px 8px;
+}
+
+/* Fix I.1: Placeholder text trong preview khi chưa có data */
+.pf-empty-hint {
+  font-size: 12px;
+  color: #cbd5e1;
+  font-style: italic;
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+/* Fix I.1: Score placeholder khi chưa có data thật */
+.pf-score-placeholder {
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+  opacity: 0.7;
+}
+
+.pf-score-placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.pf-score-placeholder-text {
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 120px;
+}
+
+/* Fix II.1a: Expanded theme grid (3 cột) */
+.pb-theme-cards.expanded {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Fix II.1b: Device switch — mobile frame appearance */
+.pb-preview-inner.mobile {
+  /* Shadow và border giả lập phone đã được set bằng inline style */
+}
+
+/* Responsive: hide device switch label on small screens */
+@media (max-width: 1200px) {
+  .pb-device-btn span { display: none; }
+}
+
+/* Dark theme cho các class mới */
+body.dark-theme .pb-btn-extract { background: #22252e; border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); }
+body.dark-theme .pb-btn-extract:hover { background: #303440; }
+body.dark-theme .pb-ai-off { background: #1a1c23 !important; border-color: #343842 !important; }
+body.dark-theme .pf-empty-hint { color: #4b5563; }
+
+/* =============================================
+   TOAST NOTIFICATION
+   ============================================= */
+.pb-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pb-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.pb-toast.info  { background: #1e3a5f; color: #93c5fd; }
+.pb-toast.success { background: #064e3b; color: #6ee7b7; }
+.pb-toast.warn  { background: #78350f; color: #fde68a; }
+
+/* =============================================
+   AI SKILL SUGGESTIONS
+   ============================================= */
+.pb-suggest-skill-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 6px;
+}
+.pb-suggest-skill-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.pb-suggest-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: inherit;
+  background: linear-gradient(135deg, #eff2ff, #e8ecff);
+  color: var(--primary-color, #3b5bdb);
+  border: 1.5px solid #c7d2fe;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pb-suggest-btn:hover { background: #e0e7ff; border-color: var(--primary-color, #3b5bdb); }
+.pb-suggest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pb-suggest-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 10px;
+  background: #f8faff;
+  border: 1px dashed #c7d2fe;
+  border-radius: 8px;
+  min-height: 42px;
+}
+.pb-suggest-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #fff;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.pb-suggest-tag:hover {
+  background: var(--primary-color, #3b5bdb);
+  border-color: var(--primary-color, #3b5bdb);
+  color: #fff;
+}
+.pb-suggest-tag.added {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+  cursor: default;
+}
+
+/* =============================================
+   VISUAL PROJECT CARDS (Preview)
+   ============================================= */
+.pf-project-visual-card {
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s;
+}
+.pf-project-visual-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.pf-project-thumb-visual {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.pf-project-thumb-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pf-project-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.pf-project-thumb-placeholder:hover { opacity: 0.85; }
+
+.pf-project-card-body {
+  padding: 12px 14px;
+}
+.pf-project-title { font-size: 14px; font-weight: 700; color: #111827; margin: 0 0 4px; }
+.pf-project-desc  { font-size: 12.5px; color: #6b7280; line-height: 1.5; margin: 0 0 8px; }
+.pf-project-tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.pf-tech-tag {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* Image upload input trong proj card editor */
+.pb-proj-img-upload {
+  width: 100%;
+  height: 80px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  margin-bottom: 10px;
+  background: #fafafa;
+  overflow: hidden;
+  position: relative;
+}
+.pb-proj-img-upload:hover { border-color: var(--primary-color, #3b5bdb); color: var(--primary-color, #3b5bdb); background: #f0f4ff; }
+.pb-proj-img-upload img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.pb-proj-img-upload input[type="file"] { display: none; }
+
+/* ── Ẩn DashboardFooter bên trong portfolio page ── */
+/* (dùng JS class thay thế cho selector :has() để đảm bảo cross-browser) */
+.portfolio-page-active .dashboard-footer { display: none !important; }
+
+/* dark theme updates */
+body.dark-theme .pb-suggest-tags { background: #111216; border-color: #343842; }
+body.dark-theme .pb-suggest-tag { background: #22252e; border-color: #343842; color: #d1d5db; }
+body.dark-theme .pb-suggest-tag:hover { background: var(--primary-color, #3b5bdb); border-color: var(--primary-color, #3b5bdb); color: #fff; }
+body.dark-theme .pf-project-visual-card { border-color: #343842; }
+body.dark-theme .pf-project-title { color: #f1f5f9; }
+body.dark-theme .pf-project-desc { color: #8f95a3; }
+body.dark-theme .pb-proj-img-upload { background: #111216; border-color: #343842; color: #6b7280; }
+
 
 /* =============================================
    PRINT / PDF EXPORT STYLES

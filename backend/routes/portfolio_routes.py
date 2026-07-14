@@ -235,3 +235,32 @@ CV Text:
         return jsonify({'success': False, 'message': 'Lỗi AI'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: AI gợi ý kỹ năng theo chức danh / ngành nghề
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/suggest-skills', methods=['POST'])
+def suggest_skills():
+    data = request.json
+    job_title = data.get('job_title', '').strip()
+    existing_skills = data.get('existing_skills', [])
+
+    if not job_title:
+        return jsonify({'success': False, 'message': 'Thiếu job_title'}), 400
+
+    prompt = f"""Bạn là chuyên gia tuyển dụng IT & kỹ thuật. 
+Dựa vào chức danh "{job_title}", hãy gợi ý 10 kỹ năng/công cụ kỹ thuật phổ biến và được nhà tuyển dụng tìm kiếm nhiều nhất cho vị trí này.
+
+Yêu cầu:
+- Chỉ liệt kê tên kỹ năng/công cụ ngắn gọn (ví dụ: "Python", "SQL", "Tableau")
+- Ưu tiên kỹ năng cụ thể (tool, language, framework) hơn kỹ năng mềm
+- KHÔNG lặp lại các kỹ năng đã có: {', '.join(existing_skills) if existing_skills else 'không có'}
+- Trả về đúng 10 kỹ năng
+
+Trả về JSON: {{"skills": ["kỹ năng 1", "kỹ năng 2", ..., "kỹ năng 10"]}}"""
+
+    result = call_openai_json(prompt)
+    if result and 'skills' in result:
+        return jsonify({'success': True, 'data': result['skills']})
+    return jsonify({'success': False, 'message': 'Lỗi gọi AI'}), 500

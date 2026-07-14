@@ -19,6 +19,9 @@ import LearningPath from './components/Features/LearningPath';
 import Settings from './components/Features/Settings';
 import MyProfile from './components/Features/MyProfile';
 
+// Tiện ích: reset scroll về đầu trang khi navigate
+import ScrollToTop from './components/DashboardLogged/ScrollToTop';
+
 function App() {
   useEffect(() => {
     // Apply global appearance settings on load
@@ -42,6 +45,8 @@ function App() {
 
   return (
     <Router>
+      {/* ScrollToTop phải nằm bên trong <Router> để dùng được useLocation() */}
+      <ScrollToTop />
       <div className="App">
         <Routes>
           <Route path="/" element={<Landing />} />

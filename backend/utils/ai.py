@@ -28,7 +28,7 @@ def call_openai_json(prompt, system_prompt="You are a helpful assistant that out
             response_format={
                 'type': 'json_object'
             },
-            temperature=0.5
+            temperature=0.3
         )
         content = response.choices[0].message.content
         return json.loads(content)

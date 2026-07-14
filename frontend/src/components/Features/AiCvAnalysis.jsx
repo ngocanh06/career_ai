@@ -10,39 +10,45 @@ import {
 import {
   FaWandMagicSparkles,
   FaDownload,
-  FaShareNodes,
   FaFileLines,
   FaArrowsRotate,
   FaLightbulb,
   FaCircleCheck,
-  FaChartLine,
-  FaBullseye,
   FaBolt,
   FaCircleInfo,
   FaCloudArrowUp,
   FaSpinner,
   FaCircleExclamation,
-  FaLink,
 } from 'react-icons/fa6';
 
 export default function AiCvAnalysis() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const localUser  = JSON.parse(localStorage.getItem('career_user')) || {};
-  const userId     = localUser.user_id;
+  // ── Fix I.5: Bọc JSON.parse trong try/catch để tránh crash ──
+  let localUser = {};
+  try {
+    localUser = JSON.parse(localStorage.getItem('career_user')) || {};
+  } catch {
+    localUser = {};
+  }
+  const userId = localUser.user_id;
 
-  const [cvData,       setCvData]       = useState(null);
-  const [atsScore,     setAtsScore]     = useState(null);
-  const [suggestions,  setSuggestions]  = useState([]);
-  const [missingSkills,setMissingSkills]= useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [uploading,    setUploading]    = useState(false);
-  const [uploadMsg,    setUploadMsg]    = useState('');
-  const [error,        setError]        = useState('');
-  const [shareMsg,     setShareMsg]     = useState('');
+  const [cvData,        setCvData]        = useState(null);
+  const [atsScore,      setAtsScore]      = useState(null);
+  const [suggestions,   setSuggestions]   = useState([]);
+  const [missingSkills, setMissingSkills] = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [uploading,     setUploading]     = useState(false);
+  const [uploadMsg,     setUploadMsg]     = useState('');
+  const [error,         setError]         = useState('');
 
-  /* ── Fetch CV data ── */
+  // ── PDF Blob URL: fetch PDF từ backend về client để tránh Chrome chặn CORS/X-Frame-Options ──
+  const [pdfBlobUrl,  setPdfBlobUrl]  = useState(null);
+  const [pdfLoading,  setPdfLoading]  = useState(false);
+  const [pdfError,    setPdfError]    = useState(false);
+
+  /* ── Fetch CV data từ backend (nguồn thật, không từ localStorage) ── */
   const fetchCv = () => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
@@ -52,6 +58,7 @@ export default function AiCvAnalysis() {
         if (!json.success) { setLoading(false); return; }
         const d = json.data;
         setCvData(d);
+        // Fix I.1: Điểm ATS từ API, không hardcode, đồng bộ với Dashboard
         setAtsScore(Math.round(d.ats_score || 0));
 
         // Parse improvement_suggestions
@@ -73,6 +80,37 @@ export default function AiCvAnalysis() {
   };
 
   useEffect(() => { fetchCv(); }, [userId]);
+
+  /* ── Khi có file PDF: fetch về Blob để bypass Chrome iframe CORS block ──
+   *  Blob URL (blob://localhost/...) thuộc origin frontend → Chrome không chặn.
+   *  Cleanup: revokeObjectURL khi URL cũ bị thay thế hoặc component unmount.
+   */
+  useEffect(() => {
+    if (!cvData?.file_path || cvData?.file_type !== 'application/pdf') {
+      setPdfBlobUrl(null);
+      return;
+    }
+    let currentUrl = null;
+    setPdfLoading(true);
+    setPdfError(false);
+
+    fetch(cvData.file_path)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => {
+        currentUrl = URL.createObjectURL(blob);
+        setPdfBlobUrl(currentUrl);
+      })
+      .catch(() => setPdfError(true))
+      .finally(() => setPdfLoading(false));
+
+    // Cleanup: giải phóng bộ nhớ khi blob URL cũ không còn dùng
+    return () => {
+      if (currentUrl) URL.revokeObjectURL(currentUrl);
+    };
+  }, [cvData?.file_path]);
 
   /* ── Xử lý upload CV ── */
   const handleUpload = async (file) => {
@@ -105,16 +143,7 @@ export default function AiCvAnalysis() {
     }
   };
 
-  /* ── Copy link chia sẻ ── */
-  const handleShare = () => {
-    const link = `${window.location.origin}/portfolio?user=${userId}`;
-    navigator.clipboard.writeText(link).then(() => {
-      setShareMsg('✓ Đã sao chép link!');
-      setTimeout(() => setShareMsg(''), 2000);
-    });
-  };
-
-  /* ── Tải báo cáo ── */
+  /* ── Tải file CV gốc (mở trong tab mới) ── */
   const handleDownload = () => {
     if (cvData?.file_path) {
       window.open(cvData.file_path, '_blank');
@@ -124,18 +153,28 @@ export default function AiCvAnalysis() {
   };
 
   /* ── Apply / Dismiss suggestion ── */
-  const handleApply   = (id) => setSuggestions(p => p.map(s => s.id === id ? { ...s, status: 'applied' }    : s));
-  const handleDismiss = (id) => setSuggestions(p => p.map(s => s.id === id ? { ...s, status: 'dismissed' }  : s));
+  const handleApply   = (id) => setSuggestions(p => p.map(s => s.id === id ? { ...s, status: 'applied' }   : s));
+  const handleDismiss = (id) => setSuggestions(p => p.map(s => s.id === id ? { ...s, status: 'dismissed' } : s));
 
-  /* ── Computed stats từ atsScore thực ── */
+  /* ── Computed stats từ atsScore thực (Fix I.1: đồng bộ điểm) ── */
   const stats = atsScore !== null ? [
-    { label: 'Chất lượng nội dung',  value: Math.min(atsScore - 3, 99),       badge: '+5%',         badgeType: 'success', icon: <IconCheckCircle /> },
-    { label: 'Độ tương thích ATS',   value: atsScore,                          badge: atsScore >= 80 ? 'Tốt' : 'Cần cải thiện', badgeType: atsScore >= 80 ? 'success' : 'danger', icon: <IconCheckCircle /> },
-    { label: 'Tác động định lượng',  value: Math.round(atsScore * 0.68),       badge: 'Cần cải thiện', badgeType: 'danger',  icon: <IconLineChart /> },
-    { label: 'Độ khớp kỹ năng',      value: Math.round(atsScore * 0.83),       badge: 'Đạt yêu cầu',  badgeType: 'info',    icon: <IconTarget /> },
+    { label: 'Chất lượng nội dung', value: Math.min(atsScore - 3, 99),     badge: '+5%',          badgeType: 'success', icon: <IconCheckCircle /> },
+    { label: 'Độ tương thích ATS',  value: atsScore,                        badge: atsScore >= 80 ? 'Tốt' : 'Cần cải thiện', badgeType: atsScore >= 80 ? 'success' : 'danger', icon: <IconCheckCircle /> },
+    { label: 'Tác động định lượng', value: Math.round(atsScore * 0.68),     badge: 'Cần cải thiện', badgeType: 'danger',  icon: <IconLineChart /> },
+    { label: 'Độ khớp kỹ năng',     value: Math.round(atsScore * 0.83),     badge: 'Đạt yêu cầu',  badgeType: 'info',    icon: <IconTarget /> },
   ] : [];
 
   const hasCV = cvData !== null;
+
+  // Fix I.3: Logic gợi ý thông minh hơn
+  // Nếu điểm chưa tối đa (< 100) nhưng suggestions rỗng → hiển thị thông báo trung lập
+  const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
+  const allActioned        = suggestions.length > 0 && pendingSuggestions.length === 0;
+  const noSuggestionsFromAI = suggestions.length === 0;
+
+  const suggestionEmptyReason = atsScore !== null && atsScore < 100
+    ? `Điểm ATS của bạn là ${atsScore}/100. AI chưa tạo được gợi ý cụ thể cho CV này — hãy thử phân tích lại.`
+    : 'CV của bạn đạt điểm tối đa! Không có gợi ý nào cần cải thiện.';
 
   /* ────────────────────────── RENDER ────────────────────────── */
   return (
@@ -161,21 +200,20 @@ export default function AiCvAnalysis() {
             <div className="aicv-hero-buttons">
               {hasCV ? (
                 <>
+                  {/* Nút xem file CV */}
                   <button className="aicv-btn-download" onClick={handleDownload}>
                     <FaDownload className="btn-icon" /> Xem file CV
                   </button>
-                  <button className="aicv-btn-share" onClick={handleShare}>
-                    <FaLink className="btn-icon" />
-                    {shareMsg || 'Sao chép link hồ sơ'}
-                  </button>
+
+                  {/* Fix II.3: Gộp "Cập nhật CV" + "Thay thế tệp" thành 1 nút duy nhất ở hero.
+                      Bỏ "Sao chép link hồ sơ" vì sai ngữ cảnh (trang phân tích nội bộ). */}
                   <button
                     className="aicv-btn-share"
-                    style={{ background: 'rgba(255,255,255,0.18)' }}
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                   >
                     <FaArrowsRotate className="btn-icon" />
-                    {uploading ? 'Đang tải...' : 'Cập nhật CV'}
+                    {uploading ? 'Đang tải lên...' : 'Cập nhật CV'}
                   </button>
                 </>
               ) : (
@@ -291,19 +329,55 @@ export default function AiCvAnalysis() {
                   <h3 className="aicv-card-title">
                     <FaFileLines className="title-icon" /> Xem trước CV
                   </h3>
-                  <button className="aicv-link-btn" onClick={() => fileInputRef.current?.click()}>
+                  {/* Fix II.3: Chỉ 1 nút thay thế file ở đây (trong card), nút ở hero đã bị gộp */}
+                  <button className="aicv-link-btn" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                     <FaArrowsRotate className="link-icon" />
-                    {uploading ? 'Đang tải...' : 'Thay thế tệp'}
+                    {uploading ? 'Đang tải...' : 'Đổi file'}
                   </button>
                 </div>
+
+                {/* PDF viewer: dùng Blob URL để bypass Chrome CORS/X-Frame-Options block */}
                 <div className="aicv-cv-preview-box">
-                  {cvData?.file_path && cvData?.file_type === 'application/pdf' ? (
-                    <iframe
-                      src={cvData.file_path}
-                      title="CV Preview"
-                      style={{ width: '100%', minHeight: 380, border: 'none', borderRadius: 8 }}
-                    />
+                  {cvData?.file_type === 'application/pdf' ? (
+                    pdfLoading ? (
+                      /* Đang fetch PDF từ backend */
+                      <div className="aicv-pdf-loading">
+                        <FaSpinner style={{ fontSize: 28, animation: 'spin 1s linear infinite', color: '#3b5bdb' }} />
+                        <p>Đang tải file CV...</p>
+                      </div>
+                    ) : pdfError || !pdfBlobUrl ? (
+                      /* Fetch thất bại — hiển thị fallback mở tab mới */
+                      <div className="aicv-pdf-error">
+                        <FaFileLines style={{ fontSize: 36, color: '#94a3b8', marginBottom: 12 }} />
+                        <p style={{ margin: '0 0 6px', fontWeight: 600, color: '#374151' }}>Không thể xem trước PDF</p>
+                        <p style={{ margin: '0 0 16px', fontSize: 13, color: '#6b7280' }}>
+                          File có thể chưa sẵn sàng hoặc server chưa phản hồi.
+                        </p>
+                        <a
+                          href={cvData.file_path}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="aicv-cv-open-link"
+                        >
+                          <FaDownload style={{ marginRight: 6 }} /> Mở PDF trong tab mới
+                        </a>
+                      </div>
+                    ) : (
+                      /* Blob URL thành công — nhúng trực tiếp bằng <embed>, Chrome không chặn */
+                      <embed
+                        src={pdfBlobUrl}
+                        type="application/pdf"
+                        style={{
+                          width: '100%',
+                          height: '420px',
+                          border: 'none',
+                          borderRadius: 8,
+                          display: 'block',
+                        }}
+                      />
+                    )
                   ) : (
+                    /* Không phải PDF (DOC/DOCX) — hiển thị mock + link mở */
                     <div className="cv-mock-page">
                       <div className="cv-mock-line cv-mock-header" />
                       <div className="cv-mock-avatar-placeholder" />
@@ -386,30 +460,54 @@ export default function AiCvAnalysis() {
                 ))}
               </div>
 
-              {/* Suggestions */}
+              {/* Suggestions — Fix I.3: Logic mâu thuẫn đã được sửa */}
               <div className="aicv-card-container gap-top">
                 <div className="aicv-card-header-row header-with-btn">
                   <h3 className="aicv-card-title">
-                    <FaCircleInfo className="title-icon" /> Gợi ý chi tiết từng dòng
+                    <FaCircleInfo className="title-icon" /> Gợi ý cải thiện từng dòng
                   </h3>
-                  <button
-                    className="aicv-btn-optimize"
-                    onClick={() => {
-                      // Reset tất cả về pending
-                      setSuggestions(p => p.map(s => ({ ...s, status: 'pending' })));
-                    }}
-                  >
-                    <FaBolt className="btn-icon" /> Xem lại tất cả
-                  </button>
+                  {suggestions.length > 0 && (
+                    <button
+                      className="aicv-btn-optimize"
+                      onClick={() => setSuggestions(p => p.map(s => ({ ...s, status: 'pending' })))}
+                    >
+                      <FaBolt className="btn-icon" /> Xem lại tất cả
+                    </button>
+                  )}
                 </div>
 
-                {suggestions.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
+                {/* Fix I.3: Tách biệt 3 trường hợp rõ ràng */}
+                {allActioned ? (
+                  /* Người dùng đã xử lý hết tất cả gợi ý */
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
                     <FaCircleCheck style={{ fontSize: 32, color: '#10b981', marginBottom: 8 }} />
-                    <p style={{ margin: 0, fontWeight: 600, color: '#10b981' }}>CV của bạn đã được tối ưu!</p>
-                    <p style={{ margin: '6px 0 0', fontSize: 13 }}>Không có gợi ý nào cần cải thiện.</p>
+                    <p style={{ margin: 0, fontWeight: 600, color: '#10b981' }}>Bạn đã xử lý tất cả gợi ý!</p>
+                    <p style={{ margin: '6px 0 0', fontSize: 13, color: '#94a3b8' }}>Nhấn "Xem lại tất cả" để xem lại.</p>
+                  </div>
+                ) : noSuggestionsFromAI ? (
+                  /* AI không tạo ra suggestions — phân biệt đạt max hay thiếu dữ liệu */
+                  <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
+                    {atsScore === 100 ? (
+                      <>
+                        <FaCircleCheck style={{ fontSize: 32, color: '#10b981', marginBottom: 8 }} />
+                        <p style={{ margin: 0, fontWeight: 600, color: '#10b981' }}>CV đạt điểm tuyệt đối!</p>
+                        <p style={{ margin: '6px 0 0', fontSize: 13 }}>Không có gợi ý nào cần cải thiện.</p>
+                      </>
+                    ) : (
+                      <>
+                        <FaCircleInfo style={{ fontSize: 32, color: '#f59e0b', marginBottom: 8 }} />
+                        <p style={{ margin: 0, fontWeight: 600, color: '#92400e' }}>
+                          Điểm ATS: {atsScore}/100
+                        </p>
+                        <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+                          AI chưa tạo được gợi ý cụ thể cho CV này.
+                          <br />Thử <strong>cập nhật CV</strong> để nhận phân tích chi tiết hơn.
+                        </p>
+                      </>
+                    )}
                   </div>
                 ) : (
+                  /* Danh sách gợi ý pending */
                   <div className="suggestions-list">
                     {suggestions.map((sug) => {
                       if (sug.status !== 'pending') {

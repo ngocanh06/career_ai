@@ -6,7 +6,7 @@ import {
   FaBriefcase, 
   FaEarthAmericas, 
   FaChartSimple, 
-  FaGear, 
+  FaGear,
   FaCircleQuestion, 
   FaWandMagicSparkles 
 } from "react-icons/fa6";
@@ -32,13 +32,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo" onClick={() => navigate('/dashboard')}>
-        <div className="sidebar-logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
-            <polyline points="2 15.5 12 22 22 15.5"/>
-            <polyline points="2 12 12 18.5 22 12"/>
-          </svg>
-        </div>
+        <img src="/logo.png" alt="CareerAI" className="sidebar-logo-img" />
         <span className="sidebar-logo-text">CareerAI</span>
       </div>
 

@@ -29,39 +29,58 @@ def extract_text_from_file(filepath, file_type):
     return text
 
 def analyze_cv_with_openai(cv_text):
-    prompt = f"""
-Bạn là một chuyên gia nhân sự và một hệ thống ATS đánh giá hồ sơ.
-Dưới đây là văn bản trích xuất từ CV của ứng viên. Hãy phân tích và trả về DUY NHẤT một chuỗi JSON hợp lệ theo đúng cấu trúc sau (không kèm theo văn bản giải thích nào khác ngoài JSON):
+    system_prompt = """Bạn là chuyên gia tối ưu hóa CV và hệ thống ATS chuyên nghiệp.
+
+NGUYÊN TẮC BẮT BUỘC KHI ĐƯA RA GỢI Ý:
+1. TUYỆT ĐỐI KHÔNG khuyên ứng viên đổi công ty, thay trường đại học, hay chọn nhà tuyển dụng khác.
+   Lý do: Kinh nghiệm làm việc và học vấn là lịch sử đã xảy ra — không thể thay đổi được.
+   
+2. Gợi ý CHỈ tập trung vào cách VIẾT LẠI nội dung CV để trông chuyên nghiệp hơn, gồm:
+   - Thêm số liệu định lượng cụ thể (%, con số, quy mô, thời gian, doanh thu...)
+   - Viết lại theo cấu trúc: [Động từ hành động] + [Công việc đã làm] + [Kết quả đo lường được]
+   - Bổ sung từ khóa công nghệ/chuyên ngành phù hợp để vượt ATS scanner
+   - Giải thích rõ hơn lý do thời gian làm việc ngắn (nếu có) thay vì để trống
+   - Thay thế đánh giá chủ quan (sao, %) bằng bằng chứng cụ thể (chứng chỉ, dự án, phương pháp)
+
+3. Câu "recommendation" phải là đoạn text CỤ THỂ có thể dán thẳng vào CV, không phải lời khuyên chung chung.
+
+Chỉ trả về JSON, không có văn bản giải thích nào khác."""
+
+    prompt = f"""Phân tích CV sau và trả về JSON theo cấu trúc bên dưới.
 
 {{
-  "ats_score": <số nguyên từ 1 đến 100>,
+  "ats_score": <số nguyên từ 1 đến 100, đánh giá khả năng vượt ATS scanner>,
   "analysis_result": {{
-    "strengths": ["<điểm mạnh 1>", "<điểm mạnh 2>", "<điểm mạnh 3>"],
-    "weaknesses": ["<điểm yếu 1>", "<điểm yếu 2>", "<kỹ năng còn thiếu 3>"],
-    "summary": "<Tóm tắt đánh giá CV bằng tiếng Việt, khoảng 2 câu>"
+    "strengths": ["<điểm mạnh cụ thể 1>", "<điểm mạnh cụ thể 2>", "<điểm mạnh cụ thể 3>"],
+    "weaknesses": ["<kỹ năng/từ khóa còn thiếu 1>", "<kỹ năng/từ khóa còn thiếu 2>", "<điểm yếu cụ thể 3>"],
+    "summary": "<Nhận xét tổng quan về CV bằng tiếng Việt, 2-3 câu, tập trung vào cách trình bày và nội dung>"
   }},
   "improvement_suggestions": {{
     "suggestions": [
       {{
         "id": 1,
-        "type": "<HÀNH ĐỘNG hoặc TỪ KHÓA hoặc SỐ LIỆU>",
-        "section": "<Tên mục cần sửa, ví dụ 'Kinh nghiệm làm việc'>",
-        "original": "<Một đoạn ngắn trích chính xác từ CV cần cải thiện>",
-        "recommendation": "<Đoạn viết lại tốt hơn, chuyên nghiệp hơn>"
+        "type": "<HÀNH ĐỘNG | TỪ KHÓA | SỐ LIỆU | GIẢI THÍCH | CHỨNG MINH>",
+        "section": "<Tên mục trong CV cần sửa, ví dụ: Kinh nghiệm làm việc, Kỹ năng, Học vấn>",
+        "original": "<Trích dẫn chính xác đoạn text từ CV cần cải thiện>",
+        "recommendation": "<Đoạn viết lại hoàn chỉnh, cụ thể, có thể dán thẳng vào CV — KHÔNG được khuyên đổi công ty hay đổi trường>"
       }}
     ]
   }}
 }}
 
-(Trả về tối đa 3 suggestions)
-Tất cả ngôn ngữ sử dụng phải là tiếng Việt, ngoại trừ các từ khóa chuyên ngành.
+Quy tắc bắt buộc:
+- Trả về tối đa 5 suggestions
+- Mỗi "recommendation" phải là nội dung viết lại cụ thể, KHÔNG phải lời khuyên chung ("hãy thêm số liệu" là SAI, cần viết ra con số cụ thể ví dụ như "Quản lý nhóm 5 thành viên, hoàn thành dự án đúng deadline 95% các sprint")
+- Nếu thời gian làm việc ngắn (dưới 6 tháng), gợi ý cách giải thích rõ lý do (thực tập, dự án ngắn hạn, hợp đồng theo mùa...) thay vì bỏ qua
+- Tất cả ngôn ngữ dùng tiếng Việt, ngoại trừ từ khóa kỹ thuật/chuyên ngành
 
 Văn bản CV:
 \"\"\"
 {cv_text[:6000]}
 \"\"\"
 """
-    return call_openai_json(prompt)
+    return call_openai_json(prompt, system_prompt=system_prompt, model="llama-3.3-70b-versatile")
+
 
 # -------------------------------------------------------
 # API: Lấy thông tin phân tích CV theo user_id
