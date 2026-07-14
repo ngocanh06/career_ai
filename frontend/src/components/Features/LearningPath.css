@@ -884,6 +884,30 @@ body.dark-theme .lp-empty-courses { background: #1a1c23; border-color: #343842; 
   box-shadow: 0 4px 12px rgba(59,91,219,0.08);
 }
 
+/* ── Platform link trong course card ── */
+.lp-platform-link {
+  color: var(--primary-color, #3b5bdb);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.lp-platform-link:hover { opacity: 0.75; text-decoration: underline; }
+
+/* Đảm bảo <a> tag styled như button */
+a.lp-course-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+a.lp-goal-course-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── PDF Print Optimizations ── */
 @media print {
   #learning-path-print-content {
@@ -897,3 +921,4 @@ body.dark-theme .lp-empty-courses { background: #1a1c23; border-color: #343842; 
     page-break-inside: avoid;
   }
 }
+

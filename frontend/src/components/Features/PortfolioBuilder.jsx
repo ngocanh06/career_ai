@@ -34,7 +34,7 @@ const THEMES = [
   { id: 'sunset', name: 'Sunset', colors: ['#dc2626', '#fb923c', '#fff7ed'] },
 ];
 
-const FALLBACK_INFO = { name: '', title: '', bio: '', email: '', linkedin: '' };
+const FALLBACK_INFO = { name: '', title: '', bio: '', email: '' };
 
 /* ── Fix I.2: URL không lộ tên thật — dùng hash ngắn từ user_id ── */
 function makePortfolioSlug(userId) {
@@ -268,25 +268,43 @@ export default function PortfolioBuilder() {
       .then(json => {
         if (!json.success) return;
         const d = json.data;
-        setInfo({
+        // Tên luôn lấy từ DB (bảng profile)
+        setInfo(prev => ({
+          ...prev,
           name: d.full_name || '',
-          title: d.bio?.includes('||') ? d.bio.split('||')[0] : (d.bio?.split('.')[0] || ''),
-          bio: d.bio?.includes('||') ? d.bio.split('||')[1] : (d.bio || ''),
           email: d.email || '',
-          linkedin: '',
-        });
+        }));
       }).catch(() => { });
 
-    fetch(`http://localhost:5000/api/skills/${userId}`)
+    // Lấy thông tin từ CV → chức danh (position) và giới thiệu (summary)
+    fetch(`http://localhost:5000/api/cv/${userId}`)
       .then(r => r.json())
-      .then(json => { if (json.success) setSkills(json.data.map(s => s.skill_name)); })
-      .catch(() => { });
+      .then(json => {
+        if (!json.success || !json.data) return;
+        const cv = json.data;
+        // Lấy summary từ analysis_result → dùng làm bio
+        try {
+          const analysis = typeof cv.analysis_result === 'string'
+            ? JSON.parse(cv.analysis_result)
+            : cv.analysis_result;
+          if (analysis?.summary) {
+            setInfo(prev => ({ ...prev, bio: analysis.summary }));
+          }
+        } catch { }
+      }).catch(() => { });
 
+    // Lấy kinh nghiệm → dùng position đầu tiên làm chức danh
     fetch(`http://localhost:5000/api/experience/${userId}`)
       .then(r => r.json())
       .then(json => {
         if (!json.success) return;
-        setProjects(json.data.map(exp => ({
+        const expList = json.data || [];
+        // Chức danh: lấy position đầu tiên trong kinh nghiệm
+        if (expList.length > 0 && expList[0].position) {
+          setInfo(prev => ({ ...prev, title: prev.title || expList[0].position }));
+        }
+        // Dự án: map từ experience
+        setProjects(expList.map(exp => ({
           id: exp.experience_id,
           title: `${exp.position} - ${exp.company}`,
           desc: exp.description || '',
@@ -305,6 +323,12 @@ export default function PortfolioBuilder() {
           org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : ''),
         })));
       }).catch(() => { });
+
+    // L\u1ea5y k\u1ef9 n\u0103ng t\u1eeb b\u1ea3ng userskill
+    fetch(`http://localhost:5000/api/skills/${userId}`)
+      .then(r => r.json())
+      .then(json => { if (json.success) setSkills(json.data.map(s => s.skill_name)); })
+      .catch(() => { });
   }, [userId]);
 
   /* ── Fix I.1: Score chỉ được fetch khi có data thật, không hardcode ── */
@@ -378,6 +402,14 @@ export default function PortfolioBuilder() {
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;
+        if (d.name || d.title || d.bio) {
+          setInfo(prev => ({
+            ...prev,
+            name: d.name || prev.name,
+            title: d.title || prev.title,
+            bio: d.bio || prev.bio
+          }));
+        }
         if (d.skills) setSkills(prev => [...new Set([...prev, ...d.skills])]);
         if (d.projects) setProjects(prev => [...prev, ...d.projects.map((p, i) => ({ id: Date.now() + i, title: p.title || 'Dự án mới', desc: p.desc || '', tech: p.tech || '', link: '' }))]);
         if (d.awards) setAwards(prev => [...prev, ...d.awards.map((a, i) => ({ id: Date.now() + 100 + i, title: a.title || 'Giải thưởng', org: a.org || '' }))]);
@@ -397,7 +429,8 @@ export default function PortfolioBuilder() {
       await fetch(`http://localhost:5000/api/user/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: info.name, bio: `${info.title}||${info.bio}` }),
+        // Lưu full_name và bio riêng biệt, không dùng dấu phân cách '||' nữa
+        body: JSON.stringify({ full_name: info.name, bio: info.bio }),
       });
     } catch (e) { console.error('Failed to save profile', e); }
   };
@@ -488,9 +521,9 @@ export default function PortfolioBuilder() {
 
               {/* Thông tin cá nhân */}
               <SectionRow dot="var(--primary-color, #3b5bdb)" title="Thông tin cá nhân" subtitle={info.name ? `${info.name}${info.title ? ' • ' + info.title : ''}` : 'Chưa có thông tin'}>
-                {['name', 'title', 'email', 'linkedin'].map(f => (
+                {['name', 'title', 'email'].map(f => (
                   <div className="pb-form-group" key={f}>
-                    <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email', linkedin: 'LinkedIn' }[f]}</label>
+                    <label className="pb-form-label">{{ name: 'Họ và tên', title: 'Chức danh', email: 'Email' }[f]}</label>
                     <input className="pb-form-input" value={info[f]} onChange={e => setInfo({ ...info, [f]: e.target.value })} onBlur={handleSaveProfile} />
                   </div>
                 ))}
