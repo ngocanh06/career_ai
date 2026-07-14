@@ -217,6 +217,9 @@ def extract_portfolio_from_cv(user_id):
 Trích xuất các thông tin chuyên môn từ CV sau để xây dựng Portfolio.
 Hãy trả về một JSON có cấu trúc sau:
 {{
+  "name": "Họ và tên của ứng viên",
+  "title": "Chức danh nghề nghiệp chính (ví dụ: Software Engineer, Data Analyst...)",
+  "bio": "Đoạn giới thiệu bản thân ngắn gọn (Professional Summary) được viết lại sao cho chuyên nghiệp, dưới 50 chữ",
   "skills": ["kỹ năng 1", "kỹ năng 2"],
   "projects": [
     {{ "title": "Tên dự án", "desc": "Mô tả ngắn gọn", "tech": "Các công nghệ sử dụng" }}

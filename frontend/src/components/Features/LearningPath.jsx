@@ -10,6 +10,55 @@ import {
 
 const LEVEL_PCT = { expert: 100, advanced: 80, intermediate: 60, beginner: 30 };
 
+/* Map platform name → URL thực */
+const PLATFORM_URLS = {
+  // Coding & Tech Practice
+  'hackerrank': 'https://www.hackerrank.com',
+  'leetcode': 'https://leetcode.com',
+  'codewars': 'https://www.codewars.com',
+  'kaggle': 'https://www.kaggle.com/learn',
+  // Video Courses
+  'coursera': 'https://www.coursera.org',
+  'udemy': 'https://www.udemy.com',
+  'edx': 'https://www.edx.org',
+  'pluralsight': 'https://www.pluralsight.com',
+  'linkedin learning': 'https://www.linkedin.com/learning',
+  'skillshare': 'https://www.skillshare.com',
+  'udacity': 'https://www.udacity.com',
+  'datacamp': 'https://www.datacamp.com',
+  // Free Resources
+  'youtube': 'https://www.youtube.com',
+  'freecodecamp': 'https://www.freecodecamp.org',
+  'w3schools': 'https://www.w3schools.com',
+  'mdn': 'https://developer.mozilla.org',
+  'codecademy': 'https://www.codecademy.com',
+  'theodinproject': 'https://www.theodinproject.com',
+  // Cloud / Enterprise
+  'aws training': 'https://aws.amazon.com/training',
+  'google cloud': 'https://cloud.google.com/training',
+  'microsoft learn': 'https://learn.microsoft.com',
+  'azure': 'https://learn.microsoft.com/azure',
+  // Vietnam
+  'topdev': 'https://topdev.vn',
+  'tek4': 'https://tek4.vn',
+  'kteam': 'https://www.kteam.vn',
+  'cybersoft': 'https://cybersoft.edu.vn',
+};
+
+/* Lấy URL thực từ tên platform (có fallback sang Google search) */
+const getPlatformUrl = (platformName = '') => {
+  if (!platformName) return '#';
+  const key = platformName.toLowerCase().trim();
+  // Tìm exact match trước
+  if (PLATFORM_URLS[key]) return PLATFORM_URLS[key];
+  // Tìm partial match
+  for (const [k, url] of Object.entries(PLATFORM_URLS)) {
+    if (key.includes(k) || k.includes(key)) return url;
+  }
+  // Fallback: Google tìm kiếm platform
+  return `https://www.google.com/search?q=${encodeURIComponent(platformName + ' online course')}`;
+};
+
 const CAREER_TARGETS = [
   'Senior Data Analyst', 'Data Scientist', 'Machine Learning Engineer',
   'Fullstack Developer', 'Backend Developer', 'Frontend Developer',
@@ -57,7 +106,9 @@ export default function LearningPath() {
               return parsed.map((c, ci) => ({
                 id: gi * 10 + ci,
                 title: c.name,
-                desc: `${c.platform} — ${g.skill_name || ''}`,
+                desc: `${c.platform}`,
+                platform: c.platform,
+                url: getPlatformUrl(c.platform),
                 hours: 8 + gi * 4 + ci * 2,
                 level: LEVELS[gi % LEVELS.length] || 'TRUNG CẤP',
                 type: TYPES[ci % TYPES.length],
@@ -336,7 +387,14 @@ export default function LearningPath() {
                                     <span className="lp-platform-tag">{c.platform}</span>
                                   </p>
                                 </div>
-                                <button className="lp-goal-course-btn">Học ngay →</button>
+                                <a
+                                  href={getPlatformUrl(c.platform)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="lp-goal-course-btn"
+                                >
+                                  Học ngay →
+                                </a>
                               </div>
                             )) : (
                               <p style={{ color: '#9ca3af', fontSize: 14 }}>Chưa có khóa học cụ thể.</p>
@@ -388,7 +446,12 @@ export default function LearningPath() {
                     </div>
                     <div className="lp-course-month-tag">Tháng {c.goalMonth}</div>
                     <h4 className="lp-course-name">{c.title}</h4>
-                    <p className="lp-course-desc">{c.desc}</p>
+                    <p className="lp-course-desc">
+                      <a href={c.url} target="_blank" rel="noopener noreferrer"
+                        className="lp-platform-link">
+                        {c.platform}
+                      </a>
+                    </p>
                     <div className="lp-course-meta">
                       <div className="lp-course-meta-item">
                         <FaClock style={{ marginRight: '6px' }} />{c.hours} GIỜ
@@ -397,7 +460,14 @@ export default function LearningPath() {
                         <FaStar style={{ marginRight: '4px' }} />{c.level}
                       </div>
                     </div>
-                    <button className="lp-course-btn">Bắt đầu học ngay</button>
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="lp-course-btn"
+                    >
+                      Bắt đầu học ngay
+                    </a>
                   </div>
                 ))}
               </div>

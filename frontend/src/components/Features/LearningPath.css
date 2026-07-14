@@ -856,3 +856,27 @@ body.dark-theme .lp-goal-course-item { background: #22252e; border-color: #34384
 body.dark-theme .lp-goal-course-name { color: #f1f5f9; }
 body.dark-theme .lp-btn-danger { background: #22252e; border-color: #fca5a5; }
 body.dark-theme .lp-empty-courses { background: #1a1c23; border-color: #343842; }
+
+/* ── Platform link trong course card ── */
+.lp-platform-link {
+  color: var(--primary-color, #3b5bdb);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.lp-platform-link:hover { opacity: 0.75; text-decoration: underline; }
+
+/* Đảm bảo <a> tag styled như button */
+a.lp-course-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+a.lp-goal-course-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

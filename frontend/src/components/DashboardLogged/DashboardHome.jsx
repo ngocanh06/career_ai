@@ -66,7 +66,8 @@ export default function DashboardLogged() {
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const fullName = data?.user?.full_name || localUser.full_name || 'Người dùng';
+  // Ưu tiên full_name từ API (lấy từ bảng profile trong DB), fallback localStorage
+  const fullName = data?.user?.full_name || localUser.full_name || localUser.email?.split('@')[0] || 'Người dùng';
   const completion = data?.profile_completion ?? 0;
   const atsScore = data?.cv?.ats_score ? Math.round(data.cv.ats_score) : null;
   const hasCV = data?.has_cv;
@@ -154,9 +155,11 @@ export default function DashboardLogged() {
             <p className="home-greeting-sub">
               {loading
                 ? 'Đang lấy dữ liệu...'
-                : hasCV
-                  ? `Hồ sơ của bạn đang ở Top ${atsScore >= 80 ? '10%' : '25%'}. Tiếp tục cải thiện để tăng cơ hội được tuyển dụng.`
-                  : 'Hãy bắt đầu bằng cách tải CV lên để AI phân tích và đưa ra gợi ý cá nhân hoá cho bạn.'
+                : hasCV && atsScore !== null
+                  ? `Điểm ATS của bạn: ${atsScore}/100 — ${atsScore >= 80 ? 'Xuất sắc! Hồ sơ sẵn sàng ứng tuyển.' : atsScore >= 60 ? 'Tốt. Tiếp tục cải thiện để tăng cơ hội.' : 'Cần cải thiện thêm để vượt bộ lọc ATS.'}`
+                  : hasCV
+                    ? 'CV đã được tải lên. Hãy tối ưu thêm để tăng cơ hội ứng tuyển.'
+                    : 'Hãy bắt đầu bằng cách tải CV lên để AI phân tích và đưa ra gợi ý cá nhân hoá cho bạn.'
               }
             </p>
           </div>
