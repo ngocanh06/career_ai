@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, request
-from utils.db import get_db
-from utils.ai import call_openai_json
+from flask import Blueprint, jsonify, request  # pyrefly: ignore [missing-import]
+from utils.db import get_db  # pyrefly: ignore [missing-import]
+from utils.ai import call_openai_json  # pyrefly: ignore [missing-import]
 import json
 
 roadmap_bp = Blueprint('roadmap', __name__)
@@ -200,5 +200,142 @@ def delete_roadmap(roadmap_id):
         conn.close()
 
         return jsonify({'success': True, 'message': 'Da xoa lo trinh'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: Cập nhật tiến độ của mục tiêu tháng (goal)
+# -------------------------------------------------------
+@roadmap_bp.route('/roadmap/goal/<int:goal_id>', methods=['PUT'])
+def update_goal_progress(goal_id):
+    try:
+        data = request.json or {}
+        
+        conn = get_db()
+        with conn.cursor() as cursor:
+            # Check if we are updating suggested_courses
+            if 'suggested_courses' in data:
+                courses = data['suggested_courses']
+                # Calculate progress based on completed courses
+                total = len(courses)
+                completed = sum(1 for c in courses if c.get('completed') is True)
+                progress_percentage = int((completed / total) * 100) if total > 0 else 0
+                
+                # Determine goal status
+                if progress_percentage >= 100:
+                    status = 'completed'
+                elif progress_percentage > 0:
+                    status = 'in_progress'
+                else:
+                    status = 'pending'
+                    
+                cursor.execute(
+                    "UPDATE goal SET suggested_courses = %s, progress_percentage = %s, status = %s WHERE goal_id = %s",
+                    (json.dumps(courses, ensure_ascii=False), progress_percentage, status, goal_id)
+                )
+            else:
+                progress_percentage = data.get('progress_percentage', 0)
+                if progress_percentage >= 100:
+                    status = 'completed'
+                    progress_percentage = 100
+                elif progress_percentage > 0:
+                    status = 'in_progress'
+                else:
+                    status = 'pending'
+                    
+                cursor.execute(
+                    "UPDATE goal SET progress_percentage = %s, status = %s WHERE goal_id = %s",
+                    (progress_percentage, status, goal_id)
+                )
+            
+            # 2. Get the roadmap_id for this goal
+            cursor.execute("SELECT roadmap_id FROM goal WHERE goal_id = %s", (goal_id,))
+            row = cursor.fetchone()
+            if not row:
+                conn.close()
+                return jsonify({'success': False, 'message': 'Không tìm thấy mục tiêu'}), 404
+            
+            roadmap_id = row['roadmap_id']
+            
+            # 3. Get all goals for this roadmap to calculate completion rate
+            cursor.execute("SELECT progress_percentage FROM goal WHERE roadmap_id = %s", (roadmap_id,))
+            goals = cursor.fetchall()
+            
+            if goals:
+                total_progress = sum(g['progress_percentage'] for g in goals)
+                completion_rate = int(total_progress / len(goals))
+            else:
+                completion_rate = 0
+                
+            roadmap_status = 'completed' if completion_rate == 100 else 'in_progress'
+            
+            # 4. Update the roadmap completion rate and status
+            cursor.execute(
+                "UPDATE roadmap SET completion_rate = %s, status = %s WHERE roadmap_id = %s",
+                (completion_rate, roadmap_status, roadmap_id)
+            )
+            conn.commit()
+            
+        conn.close()
+        return jsonify({'success': True, 'message': 'Cập nhật tiến độ thành công', 'completion_rate': completion_rate})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
+# API: Đồng bộ kỹ năng từ Lộ trình vào Profile/CV
+# -------------------------------------------------------
+@roadmap_bp.route('/roadmap/sync-skills', methods=['POST'])
+def sync_roadmap_skills():
+    try:
+        data = request.json or {}
+        user_id = data.get('user_id')
+        skills = data.get('skills', [])
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'Thiếu user_id'}), 400
+            
+        if not skills:
+            return jsonify({'success': False, 'message': 'Không có kỹ năng nào để đồng bộ'}), 400
+            
+        conn = get_db()
+        with conn.cursor() as cursor:
+            synced_count = 0
+            for skill_name in skills:
+                skill_name = skill_name.strip()
+                if not skill_name:
+                    continue
+                
+                # Check if skill exists in skill table
+                cursor.execute("SELECT skill_id FROM skill WHERE skill_name = %s", (skill_name,))
+                skill_row = cursor.fetchone()
+                
+                if skill_row:
+                    skill_id = skill_row['skill_id']
+                else:
+                    # Insert new skill
+                    cursor.execute("INSERT INTO skill (skill_name, category) VALUES (%s, 'Other')", (skill_name,))
+                    skill_id = cursor.lastrowid
+                
+                # Check if user already has this skill
+                cursor.execute(
+                    "SELECT 1 FROM userskill WHERE user_id = %s AND skill_id = %s",
+                    (user_id, skill_id)
+                )
+                if not cursor.fetchone():
+                    # Insert user skill mapping
+                    cursor.execute(
+                        "INSERT INTO userskill (user_id, skill_id, proficiency_level) VALUES (%s, %s, 'Intermediate')",
+                        (user_id, skill_id)
+                    )
+                    synced_count += 1
+            conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Đồng bộ thành công! Đã thêm {synced_count} kỹ năng mới vào hồ sơ.'
+        })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

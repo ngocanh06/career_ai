@@ -11,6 +11,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "html2canvas": "npm:html2canvas-pro@^2.2.4",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
@@ -21,6 +22,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "postinstall": "node -e \"const fs = require('fs'); const path = require('path'); const dirs = [path.join('node_modules','html2canvas','dist'), path.join('node_modules','html2pdf.js','node_modules','html2canvas','dist')]; dirs.forEach(dist => { if (fs.existsSync(dist)) { ['html2canvas-pro.js','html2canvas-pro.js.map','html2canvas-pro.min.js'].forEach(f => { const src = path.join(dist, f); const dest = path.join(dist, f.replace('-pro','')); if (fs.existsSync(src)) fs.copyFileSync(src, dest); }); } });\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
