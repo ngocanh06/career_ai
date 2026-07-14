@@ -89,29 +89,30 @@ export default function Landing() {
   const [modal, setModal] = useState(null); // null | { featureName: string }
 
   const requireLogin = (featureName) => {
-    let userStr = localStorage.getItem('career_user');
     let isLoggedIn = false;
-    
-    if (userStr && userStr !== 'null' && userStr !== 'undefined' && userStr.trim() !== '') {
-       try {
-           const parsed = JSON.parse(userStr);
-           if (parsed) isLoggedIn = true;
-       } catch (e) {
-           // If it's not valid JSON but truthy, we might still treat it as invalid 
-           // to be safe, but let's just clear it to reset state.
-           localStorage.removeItem('career_user');
-       }
+
+    try {
+      const raw = localStorage.getItem('career_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Kiểm tra nhất quán với PrivateRoute: phải có user_id
+        isLoggedIn = !!(parsed && parsed.user_id);
+      }
+    } catch (e) {
+      // JSON lỗi → dọn dẹp dữ liệu rác
+      localStorage.removeItem('career_user');
     }
 
     if (isLoggedIn) {
-      // Đã đăng nhập, điều hướng tương ứng thay vì không làm gì
+      // Đã đăng nhập, điều hướng tương ứng
       if (featureName === 'Hồ sơ') navigate('/profile');
       else if (featureName === 'Nghề nghiệp') navigate('/career');
       else if (featureName === 'Công cụ') navigate('/dashboard');
       else if (featureName === 'Lộ trình học tập') navigate('/learning-path');
       return true;
     }
-    
+
+    // Chưa đăng nhập → hiện modal xác thực
     setModal({ featureName });
     return false;
   };
@@ -356,9 +357,9 @@ export default function Landing() {
           <div className="footer-section">
             <h4>Công cụ</h4>
             <ul>
-              <li><Link to="/profile">Hồ sơ</Link></li>
-              <li><Link to="/career">Nghề nghiệp</Link></li>
-              <li><Link to="/learning">Lộ trình học tập</Link></li>
+              <li><button className="footer-nav-btn" onClick={() => requireLogin('Hồ sơ')}>Hồ sơ</button></li>
+              <li><button className="footer-nav-btn" onClick={() => requireLogin('Nghề nghiệp')}>Nghề nghiệp</button></li>
+              <li><button className="footer-nav-btn" onClick={() => requireLogin('Lộ trình học tập')}>Lộ trình học tập</button></li>
             </ul>
           </div>
           <div className="footer-section">

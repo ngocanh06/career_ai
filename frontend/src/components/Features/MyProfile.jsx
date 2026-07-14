@@ -136,10 +136,10 @@ export default function MyProfile() {
         if (u.status === 'fulfilled') setProfile(u.value);
         if (c.status === 'fulfilled') setCareers(c.value || []);
         if (sk.status === 'fulfilled') setSkills(sk.value || []);
-      } catch (_) {}
+      } catch (_) { }
 
       // Roadmap separately (can 404)
-      try { const r = await getRoadmap(userId); setRoadmap(r); } catch (_) {}
+      try { const r = await getRoadmap(userId); setRoadmap(r); } catch (_) { }
       setLoading(false);
     };
     load();
