@@ -1581,6 +1581,7 @@ body.dark-theme .pb-empty-state-cta p { color: #d1d5db; }
   cursor: pointer;
   font-family: inherit;
   transition: opacity var(--pb-transition), transform 0.1s;
+  white-space: nowrap;
 }
 .pb-gen-bio-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 .pb-gen-bio-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -1651,9 +1652,6 @@ body.dark-theme .pb-empty-state-cta p { color: #d1d5db; }
   border-radius: var(--pb-radius-pill);
   padding: 3px 10px;
   border: 1px solid #e5e7eb;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -1744,4 +1742,10 @@ body.dark-theme .pb-input-empty {
 body.dark-theme .pb-public-badge {
   background: #064e3b; color: #6ee7b7;
 }
+
+@keyframes pbSpinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 
