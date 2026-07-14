@@ -578,8 +578,8 @@ export default function PortfolioBuilder() {
           title: savedTitle,
           bio: savedBio,
           email: d.email || '',
-        }));
-  }).catch(() => { });
+        });
+      }).catch(() => { });
 
   // 2. Fetch CV data — FIX 1 & 2: properly extract title + separate critique from bio
   fetch(`http://localhost:5000/api/cv/${userId}`)

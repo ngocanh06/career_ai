@@ -91,7 +91,7 @@ export default function Landing() {
   // State cho form validation
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState('');
-  
+
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [emailSuccess, setEmailSuccess] = useState('');
@@ -162,7 +162,7 @@ export default function Landing() {
         loggedInUser = parsed;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   return (
     <div className="landing">
@@ -187,7 +187,7 @@ export default function Landing() {
             <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Công cụ'); }}>Công cụ</button>
             <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button>
           </nav>
-          
+
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
           <div className="auth-buttons">
             {loggedInUser ? (
@@ -224,7 +224,7 @@ export default function Landing() {
               <Link to="/register" className="btn-primary" style={{ textDecoration: 'none' }}>Bắt đầu miễn phí →</Link>
               <button className="btn-secondary">Tìm hiểu thêm</button>
             </div>
-            
+
             {/* Social Proof */}
             <div className="hero-stats">
               <div className="avatars">
@@ -245,7 +245,7 @@ export default function Landing() {
             <div className="graphics-container">
               <img src={rightImage} alt="AI Robot Illustration" className="hero-right-image" />
             </div>
-            
+
             {/* Skill Card */}
             <div className="skill-card">
               <div className="skill-header">
@@ -260,7 +260,7 @@ export default function Landing() {
                     <span className="percent-blue">92%</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-fill fill-blue" style={{width: '92%'}}></div>
+                    <div className="progress-fill fill-blue" style={{ width: '92%' }}></div>
                   </div>
                 </div>
                 <div className="skill-progress-item">
@@ -269,7 +269,7 @@ export default function Landing() {
                     <span className="percent-teal">78%</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-fill fill-teal" style={{width: '78%'}}></div>
+                    <div className="progress-fill fill-teal" style={{ width: '78%' }}></div>
                   </div>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export default function Landing() {
       {/* SOLUTIONS SECTION */}
       <section className="solutions" id="solutions">
         <div className="solutions-header">
-          <h2>Giải pháp toàn diện cho<br/>hành trình nghề nghiệp</h2>
+          <h2>Giải pháp toàn diện cho<br />hành trình nghề nghiệp</h2>
           <p className="solutions-subtitle">CareerAI kết hợp dữ liệu thị trường thực tế với trí tuệ nhân tạo để đưa ra những chỉ dẫn chính xác nhất.</p>
         </div>
         <div className="solutions-top-grid">
@@ -427,9 +427,9 @@ export default function Landing() {
           <div className="footer-newsletter">
             <h4 className="newsletter-title">Đăng ký nhận bản tin của chúng tôi và không bao giờ bỏ lỡ bất kỳ cập nhật việc làm nào!</h4>
             <div className="newsletter-input-wrapper">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -438,9 +438,9 @@ export default function Landing() {
                 }}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
               />
-              <i 
-                className="fa-regular fa-envelope newsletter-mail-icon" 
-                onClick={handleSubscribe} 
+              <i
+                className="fa-regular fa-envelope newsletter-mail-icon"
+                onClick={handleSubscribe}
                 style={{ cursor: 'pointer' }}
               ></i>
             </div>
