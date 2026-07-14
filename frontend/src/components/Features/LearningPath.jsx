@@ -46,18 +46,43 @@ const PLATFORM_URLS = {
   'cybersoft': 'https://cybersoft.edu.vn',
 };
 
-/* Lấy URL thực từ tên platform (có fallback sang Google search) */
-const getPlatformUrl = (platformName = '') => {
+/* Lấy URL thực từ tên platform kèm theo từ khóa tìm kiếm khóa học */
+const getPlatformUrl = (platformName = '', courseTitle = '') => {
   if (!platformName) return '#';
   const key = platformName.toLowerCase().trim();
-  // Tìm exact match trước
-  if (PLATFORM_URLS[key]) return PLATFORM_URLS[key];
-  // Tìm partial match
-  for (const [k, url] of Object.entries(PLATFORM_URLS)) {
+  // Udemy và một số trang dùng dấu '+' thay cho '%20'
+  const encodedTitle = encodeURIComponent(courseTitle).replace(/%20/g, '+');
+  
+  // Mapping platform sang URL tìm kiếm thực tế (Deep links)
+  const SEARCH_URLS = {
+    'coursera': `https://www.coursera.org/search?query=${encodedTitle}`,
+    'udemy': `https://www.coursera.org/search?query=${encodedTitle}`, // Chuyển sang Coursera theo yêu cầu
+    'edx': `https://www.edx.org/search?q=${encodedTitle}`,
+    'youtube': `https://www.youtube.com/results?search_query=${encodedTitle}`,
+    'linkedin learning': `https://www.linkedin.com/learning/search?keywords=${encodedTitle}`,
+    'pluralsight': `https://www.pluralsight.com/search?q=${encodedTitle}`,
+    'skillshare': `https://www.skillshare.com/search?query=${encodedTitle}`,
+    'datacamp': `https://www.datacamp.com/search?q=${encodedTitle}`,
+    'codecademy': `https://www.codecademy.com/search?query=${encodedTitle}`,
+    'hackerrank': 'https://www.hackerrank.com/domains',
+    'leetcode': `https://leetcode.com/problemset/all/?search=${encodedTitle}`,
+    'kaggle': `https://www.kaggle.com/search?q=${encodedTitle}`,
+    'aws training': `https://explore.skillbuilder.aws/learn/catalog?search=${encodedTitle}`,
+    'microsoft learn': `https://learn.microsoft.com/en-us/search/?terms=${encodedTitle}`,
+    'google cloud': `https://www.cloudskillsboost.google/catalog?search=${encodedTitle}`,
+    'freecodecamp': `https://www.freecodecamp.org/news/search/?query=${encodedTitle}`
+  };
+
+  // 1. Tìm exact match trong SEARCH_URLS
+  if (SEARCH_URLS[key]) return SEARCH_URLS[key];
+  
+  // 2. Tìm partial match
+  for (const [k, url] of Object.entries(SEARCH_URLS)) {
     if (key.includes(k) || k.includes(key)) return url;
   }
-  // Fallback: Google tìm kiếm platform
-  return `https://www.google.com/search?q=${encodeURIComponent(platformName + ' online course')}`;
+  
+  // 3. Fallback: Nếu không tìm thấy trong danh sách, chuyển mặc định tất cả sang Coursera theo yêu cầu
+  return `https://www.coursera.org/search?query=${encodedTitle}`;
 };
 
 const CAREER_TARGETS = [
@@ -80,6 +105,7 @@ export default function LearningPath() {
   const [selectedTarget, setSelectedTarget] = useState('');
   const [customTarget, setCustomTarget] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
 
   const getUser = () => {
     const user = JSON.parse(localStorage.getItem('career_user'));
@@ -109,7 +135,7 @@ export default function LearningPath() {
                 title: c.name,
                 desc: `${c.platform}`,
                 platform: c.platform,
-                url: getPlatformUrl(c.platform),
+                url: getPlatformUrl(c.platform, c.name),
                 hours: 8 + gi * 4 + ci * 2,
                 level: LEVELS[gi % LEVELS.length] || 'TRUNG CẤP',
                 type: TYPES[ci % TYPES.length],
@@ -210,15 +236,40 @@ export default function LearningPath() {
     const pct = Math.round((completedCount / total) * 100);
     const newStatus = pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : 'pending';
     
-    // Optimistically update frontend state
+    // Optimistically update frontend state with cascading reset
+    let pastCurrentGoal = false;
+    const goalsToUpdateInBackend = [];
+    
     const updatedGoals = roadmap.goals.map(g => {
       if (g.goal_id === goal.goal_id) {
-        return {
+        pastCurrentGoal = true;
+        const updatedG = {
           ...g,
           suggested_courses: JSON.stringify(parsedCourses),
           progress_percentage: pct,
           status: newStatus
         };
+        goalsToUpdateInBackend.push(updatedG);
+        return updatedG;
+      }
+      
+      // Nếu mục tiêu hiện tại bị mất trạng thái hoàn thành (VD: bỏ tick) -> Reset các tháng sau
+      if (pastCurrentGoal && newStatus !== 'completed') {
+        let gParsed = [];
+        try { gParsed = JSON.parse(g.suggested_courses) || []; } catch { gParsed = []; }
+        const hasProgress = gParsed.some(c => c.completed) || g.progress_percentage > 0;
+        
+        if (hasProgress) {
+          gParsed.forEach(c => c.completed = false);
+          const resetG = {
+            ...g,
+            suggested_courses: JSON.stringify(gParsed),
+            progress_percentage: 0,
+            status: 'pending'
+          };
+          goalsToUpdateInBackend.push(resetG);
+          return resetG;
+        }
       }
       return g;
     });
@@ -244,6 +295,8 @@ export default function LearningPath() {
         id: gi * 10 + ci,
         title: c.name,
         desc: `${c.platform} — ${g.skill_name || ''}`,
+        platform: c.platform,
+        url: getPlatformUrl(c.platform, c.name),
         hours: 8 + gi * 4 + ci * 2,
         level: LEVELS[gi % LEVELS.length] || 'TRUNG CẤP',
         type: TYPES[ci % TYPES.length],
@@ -255,13 +308,22 @@ export default function LearningPath() {
     });
     setCourses(mapped);
     
+    // Kiểm tra nếu lộ trình vừa đạt 100%
+    if (newCompletionRate === 100 && roadmap.completion_rate < 100) {
+      setTimeout(() => {
+        setShowCongratsModal(true);
+      }, 500);
+    }
+    
     // Call backend
     try {
-      await fetch(`http://localhost:5000/api/roadmap/goal/${goal.goal_id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ suggested_courses: parsedCourses })
-      });
+      await Promise.all(goalsToUpdateInBackend.map(gUpdate => 
+        fetch(`http://localhost:5000/api/roadmap/goal/${gUpdate.goal_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ suggested_courses: JSON.parse(gUpdate.suggested_courses) })
+        })
+      ));
     } catch (e) {
       console.error(e);
       // Revert if error occurs
@@ -376,6 +438,32 @@ export default function LearningPath() {
           </div>
         )}
 
+        {/* ── CONGRATULATIONS MODAL ── */}
+        {showCongratsModal && (
+          <div className="lp-modal-overlay" onClick={() => setShowCongratsModal(false)}>
+            <div className="lp-modal lp-modal-sm" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--primary-color, #3b5bdb)', marginBottom: '12px' }}>
+                Chúc mừng!
+              </h2>
+              <p style={{ fontSize: '15px', color: '#4b5563', marginBottom: '24px', lineHeight: '1.5' }}>
+                Bạn đã hoàn thành xuất sắc toàn bộ Lộ trình học tập! Giờ đây bạn đã sẵn sàng cho bước tiến mới trong sự nghiệp.<br/><br/>
+                Đừng quên bấm <strong>"Cập nhật CV ngay"</strong> để đồng bộ các kỹ năng mới vào hồ sơ nhé!
+              </p>
+              <button 
+                className="lp-btn-primary" 
+                style={{ width: '100%', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                onClick={() => {
+                  setShowCongratsModal(false);
+                  handleSyncSkills(); // Tự động đồng bộ luôn cũng được, hoặc để user tự bấm
+                }}
+              >
+                Tuyệt vời! Đồng bộ CV ngay
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── HERO CARD ── */}
         <div className="lp-hero-card">
           <div className="lp-hero-body">
@@ -454,13 +542,20 @@ export default function LearningPath() {
                   const parsedCourses = getParsedCourses(g);
                   const isExpanded = expandedGoal === g.goal_id;
                   const dotClass = g.status === 'completed' ? 'done' : g.status === 'in_progress' ? 'active' : 'upcoming';
+                  const isLocked = idx > 0 && roadmap.goals[idx - 1].status !== 'completed';
                   return (
                     <React.Fragment key={g.goal_id || idx}>
                       <div className="lp-timeline-step-wrapper">
                         <div
-                          className={`lp-timeline-step ${isExpanded ? 'expanded' : ''}`}
-                          onClick={() => setExpandedGoal(isExpanded ? null : g.goal_id)}
-                          style={{ cursor: 'pointer' }}
+                          className={`lp-timeline-step ${isExpanded ? 'expanded' : ''} ${isLocked ? 'locked' : ''}`}
+                          onClick={() => {
+                            if (isLocked) {
+                              alert('🔒 Vui lòng hoàn thành lộ trình tháng trước để mở khóa tháng này!');
+                              return;
+                            }
+                            setExpandedGoal(isExpanded ? null : g.goal_id);
+                          }}
+                          style={{ cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1 }}
                         >
                           <div className={`lp-timeline-dot ${dotClass}`}>
                             {g.status === 'completed' ? <FaCheck style={{ color: 'white', fontSize: '14px' }} /> :
@@ -568,44 +663,16 @@ export default function LearningPath() {
                           <FaStar style={{ marginRight: '4px' }} />{c.level}
                         </div>
                       </div>
-
-                      {/* ── DETAIL PANEL ── */}
-                      {isExpanded && (
-                        <div className="lp-goal-detail">
-                          <div className="lp-goal-detail-header">
-                            <span className={`lp-goal-status-badge ${dotClass}`}>
-                              {g.status === 'completed' ? '✅ Hoàn thành' :
-                               g.status === 'in_progress' ? '🔥 Đang học' : '🔒 Chưa mở khóa'}
-                            </span>
-                            <span className="lp-goal-progress">{g.progress_percentage || 0}% tiến độ</span>
-                          </div>
-                          <h4 className="lp-goal-detail-title">Nội dung học Tháng {g.target_month}: {g.skill_name}</h4>
-                          <div className="lp-goal-courses">
-                            {parsedCourses.length > 0 ? parsedCourses.map((c, ci) => (
-                              <div key={ci} className="lp-goal-course-item">
-                                <div className="lp-goal-course-num">{ci + 1}</div>
-                                <div className="lp-goal-course-info">
-                                  <p className="lp-goal-course-name">{c.name}</p>
-                                  <p className="lp-goal-course-platform">
-                                    <span className="lp-platform-tag">{c.platform}</span>
-                                  </p>
-                                </div>
-                                <a
-                                  href={getPlatformUrl(c.platform)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="lp-goal-course-btn"
-                                >
-                                  Học ngay →
-                                </a>
-                              </div>
-                            )) : (
-                              <p style={{ color: '#9ca3af', fontSize: 14 }}>Chưa có khóa học cụ thể.</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      <a
+                        href={c.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="lp-course-btn"
+                      >
+                        Bắt đầu học ngay
+                      </a>
                     </div>
+
                   ))}
                 </div>
               ) : (
@@ -635,86 +702,20 @@ export default function LearningPath() {
                   <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
                   Phân tích kỹ năng
                 </h3>
-              </div>
-            </div>
-
-            {courses.length > 0 ? (
-              <div className="lp-courses-grid">
-                {courses.map(c => (
-                  <div key={c.id} className="lp-course-card">
-                    <div className="lp-course-card-top">
-                      <div className="lp-course-icon">{c.icon}</div>
-                      <span className={`lp-course-badge ${c.badgeClass}`}>{c.type}</span>
-                    </div>
-                    <div className="lp-course-month-tag">Tháng {c.goalMonth}</div>
-                    <h4 className="lp-course-name">{c.title}</h4>
-                    <p className="lp-course-desc">
-                      <a href={c.url} target="_blank" rel="noopener noreferrer"
-                        className="lp-platform-link">
-                        {c.platform}
-                      </a>
-                    </p>
-                    <div className="lp-course-meta">
-                      <div className="lp-course-meta-item">
-                        <FaClock style={{ marginRight: '6px' }} />{c.hours} GIỜ
+                <div className="lp-skill-rows">
+                  {skills.length > 0 ? skills.map(s => (
+                    <div key={s.name} className="lp-skill-row">
+                      <div className="lp-skill-row-header">
+                        <span className="lp-skill-row-name">{s.name}</span>
+                        <span className="lp-skill-row-pct">{s.pct}%</span>
                       </div>
-                      <div className="lp-skill-level">
-                        <FaStar style={{ marginRight: '4px' }} />{c.level}
+                      <div className="lp-skill-track">
+                        <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
                       </div>
                     </div>
-                    <a
-                      href={c.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="lp-course-btn"
-                    >
-                      Bắt đầu học ngay
-                    </a>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="lp-empty-courses">
-                <p>Chưa có tài nguyên học tập. Hãy tạo lộ trình AI để nhận gợi ý khóa học!</p>
-              </div>
-            )}
-
-            {/* AI Insight */}
-            <div className="lp-skill-gap-box">
-              <h4 className="lp-skill-gap-title">
-                <FaWandMagicSparkles style={{ marginRight: 6, color: 'var(--primary-color, #3b5bdb)' }} />
-                Phân tích lộ trình bằng AI
-              </h4>
-              <p className="lp-skill-gap-desc">{aiInsight}</p>
-              <button className="lp-skill-gap-link" onClick={generateAIInsight} disabled={generatingInsight || !roadmap}>
-                {generatingInsight ? 'Đang phân tích...' : 'Lấy gợi ý AI mới'}
-                <FaArrowRight style={{ marginLeft: '6px' }} />
-              </button>
-            </div>
-          </div>
-
-          {/* RIGHT – Sidebar */}
-          <div className="lp-sidebar">
-            <div className="lp-skill-card">
-              <h3 className="lp-skill-card-title">
-                <FaChartSimple style={{ color: 'var(--primary-color, #3b5bdb)', fontSize: '16px' }} />
-                Phân tích kỹ năng
-              </h3>
-              <div className="lp-skill-rows">
-                {skills.length > 0 ? skills.map(s => (
-                  <div key={s.name} className="lp-skill-row">
-                    <div className="lp-skill-row-header">
-                      <span className="lp-skill-row-name">{s.name}</span>
-                      <span className="lp-skill-row-pct">{s.pct}%</span>
-                    </div>
-                    <div className="lp-skill-track">
-                      <div className="lp-skill-fill" style={{ width: `${s.pct}%`, background: s.low ? '#e5e7eb' : 'var(--primary-color, #3b5bdb)' }} />
-                    </div>
-                  </div>
-                )) : (
-                  <p style={{ color: '#9ca3af', fontSize: 13 }}>Chưa có dữ liệu kỹ năng.</p>
-                )}
-              </div>
+                  )) : (
+                    <p style={{ color: '#9ca3af', fontSize: 13 }}>Chưa có dữ liệu kỹ năng.</p>
+                  )}
                 </div>
 
                 <div className="lp-readiness">
@@ -752,4 +753,4 @@ export default function LearningPath() {
       </div>
     </DashboardLayout>
   );
-}
+}
