@@ -182,10 +182,10 @@ export default function Landing() {
           </div>
           <nav className="nav">
             <Link to="/" className="active">Trang chủ</Link>
-            <button className="nav-btn-link" onClick={() => requireLogin('Hồ sơ')}>Hồ sơ</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Nghề nghiệp')}>Nghề nghiệp</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Công cụ')}>Công cụ</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Lộ trình học tập')}>Lộ trình học tập</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Công cụ'); }}>Công cụ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button>
           </nav>
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
@@ -412,9 +412,9 @@ export default function Landing() {
           <div className="footer-section">
             <h4>Công cụ</h4>
             <ul>
-              <li><button className="footer-nav-btn" onClick={() => requireLogin('Hồ sơ')}>Hồ sơ</button></li>
-              <li><button className="footer-nav-btn" onClick={() => requireLogin('Nghề nghiệp')}>Nghề nghiệp</button></li>
-              <li><button className="footer-nav-btn" onClick={() => requireLogin('Lộ trình học tập')}>Lộ trình học tập</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button></li>
             </ul>
           </div>
           <div className="footer-section">
