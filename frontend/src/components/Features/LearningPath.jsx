@@ -193,7 +193,7 @@ export default function LearningPath() {
     setGeneratingInsight(false);
   };
 
-  const completionRate = roadmap ? Math.round(roadmap.completion_rate) : 0;
+  const completionRate = roadmap ? Math.round(roadmap.completion_rate || 0) : 0;
 
   const getParsedCourses = (goal) => {
     try { return JSON.parse(goal.suggested_courses) || []; }

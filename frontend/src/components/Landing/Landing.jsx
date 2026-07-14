@@ -88,6 +88,41 @@ export default function Landing() {
   // State quản lý modal yêu cầu đăng nhập
   const [modal, setModal] = useState(null); // null | { featureName: string }
 
+  // State cho form validation
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState('');
+  
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      setSearchError('Vui lòng nhập từ khóa tìm kiếm');
+      return;
+    }
+    setSearchError('');
+    // TODO: implement search logic
+    console.log('Searching for:', searchQuery);
+  };
+
+  const handleSubscribe = () => {
+    if (!email.trim()) {
+      setEmailError('Vui lòng nhập địa chỉ email');
+      setEmailSuccess('');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setEmailError('Địa chỉ email không hợp lệ');
+      setEmailSuccess('');
+      return;
+    }
+    setEmailError('');
+    setEmailSuccess('Đăng ký nhận bản tin thành công!');
+    setEmail('');
+  };
+
   const requireLogin = (featureName) => {
     let isLoggedIn = false;
 
@@ -117,6 +152,18 @@ export default function Landing() {
     return false;
   };
 
+  // Xác định user đang đăng nhập để đổi nút header
+  let loggedInUser = null;
+  try {
+    const raw = localStorage.getItem('career_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.user_id) {
+        loggedInUser = parsed;
+      }
+    }
+  } catch (e) {}
+
   return (
     <div className="landing">
       {/* Modal yêu cầu đăng nhập */}
@@ -143,12 +190,20 @@ export default function Landing() {
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
           <div className="auth-buttons">
-            <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng ký
-            </Link>
-            <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng nhập
-            </Link>
+            {loggedInUser ? (
+              <Link to="/dashboard" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                Đến Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng ký
+                </Link>
+                <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng nhập
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -372,9 +427,25 @@ export default function Landing() {
           <div className="footer-newsletter">
             <h4 className="newsletter-title">Đăng ký nhận bản tin của chúng tôi và không bao giờ bỏ lỡ bất kỳ cập nhật việc làm nào!</h4>
             <div className="newsletter-input-wrapper">
-              <input type="email" placeholder="Enter your email" />
-              <i className="fa-regular fa-envelope newsletter-mail-icon"></i>
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                  if (emailSuccess) setEmailSuccess('');
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
+              />
+              <i 
+                className="fa-regular fa-envelope newsletter-mail-icon" 
+                onClick={handleSubscribe} 
+                style={{ cursor: 'pointer' }}
+              ></i>
             </div>
+            {emailError && <div style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{emailError}</div>}
+            {emailSuccess && <div style={{ color: '#10b981', fontSize: '13px', marginTop: '8px' }}>{emailSuccess}</div>}
           </div>
         </div>
         <div className="footer-bottom">
