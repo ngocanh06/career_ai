@@ -190,20 +190,12 @@ export default function Landing() {
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
           <div className="auth-buttons">
-            {loggedInUser ? (
-              <Link to="/dashboard" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
-                Đến Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
-                  Đăng ký
-                </Link>
-                <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
-                  Đăng nhập
-                </Link>
-              </>
-            )}
+            <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+              Đăng ký
+            </Link>
+            <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+              Đăng nhập
+            </Link>
           </div>
         </div>
       </header>

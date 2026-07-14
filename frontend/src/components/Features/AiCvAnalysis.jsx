@@ -132,6 +132,8 @@ export default function AiCvAnalysis() {
       const json = await res.json();
       if (json.success) {
         setUploadMsg('✓ Tải lên thành công! Đang phân tích CV...');
+        // Notify other components (DashboardHome, etc.) that CV data changed
+        window.dispatchEvent(new CustomEvent('cv-updated'));
         setTimeout(() => { setUploadMsg(''); fetchCv(); }, 1800);
       } else {
         setUploadMsg(json.message || 'Tải lên thất bại');

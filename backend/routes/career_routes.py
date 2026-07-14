@@ -42,8 +42,12 @@ def generate_careers():
             bio = prof['bio'] if prof else ''
             
             cursor.execute("SELECT s.skill_name FROM userskill us JOIN skill s ON us.skill_id = s.skill_id WHERE us.user_id = %s", (user_id,))
-            skills = [row['skill_name'] for row in cursor.fetchall()]
+            db_skills = [row['skill_name'] for row in cursor.fetchall()]
         conn.close()
+
+        # Kết hợp kỹ năng từ DB và kỹ năng từ portfolio (frontend gửi lên)
+        portfolio_skills = data.get('portfolio_skills', [])
+        skills = list(dict.fromkeys(db_skills + [s for s in portfolio_skills if s not in db_skills]))
 
         prompt = f"""
 Bạn là AI phân tích nghề nghiệp chuyên sâu. Người dùng có hồ sơ: {bio}. Kỹ năng hiện tại: {', '.join(skills)}.

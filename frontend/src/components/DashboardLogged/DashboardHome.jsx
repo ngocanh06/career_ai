@@ -56,14 +56,23 @@ export default function DashboardLogged() {
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    fetch(`http://localhost:5000/api/dashboard/${userId}`)
-      .then(r => r.json())
-      .then(json => {
-        if (json.success) setData(json.data);
-        else setError(json.message || 'Không thể tải dữ liệu');
-      })
-      .catch(() => setError('Không thể kết nối đến máy chủ'))
-      .finally(() => setLoading(false));
+    const loadDashboard = () => {
+      setLoading(true);
+      fetch(`http://localhost:5000/api/dashboard/${userId}`)
+        .then(r => r.json())
+        .then(json => {
+          if (json.success) setData(json.data);
+          else setError(json.message || 'Không thể tải dữ liệu');
+        })
+        .catch(() => setError('Không thể kết nối đến máy chủ'))
+        .finally(() => setLoading(false));
+    };
+
+    loadDashboard();
+
+    // Reload khi CV mới được upload từ trang Phan tích CV
+    window.addEventListener('cv-updated', loadDashboard);
+    return () => window.removeEventListener('cv-updated', loadDashboard);
   }, [userId]);
 
   const fullName = data?.user?.full_name || localUser.full_name || 'Người dùng';

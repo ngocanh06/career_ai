@@ -45,8 +45,8 @@ export default function Topbar({ user }) {
   // ── Fix #3: Logout dùng replace để chặn Back-button quay lại Dashboard ──
   const handleLogout = () => {
     localStorage.removeItem('career_user');
-    // replace: true → thay thế entry history hiện tại, không thể Back lại
-    navigate('/login', { replace: true });
+    // Redirect to landing page, replace history so Back button doesn't return to dashboard
+    navigate('/', { replace: true });
   };
 
   // ── Fix #4: Debounce search (400ms) + xử lý Enter để tránh "Broken Feature" ──
