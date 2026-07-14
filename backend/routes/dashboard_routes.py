@@ -29,7 +29,7 @@ def get_dashboard(user_id):
                 "SELECT cv_id, file_path, file_type, "
                 "DATE_FORMAT(upload_date, '%%Y-%%m-%%d') as upload_date, "
                 "ats_score, analysis_result, improvement_suggestions, status "
-                "FROM cv WHERE user_id = %s ORDER BY upload_date DESC LIMIT 1",
+                "FROM cv WHERE user_id = %s ORDER BY cv_id DESC LIMIT 1",
                 (user_id,)
             )
             cv = cursor.fetchone()

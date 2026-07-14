@@ -53,9 +53,11 @@ export default function DashboardLogged() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
+
     const loadDashboard = () => {
       setLoading(true);
       fetch(`http://localhost:5000/api/dashboard/${userId}`)
@@ -70,9 +72,30 @@ export default function DashboardLogged() {
 
     loadDashboard();
 
-    // Reload khi CV mới được upload từ trang Phan tích CV
+    // Nếu CV vừa được upload gần đây (trong vòng 60 giây),
+    // đợi backend xử lý AI xong rồi tự fetch lại
+    const cvUpdatedAt = parseInt(localStorage.getItem('cv_updated_at') || '0', 10);
+    const secondsSinceUpload = (Date.now() - cvUpdatedAt) / 1000;
+    let retryTimer = null;
+    if (cvUpdatedAt && secondsSinceUpload < 60) {
+      // Xóa flag để không retry vô tận
+      localStorage.removeItem('cv_updated_at');
+      // Hiển thị banner "đang cập nhật" cho user
+      setIsRefreshing(true);
+      // Đợi backend AI analysis hoàn tất (~5 giây) rồi load lại
+      const delay = Math.max(5000 - (secondsSinceUpload * 1000), 1500);
+      retryTimer = setTimeout(() => {
+        setIsRefreshing(false);
+        loadDashboard();
+      }, delay);
+    }
+
+    // Reload khi CV mới được upload từ trang Phân tích CV (cùng tab)
     window.addEventListener('cv-updated', loadDashboard);
-    return () => window.removeEventListener('cv-updated', loadDashboard);
+    return () => {
+      window.removeEventListener('cv-updated', loadDashboard);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [userId]);
 
   const fullName = data?.user?.full_name || localUser.full_name || 'Người dùng';
@@ -198,6 +221,19 @@ export default function DashboardLogged() {
             <FaCircleExclamation />
             <span>{error}</span>
             <button onClick={() => window.location.reload()}>Thử lại</button>
+          </div>
+        )}
+
+        {/* ── Refreshing banner ── */}
+        {isRefreshing && (
+          <div className="home-refreshing-banner" style={{
+            display: 'flex', alignItems: 'center', gap: '8px', 
+            background: '#eff6ff', border: '1px solid #bfdbfe', 
+            color: '#1d4ed8', padding: '12px 16px', borderRadius: '12px', 
+            marginBottom: '20px', fontSize: '14px', fontWeight: '500'
+          }}>
+            <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+            <span>Đang đồng bộ dữ liệu với CV mới của bạn...</span>
           </div>
         )}
 
