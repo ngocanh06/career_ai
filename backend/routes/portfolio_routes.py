@@ -264,3 +264,137 @@ Trả về JSON: {{"skills": ["kỹ năng 1", "kỹ năng 2", ..., "kỹ năng 1
     if result and 'skills' in result:
         return jsonify({'success': True, 'data': result['skills']})
     return jsonify({'success': False, 'message': 'Lỗi gọi AI'}), 500
+
+
+# -------------------------------------------------------
+# API: AI Rewrite bio / project description (Co-pilot)
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/rewrite', methods=['POST'])
+def rewrite_text():
+    data = request.json
+    text = data.get('text', '').strip()
+    tone = data.get('tone', 'professional')
+
+    if not text:
+        return jsonify({'success': False, 'message': 'Không có nội dung để viết lại'})
+
+    tone_map = {
+        'professional': 'chuyên nghiệp, formal, dùng ngôn ngữ trang trọng',
+        'creative': 'sáng tạo, phóng khoáng, thể hiện cá tính riêng',
+        'tech': 'kỹ thuật, data-driven, tập trung vào công nghệ và số liệu',
+    }
+    tone_desc = tone_map.get(tone, tone_map['professional'])
+
+    prompt = f"""Bạn là chuyên gia viết Portfolio và CV chuyên nghiệp.
+Hãy viết lại đoạn văn sau theo phong cách: {tone_desc}.
+
+YÊU CẦU BẮT BUỘC:
+- Viết theo ngôi thứ nhất (Tôi là..., Tôi có kinh nghiệm..., Tôi đam mê...)
+- Đây là phần "Giới thiệu bản thân" hoặc "Mô tả dự án" dành cho Portfolio công khai
+- KHÔNG nhận xét hay đánh giá ứng viên như HR, chỉ trình bày điểm mạnh
+- Độ dài: 2-4 câu, ngắn gọn và ấn tượng
+- Phản hồi HOÀN TOÀN bằng TIẾNG VIỆT CÓ DẤU
+
+Nội dung gốc: "{text}"
+
+Trả về JSON: {{"rewritten": "<nội dung đã viết lại>"}}"""
+
+    result = call_openai_json(prompt)
+    if result and 'rewritten' in result:
+        return jsonify({'success': True, 'data': result['rewritten']})
+    return jsonify({'success': False, 'message': 'Lỗi gọi AI'})
+
+
+# -------------------------------------------------------
+# API: AI Generate professional bio từ dữ liệu CV
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/generate-bio', methods=['POST'])
+def generate_bio():
+    data = request.json
+    name = data.get('name', '').strip()
+    title = data.get('title', '').strip()
+    skills = data.get('skills', [])
+    projects = data.get('projects', [])
+    raw_summary = data.get('raw_summary', '').strip()
+    tone = data.get('tone', 'professional')
+
+    tone_map = {
+        'professional': 'chuyên nghiệp và trang trọng',
+        'creative': 'sáng tạo và cá tính',
+        'tech': 'kỹ thuật và data-driven',
+    }
+    tone_desc = tone_map.get(tone, tone_map['professional'])
+
+    # Build context from available data
+    skills_str = ', '.join(skills[:8]) if skills else 'chưa xác định'
+    projects_str = ', '.join(projects[:3]) if projects else 'chưa có'
+
+    # Use raw_summary as source material if it's a critique (AI will transform it)
+    source_context = ''
+    if raw_summary:
+        source_context = f'\nThông tin từ CV (dùng làm tham khảo để hiểu nền tảng của ứng viên): "{raw_summary[:500]}"'
+
+    prompt = f"""Bạn là chuyên gia viết Portfolio và hồ sơ cá nhân.
+Hãy tạo một đoạn "Giới thiệu bản thân" (About Me) chuyên nghiệp cho người dùng.
+
+Thông tin về ứng viên:
+- Họ tên: {name or 'Ứng viên'}
+- Chức danh / Lĩnh vực: {title or 'Chuyên ngành IT'}
+- Kỹ năng nổi bật: {skills_str}
+- Dự án tiêu biểu: {projects_str}{source_context}
+
+YÊU CẦU BẮT BUỘC:
+1. Viết theo NGÔI THỨ NHẤT (Tôi là..., Với {title or 'chuyên ngành'}..., Tôi có kinh nghiệm...)
+2. Phong cách: {tone_desc}
+3. Đây là phần công khai trên Portfolio — TUYỆT ĐỐI KHÔNG nhận xét tiêu cực
+4. Tập trung vào ĐIỂM MẠNH: kỹ năng, đam mê, mục tiêu nghề nghiệp
+5. Độ dài: 3-4 câu (khoảng 60-100 chữ), súc tích và ấn tượng
+6. Phản hồi HOÀN TOÀN bằng TIẾNG VIỆT CÓ DẤU
+7. Kết thúc bằng một câu thể hiện mục tiêu hoặc đam mê
+
+Trả về JSON: {{"bio": "<đoạn giới thiệu bản thân>"}}"""
+
+    result = call_openai_json(prompt)
+    if result and 'bio' in result:
+        return jsonify({'success': True, 'data': result['bio']})
+    return jsonify({'success': False, 'message': 'Lỗi gọi AI'})
+
+
+# -------------------------------------------------------
+# API: ATS Keyword Scanner
+# -------------------------------------------------------
+@portfolio_bp.route('/portfolio/ats-scan', methods=['POST'])
+def ats_scan():
+    data = request.json
+    jd = data.get('jd', '').strip()
+    skills = data.get('skills', [])
+
+    if not jd:
+        return jsonify({'success': False, 'message': 'Thiếu Job Description'})
+
+    prompt = f"""Bạn là chuyên gia phân tích từ khóa ATS (Applicant Tracking System).
+Phân tích Job Description (JD) sau và danh sách kỹ năng của ứng viên.
+
+JD:
+{jd[:3000]}
+
+Kỹ năng hiện có của ứng viên: {', '.join(skills) if skills else 'chưa có'}
+
+Hãy:
+1. Trích xuất 10-15 từ khóa kỹ thuật quan trọng nhất từ JD (tên công nghệ, framework, tool, kỹ năng cụ thể)
+2. Phân loại chúng thành "matched" (có trong kỹ năng ứng viên) và "missing" (chưa có)
+
+Trả về JSON:
+{{"matched": ["kw1", "kw2"], "missing": ["kw3", "kw4"]}}"""
+
+    result = call_openai_json(prompt)
+    if result and ('matched' in result or 'missing' in result):
+        return jsonify({
+            'success': True,
+            'data': {
+                'matched': result.get('matched', []),
+                'missing': result.get('missing', [])
+            }
+        })
+    return jsonify({'success': False, 'message': 'Lỗi gọi AI'})
+

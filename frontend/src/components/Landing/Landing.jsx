@@ -88,33 +88,81 @@ export default function Landing() {
   // State quản lý modal yêu cầu đăng nhập
   const [modal, setModal] = useState(null); // null | { featureName: string }
 
+  // State cho form validation
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState('');
+  
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      setSearchError('Vui lòng nhập từ khóa tìm kiếm');
+      return;
+    }
+    setSearchError('');
+    // TODO: implement search logic
+    console.log('Searching for:', searchQuery);
+  };
+
+  const handleSubscribe = () => {
+    if (!email.trim()) {
+      setEmailError('Vui lòng nhập địa chỉ email');
+      setEmailSuccess('');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setEmailError('Địa chỉ email không hợp lệ');
+      setEmailSuccess('');
+      return;
+    }
+    setEmailError('');
+    setEmailSuccess('Đăng ký nhận bản tin thành công!');
+    setEmail('');
+  };
+
   const requireLogin = (featureName) => {
-    let userStr = localStorage.getItem('career_user');
     let isLoggedIn = false;
-    
-    if (userStr && userStr !== 'null' && userStr !== 'undefined' && userStr.trim() !== '') {
-       try {
-           const parsed = JSON.parse(userStr);
-           if (parsed) isLoggedIn = true;
-       } catch (e) {
-           // If it's not valid JSON but truthy, we might still treat it as invalid 
-           // to be safe, but let's just clear it to reset state.
-           localStorage.removeItem('career_user');
-       }
+
+    try {
+      const raw = localStorage.getItem('career_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Kiểm tra nhất quán với PrivateRoute: phải có user_id
+        isLoggedIn = !!(parsed && parsed.user_id);
+      }
+    } catch (e) {
+      // JSON lỗi → dọn dẹp dữ liệu rác
+      localStorage.removeItem('career_user');
     }
 
     if (isLoggedIn) {
-      // Đã đăng nhập, điều hướng tương ứng thay vì không làm gì
+      // Đã đăng nhập, điều hướng tương ứng
       if (featureName === 'Hồ sơ') navigate('/profile');
       else if (featureName === 'Nghề nghiệp') navigate('/career');
       else if (featureName === 'Công cụ') navigate('/dashboard');
       else if (featureName === 'Lộ trình học tập') navigate('/learning-path');
       return true;
     }
-    
+
+    // Chưa đăng nhập → hiện modal xác thực
     setModal({ featureName });
     return false;
   };
+
+  // Xác định user đang đăng nhập để đổi nút header
+  let loggedInUser = null;
+  try {
+    const raw = localStorage.getItem('career_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.user_id) {
+        loggedInUser = parsed;
+      }
+    }
+  } catch (e) {}
 
   return (
     <div className="landing">
@@ -134,20 +182,28 @@ export default function Landing() {
           </div>
           <nav className="nav">
             <Link to="/" className="active">Trang chủ</Link>
-            <button className="nav-btn-link" onClick={() => requireLogin('Hồ sơ')}>Hồ sơ</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Nghề nghiệp')}>Nghề nghiệp</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Công cụ')}>Công cụ</button>
-            <button className="nav-btn-link" onClick={() => requireLogin('Lộ trình học tập')}>Lộ trình học tập</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Công cụ'); }}>Công cụ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button>
           </nav>
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
           <div className="auth-buttons">
-            <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng ký
-            </Link>
-            <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng nhập
-            </Link>
+            {loggedInUser ? (
+              <Link to="/dashboard" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                Đến Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng ký
+                </Link>
+                <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng nhập
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -356,9 +412,9 @@ export default function Landing() {
           <div className="footer-section">
             <h4>Công cụ</h4>
             <ul>
-              <li><Link to="/profile">Hồ sơ</Link></li>
-              <li><Link to="/career">Nghề nghiệp</Link></li>
-              <li><Link to="/learning">Lộ trình học tập</Link></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button></li>
             </ul>
           </div>
           <div className="footer-section">
@@ -371,9 +427,25 @@ export default function Landing() {
           <div className="footer-newsletter">
             <h4 className="newsletter-title">Đăng ký nhận bản tin của chúng tôi và không bao giờ bỏ lỡ bất kỳ cập nhật việc làm nào!</h4>
             <div className="newsletter-input-wrapper">
-              <input type="email" placeholder="Enter your email" />
-              <i className="fa-regular fa-envelope newsletter-mail-icon"></i>
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                  if (emailSuccess) setEmailSuccess('');
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
+              />
+              <i 
+                className="fa-regular fa-envelope newsletter-mail-icon" 
+                onClick={handleSubscribe} 
+                style={{ cursor: 'pointer' }}
+              ></i>
             </div>
+            {emailError && <div style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{emailError}</div>}
+            {emailSuccess && <div style={{ color: '#10b981', fontSize: '13px', marginTop: '8px' }}>{emailSuccess}</div>}
           </div>
         </div>
         <div className="footer-bottom">
