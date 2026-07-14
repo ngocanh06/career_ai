@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ============ CẤU HÌNH CHUNG & CHUẨN HÓA UI ============ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Raleway:ital,wght@0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600&display=swap');
 
@@ -1331,4 +1332,1340 @@
 
 .auth-modal-close:hover {
   background: #f1f5f9;
-}
+}
+=======
+/* ============ CẤU HÌNH CHUNG & CHUẨN HÓA UI ============ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Raleway:ital,wght@0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.landing {
+  width: 100%;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+/* ============ HEADER / NAVBAR ============ */
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 2rem; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Tăng nhẹ khoảng cách giữa ảnh và chữ */
+  text-decoration: none; /* Tránh bị gạch chân nếu sau này bọc thẻ Link */
+}
+
+.landing-logo-img {
+  height: 50px; /* Chiều cao vừa vặn với font-size 22px của chữ */
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+.logo span {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0458E6;
+  line-height: 1; /* Đảm bảo chữ căn giữa tuyệt đối theo trục dọc với logo */
+}
+
+.nav {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav a.active, .nav a:hover {
+  color: #0458E6;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-login {
+  background: #0458E6;
+  border: none;
+  color: white;
+  padding: 0.65rem 1.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-signup {
+  background: transparent;
+  border: 1px solid #0458E6;
+  color: #0458E6;
+  padding: 0.65rem 1.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-signup:hover {
+  background: #eff6ff;
+}
+
+/* ============ HERO SECTION ============ */
+.hero {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 6rem; /* Thu hẹp tối đa khoảng cách với Header */
+}
+
+.hero-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .hero-container {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+}
+
+.hero-content h1 {
+  font-family: 'Raleway', sans-serif;
+  font-size: 56px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.15;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-content .highlight {
+  font-family: 'Raleway', sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  color: #0458E6;
+}
+
+.hero-description {
+  font-size: 16px;
+  color: #64748b;
+  max-width: 520px;
+  margin-bottom: 3rem;
+  line-height: 1.7;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.btn-primary {
+  background: #0458E6;
+  color: white;
+  border: none;
+  padding: 1.1rem 2.2rem;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(4, 88, 230, 0.3);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  padding: 1.1rem 2.2rem;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Khoảng cách thông thoáng giữa cụm avatar và cụm chữ */
+  margin-top: 2rem;
+}
+
+.avatars {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  margin-left: -12px; /* Hiệu ứng xếp chồng các avatar lên nhau chuẩn Figma */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.avatar:first-child {
+  margin-left: 0; /* Avatar đầu tiên không bị lùi về sau */
+}
+
+/* Đổ màu nền phẳng tiệp màu pastel sang trọng cho các vòng tròn */
+.pic-1 { background-color: #dbeafe; color: #1e40af; }
+.pic-2 { background-color: #d1fae5; color: #065f46; }
+.pic-3 { background-color: #fef3c7; color: #92400e; }
+
+/* Ẩn các icon user tạm thời bên trong hình tròn nếu bạn muốn hiển thị phẳng sạch sẽ, hoặc chỉnh cỡ nhỏ lại */
+.avatar i {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* KHỐI QUAN TRỌNG: Căn hàng ngang cho icon tích xanh và cụm chữ */
+.stat-text-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Khoảng cách nhỏ tinh tế giữa icon và chữ số */
+}
+
+/* Ép icon tích xanh bắt buộc hiển thị chuẩn màu #0458E6 */
+.stat-icon {
+  color: #0458E6 !important; 
+  font-size: 18px; /* Tăng kích thước icon lên một chút để cân xứng với text */
+  display: inline-block;
+  line-height: 1;
+}
+
+.stat-text {
+  font-size: 15px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-number {
+  font-weight: 700;
+  color: #0458E6; /* Số +10,000 tiệp màu xanh thương hiệu */
+  margin-right: 4px;
+}
+
+/* ============ HERO GRAPHICS & MOCKUP CARD ============ */
+.hero-graphics {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.graphics-container {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.hero-right-image {
+  width: 100%;
+  max-width: 470px; /* Làm to hình robot khớp tỷ lệ */
+  height: auto;
+  object-fit: contain;
+  z-index: 1;
+  display: block;
+}
+
+/* Card AI phân tích CV đổ bóng siêu mềm mịn */
+.skill-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.08); 
+  position: relative;
+  z-index: 2;
+  margin-top: -45px; /* Kéo đẩy đè mượt mà lên chân ảnh */
+}
+
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.badge-icon-box {
+  padding: 10px;
+  background-color: #eff6ff;
+  color: #0458E6;
+  border-radius: 10px;
+  display: inline-flex;
+}
+
+.skill-title-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+}
+
+.compat-score {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 24px;
+}
+
+.score-blue {
+  color: #0458E6;
+}
+
+.skill-progress-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.percent-blue { color: #0458E6; }
+.percent-teal { color: #00cc99; }
+
+.progress-bar {
+  width: 100%;
+  background-color: #f1f5f9;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.fill-blue { background: linear-gradient(90deg, #3b82f6, #0458E6); }
+.fill-teal { background: linear-gradient(90deg, #00f2fe, #00cc99); }
+
+.skill-testimonial {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.testimonial-icon {
+  color: #0458E6;
+}
+/* ============ HERO GRAPHICS & MOCKUP CARD ============ */
+.hero-graphics {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.graphics-container {
+  width: 100%;
+  height: 400px; /* Tăng chiều cao vùng chứa hình ảnh */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Đã xóa bỏ hoàn toàn pseudo-element `::before` chứa hiệu ứng phát sáng ở đây */
+
+.hero-right-image {
+  width: 100%;
+  max-width: 460px; /* Cho phép robot bung to tương xứng kích thước Figma */
+  height: auto;
+  object-fit: contain;
+  z-index: 1;
+}
+
+/* Card AI phân tích CV */
+.skill-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.08); 
+  position: relative;
+  z-index: 2;
+  margin-top: -30px; /* Kéo đè một phần chân khối Robot */
+}
+
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.badge-icon-box {
+  padding: 10px;
+  background-color: #eff6ff;
+  color: #0458e6;
+  border-radius: 10px;
+  display: inline-flex;
+}
+
+.skill-title-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+}
+
+.compat-score {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 24px;
+}
+
+.score-blue {
+  color: #0458e6;
+}
+
+.skill-progress-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.percent-blue { color: #0458e6; }
+.percent-teal { color: #00cc99; }
+
+.progress-bar {
+  width: 100%;
+  background-color: #f1f5f9;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.fill-blue { background: linear-gradient(90deg, #3b82f6, #0458e6); }
+.fill-teal { background: linear-gradient(90deg, #00f2fe, #00cc99); }
+
+.skill-testimonial {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.testimonial-icon {
+  color: #3b82f6;
+}
+/* ============ COMPANIES SECTION (CHUẨN FIGMA) ============ */
+.companies {
+  background: #ffffff;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.companies-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 3.5rem;
+}
+
+.companies-title .highlight-count {
+  color: #0458E6; /* Màu xanh số 22,000 nhấn nhẹ */
+  font-weight: 700;
+}
+
+.companies-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem 4rem; /* Khoảng cách thông thoáng giữa các logo */
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.company-logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Xóa bỏ border, background và box-shadow cũ */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.company-logo-image {
+  height: 48px; /* Tăng nhẹ chiều cao để logo nhìn rõ và sắc nét như Figma */
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(0); /* Đảm bảo giữ nguyên màu gốc chuẩn của logo */
+}
+
+/* Định dạng riêng cho icon Dropbox nếu chưa có ảnh .png */
+.company-logo-item i {
+  font-size: 32px;
+}
+
+/* ============ SOLUTIONS SECTION (CHUẨN FIGMA) ============ */
+.solutions {
+  max-width: 100%; /* Bung rộng full màn hình để màu nền xám phủ đều */
+  background-color: #F8FAFC; /* Đổi sang màu xám nhạt chuẩn Figma của bạn */
+  padding: 6rem 2rem;
+}
+
+.solutions-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 4.5rem auto;
+}
+
+.solutions-header h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.solutions-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Chia hàng trên: 2 cột bằng nhau */
+.solutions-top-grid {
+  max-width: 1200px;
+  margin: 0 auto 2rem auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+/* Chia hàng dưới: Card lộ trình nhỏ, Khối data to chiếm 1.3 phần */
+.solutions-bottom-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 2rem;
+}
+
+/* Style các Card - Đổi sang màu trắng tinh để nổi bật trên nền F8FAFC */
+.solution-card {
+  background: #ffffff; 
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  /* Đổ bóng mịn màng */
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.solution-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 2rem;
+}
+
+.blue-icon { background-color: #eff6ff; color: #0458e6; }
+/* .teal-icon { background-color: #f0fdfa; color: #0d9488; } */
+.purple-icon { background-color: #eef2ff; color: #4f46e5; }
+
+.solution-card h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.solution-card p {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+/* Tag Link nhỏ hàng 1 */
+.card-tags {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.tag-link {
+  color: #0458e6;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.explore-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0458e6;
+  text-decoration: none;
+  margin-top: auto;
+}
+
+/* Timeline Lộ Trình Học Tập (Chuẩn Figma) */
+.mini-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-step span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+/* Base style cho các vòng tròn Icon */
+.timeline-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+/* Bước 1: Đã hoàn thành (Active) */
+.timeline-step.active .timeline-icon {
+  background-color: #0458E6;
+  color: #ffffff;
+  border: 2px solid #0458E6;
+}
+.timeline-step.active span {
+  color: #0458E6;
+}
+
+/* Bước 2: Hiện tại (Current) */
+.timeline-step.current .timeline-icon {
+  border: 2px solid #0458E6;
+  color: #0458E6;
+}
+.timeline-step.current span {
+  color: #0458E6;
+}
+
+/* Bước 3: Tương lai (Future) */
+.timeline-step.future .timeline-icon {
+  border: 2px dashed #cbd5e1;
+  color: #cbd5e1;
+  background-color: transparent;
+}
+
+/* Thanh nối giữa các bước */
+.mini-timeline .line {
+  flex: 1;
+  height: 2px;
+  background: #0458E6;
+  margin: 0 -10px;
+  margin-bottom: 22px; /* Đẩy thanh line lên giữa trục của vòng tròn icon */
+  position: relative;
+  z-index: 1;
+}
+
+/* Đường nét đứt phía sau */
+.mini-timeline .line.dashed {
+  background: none;
+  border-top: 2px dashed #cbd5e1;
+}
+/* Khối Dữ liệu thị trường - Chuyển hẳn sang màu nền trắng tinh giống card giải pháp */
+.data-section {
+  background-color: #ffffff; 
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+}
+
+.data-content {
+  flex: 1;
+}
+
+.data-section h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.data-section p {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.data-stats {
+  display: flex;
+  gap: 3rem;
+}
+
+.stat-box h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0458e6;
+  margin-bottom: 2px;
+}
+
+.stat-box p {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+/* Giả lập Chart cột bên phải */
+.data-chart-mock {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 140px;
+  padding: 10px;
+}
+
+.data-chart-mock .bar {
+  width: 18px;
+  background-color: #cbd5e1;
+  border-radius: 6px;
+  opacity: 0.4;
+}
+
+.data-chart-mock .bar-1 { height: 40%; }
+.data-chart-mock .bar-2 { height: 75%; }
+.data-chart-mock .bar-3.active { 
+  height: 100%; 
+  background-color: #0458e6; 
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(4, 88, 230, 0.2);
+}
+.data-chart-mock .bar-4 { height: 55%; }
+
+/* Responsive di động */
+@media (max-width: 992px) {
+  .solutions-top-grid, .solutions-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  .data-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .data-chart-mock {
+    align-self: center;
+  }
+}
+/* ============ TESTIMONIALS ============ */
+.testimonials {
+  background-color: #ffffff;
+  padding: 6rem 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.testimonials h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.testimonial-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.testimonial-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.user-icon-mock {
+  width: 40px;
+  height: 40px;
+  background-color: #e2e8f0;
+  color: #64748b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.testimonial-user h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.testimonial-role {
+  font-size: 13px;
+  color: #0458e6;
+  font-weight: 500;
+  margin: 0;
+}
+
+.testimonial-text {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ============ 3 STEPS SECTION (CHUẨN FIGMA) ============ */
+.steps {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 6rem 2rem;
+  background-color: #ffffff; /* Đảm bảo nền trắng tinh như Figma */
+}
+
+.steps h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 40px; /* Chữ to, đậm nét */
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+/* Đổi màu chữ số "3" sang màu xanh purple-blue chuẩn của bạn */
+.steps h2 span.highlight-blue {
+  color: #0458E6; 
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.step-item {
+  background: transparent; /* Figma không dùng khung nền trắng bo góc cho cả card ở đây */
+  border: none;
+  padding: 0 16px;
+  flex: 1;
+  text-align: center;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Khối hình thoi chứa icon - Điểm mấu chốt khác màu trong Figma */
+.step-number {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  transform: rotate(45deg); /* Xoay thành hình thoi */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.step-number:hover {
+  transform: rotate(45deg) scale(1.05);
+}
+
+/* Khử xoay cho icon bên trong hình thoi để hiển thị thẳng đứng */
+.step-number i, 
+.step-number span {
+  transform: rotate(-45deg);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Phối màu Gradient từng bước chuẩn xác theo màn hình Figma của bạn */
+.step-item:nth-child(1) .step-number {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); /* Nền hồng nhạt */
+  color: #f43f5e; /* Icon màu hồng đậm */
+}
+
+.step-item:nth-child(3) .step-number {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); /* Nền xanh mint nhạt */
+  color: #22c55e; /* Icon màu xanh lá */
+}
+
+.step-item:nth-child(5) .step-number {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); /* Nền tím nhạt */
+  color: #a855f7; /* Icon màu tím */
+}
+
+.step-item h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 14px;
+}
+
+.step-item p {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 260px;
+}
+
+/* Đường cong nét đứt nối giữa các bước */
+.step-arrow {
+  color: #818cf8; /* Màu xanh tím nhạt */
+  font-size: 32px;
+  padding-top: 20px;
+  opacity: 0.7;
+  animation: pulseArrow 2s infinite alternate;
+}
+
+@keyframes pulseArrow {
+  0% { transform: translateX(0); opacity: 0.5; }
+  100% { transform: translateX(5px); opacity: 0.9; }
+}
+/* ============ FOOTER (ĐỒNG BỘ 100% FIGMA) ============ */
+.footer {
+  background-color: #F8FAFC; /* Nền xám nhạt mịn màng */
+  padding: 2.5rem 2rem 2rem 2rem;
+  font-family: 'Inter', sans-serif;
+  border-top: 1px solid #E2E8F0;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto 2.5rem auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 1.5fr;
+  gap: 2rem;
+}
+
+/* Tiêu đề các cột màu xanh dương thương hiệu theo Figma */
+.footer-section h4 {
+  color: #0458E6; 
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 1rem;
+}
+
+/* Chữ danh mục màu xám thanh mảnh */
+.footer-section a {
+  color: #64748B;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.footer-section a:hover {
+  color: #0458E6;
+}
+
+/* Nút footer trông như link (dùng để trigger validation thay vì Link trực tiếp) */
+.footer-nav-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #64748B;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.footer-nav-btn:hover {
+  color: #0458E6;
+}
+
+/* Khối nhận bản tin bên phải */
+.footer-newsletter {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Ép chữ newsletter chuẩn màu xanh sky nhạt tinh tế */
+.footer-newsletter .newsletter-title {
+  color: #0458E6; 
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 340px;
+}
+
+/* Thanh input bo góc dẹt phẳng sạch sẽ */
+.newsletter-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  padding: 6px 16px;
+  border: 1px solid #E2E8F0;
+  max-width: 360px;
+  position: relative;
+}
+
+.newsletter-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  color: #1E293B;
+  font-size: 14px;
+  outline: none;
+}
+
+.newsletter-input-wrapper input::placeholder {
+  color: #94A3B8;
+}
+
+/* Icon phong bì màu xanh dương nằm gọn ở góc phải thanh input */
+.newsletter-mail-icon {
+  color: #0458E6;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.newsletter-mail-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Dòng Copyright đáy */
+.footer-bottom {
+  border-top: 1px solid #E2E8F0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  text-align: center;
+}
+
+.footer-bottom p {
+  font-size: 14px;
+  color: #64748B;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============ NAV BUTTON LINK (thay thế Link cần auth) ============ */
+.nav-btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s;
+  line-height: inherit;
+}
+
+.nav-btn-link:hover {
+  color: #0458E6;
+}
+
+/* ============ MODAL YÊU CẦU ĐĂNG NHẬP ============ */
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.auth-modal-box {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px 36px 32px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 32px 80px -12px rgba(15, 23, 42, 0.25);
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* Icon khóa */
+.auth-modal-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  border: 3px solid #bfdbfe;
+}
+
+/* Tiêu đề */
+.auth-modal-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+/* Mô tả */
+.auth-modal-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.auth-modal-desc strong {
+  color: #0458E6;
+  font-weight: 600;
+}
+
+/* Nút hành động */
+.auth-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.auth-modal-btn-login {
+  background: #0458E6;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -4px rgba(4, 88, 230, 0.35);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.auth-modal-btn-login:hover {
+  background: #0347c5;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -4px rgba(4, 88, 230, 0.4);
+}
+
+.auth-modal-btn-register {
+  background: transparent;
+  color: #0458E6;
+  border: 1.5px solid #0458E6;
+  padding: 0.75rem 1.8rem;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.auth-modal-btn-register:hover {
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+/* Nút đóng (X) */
+.auth-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-modal-close:hover {
+  background: #f1f5f9;
+}
+>>>>>>> 8e66830f0fa0cdf12a23db11176dcfae920ed421

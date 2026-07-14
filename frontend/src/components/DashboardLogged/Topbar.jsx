@@ -91,7 +91,7 @@ export default function Topbar({ user }) {
             id="topbar-search-input"
             className="topbar-search-input"
             type="text"
-            placeholder="Tìm kiếm vị trí, kỹ năng... (Enter để tìm)"
+            placeholder="Tìm kiếm vị trí, kỹ năng..."
             value={searchValue}
             onChange={handleSearchChange}
             onKeyDown={handleSearchKeyDown}
