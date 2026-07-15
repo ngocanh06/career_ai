@@ -14,7 +14,7 @@ def get_user(user_id):
         conn = get_db()
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT u.user_id, u.email, u.role, u.status, p.full_name, p.phone, p.bio, p.avatar_url "
+                "SELECT u.user_id, u.email, u.role, u.status, p.full_name, p.phone, p.bio, p.avatar_url, DATE_FORMAT(p.dob, '%%Y-%%m-%%d') as dob "
                 "FROM user u LEFT JOIN profile p ON u.user_id = p.user_id "
                 "WHERE u.user_id = %s", (user_id,)
             )
@@ -39,7 +39,7 @@ def update_user(user_id):
         with conn.cursor() as cursor:
             # Lấy profile hiện tại
             cursor.execute(
-                "SELECT p.full_name, p.phone, p.bio FROM profile p WHERE p.user_id = %s",
+                "SELECT p.full_name, p.phone, p.bio, DATE_FORMAT(p.dob, '%%Y-%%m-%%d') as dob FROM profile p WHERE p.user_id = %s",
                 (user_id,)
             )
             current = cursor.fetchone() or {}
@@ -48,6 +48,7 @@ def update_user(user_id):
             full_name = body.get('full_name', current.get('full_name', '')).strip() if 'full_name' in body else current.get('full_name', '')
             phone = body.get('phone', current.get('phone', '')).strip() if 'phone' in body else current.get('phone', '')
             bio = body.get('bio', current.get('bio', '')).strip() if 'bio' in body else current.get('bio', '')
+            dob = body.get('dob', current.get('dob', '')) if 'dob' in body else current.get('dob', '')
 
             if not full_name:
                 return jsonify({'success': False, 'message': 'Tên hiển thị không được để trống'}), 400
@@ -56,13 +57,13 @@ def update_user(user_id):
             prof = cursor.fetchone()
             if prof:
                 cursor.execute(
-                    "UPDATE profile SET full_name = %s, phone = %s, bio = %s WHERE user_id = %s",
-                    (full_name, phone or None, bio or None, user_id)
+                    "UPDATE profile SET full_name = %s, phone = %s, bio = %s, dob = %s WHERE user_id = %s",
+                    (full_name, phone or None, bio or None, dob if str(dob).strip() else None, user_id)
                 )
             else:
                 cursor.execute(
-                    "INSERT INTO profile (user_id, full_name, phone, bio) VALUES (%s, %s, %s, %s)",
-                    (user_id, full_name, phone or None, bio or None)
+                    "INSERT INTO profile (user_id, full_name, phone, bio, dob) VALUES (%s, %s, %s, %s, %s)",
+                    (user_id, full_name, phone or None, bio or None, dob if str(dob).strip() else None)
                 )
             conn.commit()
         conn.close()

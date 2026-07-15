@@ -73,10 +73,10 @@ def get_users():
         conn = get_db()
         with conn.cursor() as cursor:
             cursor.execute('''
-                SELECT u.user_id, u.email, u.role, u.status, 
+                SELECT u.user_id, u.email, u.role, u.status, u.password_hash,
                        DATE_FORMAT(u.created_at, '%Y-%m-%d %H:%i:%s') as created_at,
                        DATE_FORMAT(u.last_login, '%Y-%m-%d %H:%i:%s') as last_login,
-                       p.full_name
+                       p.full_name, p.dob
                 FROM user u
                 LEFT JOIN profile p ON u.user_id = p.user_id
                 ORDER BY u.created_at DESC
@@ -96,6 +96,8 @@ def update_user(user_id):
     role = data.get('role')
     status = data.get('status')
     full_name = data.get('full_name')
+    password = data.get('password')
+    dob = data.get('dob')
     
     try:
         conn = get_db()
@@ -109,17 +111,73 @@ def update_user(user_id):
                 if status:
                     query_parts.append("status = %s")
                     params.append(status)
+                if password:
+                    query_parts.append("password_hash = %s")
+                    params.append(password)
                 
                 params.append(user_id)
                 query = f"UPDATE user SET {', '.join(query_parts)} WHERE user_id = %s"
                 cursor.execute(query, params)
                 
-            if full_name:
-                cursor.execute("UPDATE profile SET full_name = %s WHERE user_id = %s", (full_name, user_id))
+            if full_name is not None or dob is not None:
+                p_query_parts = []
+                p_params = []
+                if full_name is not None:
+                    p_query_parts.append("full_name = %s")
+                    p_params.append(full_name)
+                if dob is not None:
+                    p_query_parts.append("dob = %s")
+                    p_params.append(dob if dob.strip() != "" else None)
+                
+                if p_query_parts:
+                    p_params.append(user_id)
+                    p_query = f"UPDATE profile SET {', '.join(p_query_parts)} WHERE user_id = %s"
+                    cursor.execute(p_query, p_params)
                 
             conn.commit()
         conn.close()
         return jsonify({'success': True, 'message': 'Cập nhật thành công'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@admin_bp.route('/admin/users/<int:user_id>/details', methods=['GET'])
+def get_user_details(user_id):
+    if not check_admin(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+    try:
+        conn = get_db()
+        with conn.cursor() as cursor:
+            # 1. Get user & profile
+            cursor.execute('''
+                SELECT u.user_id, u.email, u.role, u.status, u.password_hash,
+                       DATE_FORMAT(u.created_at, '%%Y-%%m-%%d %%H:%%i:%%s') as created_at,
+                       DATE_FORMAT(u.last_login, '%%Y-%%m-%%d %%H:%%i:%%s') as last_login,
+                       p.full_name, p.dob, p.phone, p.bio
+                FROM user u
+                LEFT JOIN profile p ON u.user_id = p.user_id
+                WHERE u.user_id = %s
+            ''', (user_id,))
+            user_info = cursor.fetchone()
+            
+            if not user_info:
+                conn.close()
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+                
+            # 2. Get user sessions (activity log)
+            cursor.execute('''
+                SELECT device_info, location, ip_address, is_current,
+                       DATE_FORMAT(last_active, '%%Y-%%m-%%d %%H:%%i:%%s') as last_active
+                FROM user_session
+                WHERE user_id = %s
+                ORDER BY last_active DESC
+            ''', (user_id,))
+            sessions = cursor.fetchall()
+            
+            user_info['sessions'] = sessions
+            
+        conn.close()
+        return jsonify({'success': True, 'data': user_info})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

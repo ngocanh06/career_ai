@@ -48,7 +48,7 @@ function Section({ title, action, children }) {
 }
 
 /* ─── Inline editable field ─── */
-function EditableField({ label, value, onSave, multiline }) {
+function EditableField({ label, value, onSave, multiline, type = "text" }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -77,6 +77,7 @@ function EditableField({ label, value, onSave, multiline }) {
             />
           ) : (
             <input
+              type={type}
               className="mp-input"
               value={draft}
               onChange={e => setDraft(e.target.value)}
@@ -301,6 +302,12 @@ export default function MyProfile() {
                 label="Số điện thoại"
                 value={profile?.phone || ''}
                 onSave={v => handleSave('phone', v)}
+              />
+              <EditableField
+                label="Ngày sinh"
+                value={profile?.dob || ''}
+                type="date"
+                onSave={v => handleSave('dob', v)}
               />
               <div className="mp-field">
                 <div className="mp-field-label">Email</div>
