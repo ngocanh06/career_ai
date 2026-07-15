@@ -33,6 +33,7 @@ export default function Topbar({ user }) {
   } catch {
     localUser = {};
   }
+  const isAdmin = localUser.role === 'admin';
 
   const displayName = localUser.full_name || user?.name || 'Người dùng';
   const displayEmail = localUser.email || 'user@example.com';
@@ -85,19 +86,21 @@ export default function Topbar({ user }) {
     <header className="topbar">
       {/* Left: Search bar */}
       <div className="topbar-left">
-        <div className="topbar-search">
-          <FaMagnifyingGlass className="topbar-search-icon" style={{ left: '16px', fontSize: '14px' }} />
-          <input
-            id="topbar-search-input"
-            className="topbar-search-input"
-            type="text"
-            placeholder="Tìm kiếm vị trí, kỹ năng..."
-            value={searchValue}
-            onChange={handleSearchChange}
-            onKeyDown={handleSearchKeyDown}
-            aria-label="Tìm kiếm"
-          />
-        </div>
+        {!isAdmin && (
+          <div className="topbar-search">
+            <FaMagnifyingGlass className="topbar-search-icon" style={{ left: '16px', fontSize: '14px' }} />
+            <input
+              id="topbar-search-input"
+              className="topbar-search-input"
+              type="text"
+              placeholder="Tìm kiếm vị trí, kỹ năng..."
+              value={searchValue}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
+              aria-label="Tìm kiếm"
+            />
+          </div>
+        )}
       </div>
 
       {/* Right: actions */}

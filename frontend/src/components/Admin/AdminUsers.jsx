@@ -1,11 +1,11 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../DashboardLogged/DashboardLayout";
 import "./AdminDashboard.css";
 import {
   FaEdit, FaTrash, FaTimes, FaSave, FaSearch,
   FaEye, FaEyeSlash, FaFileAlt, FaBriefcase, FaCode, FaHistory,
   FaFilePdf, FaGlobe, FaLock, FaUserShield, FaUsers, FaRoute,
-  FaPhone, FaEnvelope, FaBirthdayCake, FaShieldAlt, FaCalendarAlt, FaClock,
+  FaPhone, FaEnvelope, FaBirthdayCake, FaShieldAlt, FaCalendarAlt, FaClock, FaFilter, FaUndo,
 } from "react-icons/fa";
 
 const API = "http://localhost:5000/api";
@@ -29,6 +29,9 @@ export default function AdminUsers() {
   const [users,   setUsers]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [search,  setSearch]  = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   /* Edit modal */
   const [editingUser,  setEditingUser]  = useState(null);
@@ -53,10 +56,20 @@ export default function AdminUsers() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const filtered = users.filter((u) =>
-    (u.email     || "").toLowerCase().includes(search.toLowerCase()) ||
-    (u.full_name || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = users.filter((u) => {
+    const matchSearch = (u.email || "").toLowerCase().includes(search.toLowerCase()) ||
+                        (u.full_name || "").toLowerCase().includes(search.toLowerCase());
+    let matchType = true;
+    if (filterType === "active") matchType = u.status === "active";
+    else if (filterType === "has_roadmap") matchType = u.has_roadmap === 1;
+    else if (filterType === "has_cv") matchType = u.has_cv === 1;
+    else if (filterType === "has_published_portfolio") matchType = u.has_published_portfolio === 1;
+
+    const matchRole = filterRole === "all" || u.role === filterRole;
+    const matchStatus = filterStatus === "all" || u.status === filterStatus;
+
+    return matchSearch && matchType && matchRole && matchStatus;
+  });
 
   /* ── Edit handlers ─────────────────────────────────────────────────────── */
   const openEdit = (user) => {
@@ -137,6 +150,42 @@ export default function AdminUsers() {
               <FaSearch className="search-icon" />
               <input type="text" placeholder="Tìm kiếm email, tên..." value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="admin-filters-bar">
+            <span className="filters-label">
+              <FaFilter /> Lọc theo:
+            </span>
+            <div className="filters-selects">
+              <select value={filterType} onChange={e => setFilterType(e.target.value)} className="admin-filter-select">
+                <option value="all">Tất cả điều kiện</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="has_roadmap">Có lộ trình</option>
+                <option value="has_cv">Đã tải CV</option>
+                <option value="has_published_portfolio">Có portfolio công khai</option>
+              </select>
+              <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="admin-filter-select">
+                <option value="all">Tất cả vai trò</option>
+                <option value="user">Thành viên (User)</option>
+                <option value="admin">Quản trị (Admin)</option>
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="admin-filter-select">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động (Active)</option>
+                <option value="inactive">Ngừng (Inactive)</option>
+              </select>
+            </div>
+            {(filterType !== "all" || filterRole !== "all" || filterStatus !== "all" || search) && (
+              <button
+                className="btn-reset-filter"
+                onClick={() => { setFilterType("all"); setFilterRole("all"); setFilterStatus("all"); setSearch(""); }}
+                title="Xóa tất cả bộ lọc"
+              >
+                <FaUndo style={{ fontSize: 11 }} />
+                Đặt lại
+              </button>
+            )}
           </div>
           {loading ? <div className="admin-loading">Đang tải dữ liệu...</div> : (
             <table className="admin-table">

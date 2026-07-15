@@ -11,7 +11,7 @@ import {
   FaCalendarAlt, FaClock, FaArrowRight,
 } from "react-icons/fa";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
 const API = "http://localhost:5000/api";
@@ -32,20 +32,39 @@ function avatarColor(name = "") {
 
 function buildGrowthData(users) {
   const map = {};
+  let minDate = "9999-99";
+  let maxDate = "0000-00";
+
   users.forEach((u) => {
     const rawDate = u.createdAt || u.created_at || "";
     const dateStr = rawDate.split(" ")[0]; // YYYY-MM-DD
     if (!dateStr || dateStr.length < 7) return;
     const key = dateStr.substring(0, 7); // YYYY-MM
     map[key] = (map[key] || 0) + 1;
+    if (key < minDate) minDate = key;
+    if (key > maxDate) maxDate = key;
   });
-  return Object.entries(map)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-8)
-    .map(([k, v]) => {
-      const [y, m] = k.split("-");
-      return { month: `${m}/${y.slice(2)}`, "Người dùng mới": v };
+
+  if (minDate === "9999-99") return [];
+
+  const result = [];
+  let [currY, currM] = minDate.split("-").map(Number);
+  const [endY, endM] = maxDate.split("-").map(Number);
+
+  while (currY < endY || (currY === endY && currM <= endM)) {
+    const key = `${currY}-${String(currM).padStart(2, "0")}`;
+    result.push({
+      month: `${String(currM).padStart(2, "0")}/${String(currY).slice(2)}`,
+      "Người dùng mới": map[key] || 0,
     });
+    currM++;
+    if (currM > 12) {
+      currM = 1;
+      currY++;
+    }
+  }
+
+  return result.slice(-8);
 }
 
 /* ── Skeletons CSS fallback version ──────────────────────────────────────── */
@@ -195,8 +214,8 @@ export default function AdminDashboard() {
           {/* CỘT TRÁI: Biểu đồ AreaChart */}
           <div className="dash-chart-card">
             <div className="dash-chart-header" style={{ marginBottom: 20 }}>
-              <span className="dash-chart-title" style={{ fontSize: 16, fontWeight: 700 }}>Xu hướng tăng trưởng người dùng mới</span>
-              <span className="dash-chart-sub" style={{ fontSize: 12, color: "#94a3b8" }}>Dựa theo ngày tạo tài khoản</span>
+              <span className="dash-chart-title">Xu hướng tăng trưởng người dùng mới</span>
+              <span className="dash-chart-sub">Dựa theo ngày tạo tài khoản</span>
             </div>
 
             {loading ? (
@@ -207,13 +226,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="brandBlueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b5bdb" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#3b5bdb" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <BarChart data={growthData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis 
                     dataKey="month" 
@@ -236,18 +249,15 @@ export default function AdminDashboard() {
                       fontSize: "12px",
                       color: "#1e293b"
                     }} 
+                    cursor={{ fill: "#f8fafc" }}
                   />
-                  <Area 
-                    type="monotone" 
+                  <Bar 
                     dataKey="Người dùng mới" 
-                    stroke="#3b5bdb" 
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#brandBlueGradient)"
-                    dot={{ r: 3, stroke: "#3b5bdb", strokeWidth: 1.5, fill: "#ffffff" }}
-                    activeDot={{ r: 5, stroke: "#3b5bdb", strokeWidth: 2, fill: "#ffffff" }}
+                    fill="#3b5bdb" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
@@ -256,8 +266,8 @@ export default function AdminDashboard() {
           <div className="dash-recent-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div className="dash-recent-header" style={{ marginBottom: 0 }}>
-                <span className="dash-chart-title" style={{ fontSize: 16, fontWeight: 700 }}>Đăng ký mới nhất</span>
-                <span className="dash-chart-sub" style={{ fontSize: 12, color: "#94a3b8" }}>Top 5 tài khoản gần đây</span>
+                <span className="dash-chart-title">Đăng ký mới nhất</span>
+                <span className="dash-chart-sub">Top 5 tài khoản gần đây</span>
               </div>
               <button onClick={() => navigate("/admin")} className="view-all-btn">
                 <span>Xem tất cả</span>

@@ -67,7 +67,10 @@ def get_users():
                        DATE_FORMAT(u.last_login, '%Y-%m-%d %H:%i:%s') as last_login,
                        p.full_name,
                        DATE_FORMAT(p.dob, '%Y-%m-%d') as dob,
-                       p.phone, p.bio
+                       p.phone, p.bio,
+                       EXISTS(SELECT 1 FROM roadmap r WHERE r.user_id = u.user_id) AS has_roadmap,
+                       EXISTS(SELECT 1 FROM cv c WHERE c.user_id = u.user_id) AS has_cv,
+                       EXISTS(SELECT 1 FROM portfolio po WHERE po.user_id = u.user_id AND po.is_published = 1) AS has_published_portfolio
                 FROM user u
                 LEFT JOIN profile p ON u.user_id = p.user_id
                 ORDER BY u.created_at DESC
