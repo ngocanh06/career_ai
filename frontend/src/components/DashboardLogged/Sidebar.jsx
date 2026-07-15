@@ -27,6 +27,14 @@ const bottomNav = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  
+  let isAdmin = false;
+  try {
+    const user = JSON.parse(localStorage.getItem('career_user'));
+    if (user && user.role === 'admin') {
+      isAdmin = true;
+    }
+  } catch (e) {}
 
   return (
     <aside className="sidebar">
@@ -50,6 +58,19 @@ export default function Sidebar() {
             <span>{item.label}</span>
           </NavLink>
         ))}
+        
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              'sidebar-nav-item admin-nav-link' + (isActive ? ' active' : '')
+            }
+            style={{ marginTop: '10px', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}
+          >
+            <span className="sidebar-nav-icon"><FaGear /></span>
+            <span style={{ fontWeight: 600 }}>Quản trị viên</span>
+          </NavLink>
+        )}
       </nav>
 
       {/* CTA */}

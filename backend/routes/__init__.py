@@ -6,6 +6,7 @@ from .roadmap_routes import roadmap_bp
 from .cv_routes import cv_bp
 from .portfolio_routes import portfolio_bp
 from .dashboard_routes import dashboard_bp
+from .admin_routes import admin_bp
 
 all_blueprints = [
     db_bp,
@@ -16,4 +17,5 @@ all_blueprints = [
     cv_bp,
     portfolio_bp,
     dashboard_bp,
+    admin_bp,
 ]

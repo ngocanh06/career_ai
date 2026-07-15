@@ -10,6 +10,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import PrivateRoute from './components/Auth/PrivateRoute';
+import AdminRoute from './components/Auth/AdminRoute';
 
 // Logged-in Dashboard Layout
 import DashboardLogged from './components/DashboardLogged/DashboardHome';
@@ -19,6 +20,9 @@ import CareerOrientation from './components/Features/CareerOrientation';
 import LearningPath from './components/Features/LearningPath';
 import Settings from './components/Features/Settings';
 import MyProfile from './components/Features/MyProfile';
+
+// Admin
+import AdminDashboard from './components/Admin/AdminDashboard';
 
 // Tiện ích: reset scroll về đầu trang khi navigate
 import ScrollToTop from './components/DashboardLogged/ScrollToTop';
@@ -66,6 +70,9 @@ function App() {
             <Route path="/learning-path" element={<PrivateRoute><LearningPath /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           </Routes>
         </div>
       </Router>
