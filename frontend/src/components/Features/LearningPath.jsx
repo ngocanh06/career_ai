@@ -97,7 +97,7 @@ const mapCourses = (goals) => {
       let typeText = 'Khóa học';
       let badgeClass = 'lp-badge-course';
       let icon = 'fa-graduation-cap';
-      
+
       if (rawType === 'article') {
         typeText = 'Tài liệu';
         badgeClass = 'lp-badge-article';
@@ -144,7 +144,7 @@ export default function LearningPath() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCongratsModal, setShowCongratsModal] = useState(false);
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
-  
+
   // Diverse Resource Type & Bookmark States
   const [selectedResourceType, setSelectedResourceType] = useState('all');
   const [bookmarks, setBookmarks] = useState([]);
@@ -547,7 +547,7 @@ export default function LearningPath() {
 
     const scorePct = Math.round((correctCount / quizQuestions.length) * 100);
     const passed = scorePct >= 80;
-    
+
     setQuizResult({
       score: correctCount,
       scorePct,
@@ -1050,13 +1050,13 @@ export default function LearningPath() {
                         <div className="lp-quiz-banner-info">
                           <p className="lp-quiz-banner-title">Mở khóa kỹ năng "{g.skill_name}"</p>
                           <p className="lp-quiz-banner-desc">
-                            {g.progress_percentage >= 100 
-                              ? "Bạn đã hoàn tất học tập! Hãy làm bài trắc nghiệm ngắn (5 câu, đạt từ 80%) để xác minh năng lực." 
+                            {g.progress_percentage >= 100
+                              ? "Bạn đã hoàn tất học tập! Hãy làm bài trắc nghiệm ngắn (5 câu, đạt từ 80%) để xác minh năng lực."
                               : "Hoàn thành 100% tài nguyên của tháng để tham gia làm bài đánh giá mở khóa kỹ năng."}
                           </p>
                         </div>
-                        <button 
-                          className="lp-btn-primary lp-btn-sm" 
+                        <button
+                          className="lp-btn-primary lp-btn-sm"
                           disabled={g.progress_percentage < 100}
                           onClick={() => handleStartQuiz(g)}
                         >
@@ -1126,25 +1126,25 @@ export default function LearningPath() {
 
                   {/* Bộ lọc loại tài nguyên */}
                   <div className="lp-resource-type-tabs">
-                    <button 
+                    <button
                       className={`lp-type-tab ${selectedResourceType === 'all' ? 'active' : ''}`}
                       onClick={() => setSelectedResourceType('all')}
                     >
                       Tất cả tài nguyên
                     </button>
-                    <button 
+                    <button
                       className={`lp-type-tab lp-type-tab-course ${selectedResourceType === 'course' ? 'active' : ''}`}
                       onClick={() => setSelectedResourceType('course')}
                     >
                       <i className="fa-solid fa-graduation-cap"></i> Khóa học
                     </button>
-                    <button 
+                    <button
                       className={`lp-type-tab lp-type-tab-article ${selectedResourceType === 'article' ? 'active' : ''}`}
                       onClick={() => setSelectedResourceType('article')}
                     >
                       <i className="fa-solid fa-book-open"></i> Bài viết & Tài liệu
                     </button>
-                    <button 
+                    <button
                       className={`lp-type-tab lp-type-tab-video ${selectedResourceType === 'video' ? 'active' : ''}`}
                       onClick={() => setSelectedResourceType('video')}
                     >
@@ -1169,7 +1169,7 @@ export default function LearningPath() {
                         <span className={`lp-course-badge ${c.badgeClass}`}>
                           {c.type}
                         </span>
-                        <button 
+                        <button
                           className={`lp-course-bookmark-btn ${c.isBookmarked ? 'bookmarked' : ''}`}
                           onClick={(e) => { e.stopPropagation(); handleToggleBookmark(c); }}
                           title={c.isBookmarked ? "Xóa khỏi tài liệu yêu thích" : "Lưu vào tài liệu yêu thích"}
@@ -1216,7 +1216,7 @@ export default function LearningPath() {
                           )}
                         </button>
                       </div>
-                      
+
                       {/* Hộp Ghi chú nhanh */}
                       <div className="lp-course-note-box">
                         <div className="lp-note-header">

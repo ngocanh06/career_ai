@@ -31,29 +31,32 @@
 
 ## 🛠️ Công nghệ sử dụng
 
-### Frontend
+### Frontend (ReactJS)
 | Thư viện | Phiên bản | Mục đích |
 |---|---|---|
-| `react` | ^18 | UI framework chính |
-| `react-dom` | ^18 | Render DOM |
-| `react-router-dom` | ^6 | Client-side routing & bảo vệ route |
-| `react-icons` | latest | Bộ icon đa dạng (FontAwesome, Feather...) |
-| `lucide-react` | latest | Icon bổ sung phong cách hiện đại |
-| `html2pdf.js` | latest | Xuất Portfolio sang file PDF |
-| `@fortawesome/fontawesome-free` | latest | Bộ icon FontAwesome |
-| `react-scripts` | ^5 | Build toolchain (Create React App) |
+| `react` / `react-dom` | ^19.2.7 | UI framework chính và render DOM |
+| `react-router-dom` | ^7.18.1 | Client-side routing & bảo vệ route |
+| `react-icons` | ^5.7.0 | Bộ icon đa dạng (FontAwesome, Feather...) |
+| `lucide-react` | ^1.23.0 | Icon bổ sung phong cách hiện đại |
+| `@fortawesome/fontawesome-...`| ^7.3.0 | Các gói thư viện icon từ FontAwesome (free, core, brands) |
+| `@fortawesome/react-fontawesome` | ^3.3.1 | Component React chính thức cho FontAwesome |
+| `html2pdf.js` | ^0.14.0 | Xuất Portfolio sang file PDF |
+| `@react-oauth/google` | ^0.13.5 | Tích hợp xác thực Đăng nhập bằng Google |
+| `jwt-decode` | ^4.0.0 | Phân tích giải mã JSON Web Token (JWT) |
+| `react-scripts` | 5.0.1 | Môi trường build và dev server |
+| `web-vitals` | ^2.1.4 | Đo lường hiệu năng trang web (Core Web Vitals) |
 
-### Backend
+### Backend (Python/Flask)
 | Thư viện | Mục đích |
 |---|---|
-| `flask` | Web server & API framework |
-| `flask-cors` | Cấu hình CORS để kết nối với frontend |
-| `pymysql` | Kết nối và thao tác với MySQL |
-| `python-dotenv` | Quản lý biến môi trường qua file `.env` |
-| `groq` | Gọi Groq API (model llama-3.3-70b-versatile) cho tính năng AI |
-| `openai` | Tương thích OpenAI API (dự phòng) |
-| `pdfplumber` | Đọc và trích xuất text từ file CV `.pdf` |
-| `python-docx` | Đọc và trích xuất text từ file CV `.docx` |
+| `flask` | Web server & API framework chính |
+| `flask-cors` | Cấu hình Cross-Origin Resource Sharing (CORS) |
+| `pymysql` | Driver kết nối và thao tác với cơ sở dữ liệu MySQL |
+| `python-dotenv` | Nạp biến môi trường bảo mật từ file `.env` |
+| `groq` | SDK gọi API Groq (llama-3.3-70b-versatile) cho AI |
+| `openai` | SDK tương thích OpenAI API (dùng cho fallback model) |
+| `pdfplumber` | Đọc, bóc tách và trích xuất text từ file CV `.pdf` |
+| `python-docx` | Đọc và trích xuất nội dung text từ file CV `.docx` |
 
 ### Database & Infrastructure
 - **Database:** MySQL (chạy qua XAMPP hoặc MySQL Server)
