@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 // Import file logo PNG của bạn ở đây
 import logoCareer from '../../assets/images/logo/logo-career.png';
 
@@ -62,6 +63,42 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  const loginGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        // Lấy thông tin user từ Google
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+
+        // Gửi lên backend
+        const res = await fetch('http://localhost:5000/api/login/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userInfo.email, name: userInfo.name }),
+        });
+        const json = await res.json();
+
+        if (!json.success) {
+          setError(json.message || 'Đăng nhập Google thất bại');
+          setLoading(false);
+          return;
+        }
+
+        localStorage.setItem('career_user', JSON.stringify(json.data));
+        navigate('/dashboard');
+      } catch (err) {
+        setError('Lỗi khi đăng nhập bằng Google. Vui lòng thử lại.');
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Đăng nhập Google thất bại hoặc đã bị hủy.');
+    }
+  });
 
   return (
     <div className="auth-layout">
@@ -234,7 +271,8 @@ export default function Login() {
             {/* Social buttons */}
             <div className="auth-social-row">
               <button type="button" className="auth-social-btn" id="login-google"
-                onClick={() => setError('Đăng nhập bằng Google chưa được hỗ trợ.')}
+                onClick={() => loginGoogle()}
+                disabled={loading}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

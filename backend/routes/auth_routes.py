@@ -73,6 +73,81 @@ def login():
 
 
 # -------------------------------------------------------
+# API: Đăng nhập bằng Google
+# -------------------------------------------------------
+@auth_bp.route('/login/google', methods=['POST'])
+def login_google():
+    try:
+        body = request.get_json()
+        email = (body.get('email') or '').strip()
+        full_name = (body.get('name') or '').strip()
+
+        if not email:
+            return jsonify({'success': False, 'message': 'Không tìm thấy email từ Google.'}), 400
+
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT u.user_id, u.email, u.role, u.status, p.full_name "
+                "FROM user u LEFT JOIN profile p ON u.user_id = p.user_id "
+                "WHERE u.email = %s LIMIT 1",
+                (email,)
+            )
+            user = cursor.fetchone()
+
+            ip_addr = request.remote_addr or 'Unknown'
+            user_agent = request.headers.get('User-Agent') or 'Unknown Device'
+
+            if not user:
+                # Nếu chưa có tài khoản, tự động đăng ký
+                cursor.execute(
+                    "INSERT INTO user (email, password_hash, role, status) VALUES (%s, %s, %s, %s)",
+                    (email, 'google_sso', 'user', 'active')
+                )
+                user_id = cursor.lastrowid
+                
+                cursor.execute(
+                    "INSERT INTO profile (user_id, full_name) VALUES (%s, %s)",
+                    (user_id, full_name)
+                )
+                
+                user = {
+                    'user_id': user_id,
+                    'email': email,
+                    'role': 'user',
+                    'status': 'active',
+                    'full_name': full_name
+                }
+            elif user['status'] != 'active':
+                conn.close()
+                return jsonify({'success': False, 'message': 'Tài khoản đã bị khóa'}), 403
+
+            # Cập nhật session và last_login
+            cursor.execute("SELECT id FROM user_session WHERE user_id=%s AND device_info=%s LIMIT 1", (user['user_id'], user_agent))
+            session_row = cursor.fetchone()
+            if session_row:
+                cursor.execute("UPDATE user_session SET last_active=NOW(), ip_address=%s, location='Hà Nội, VN' WHERE id=%s", (ip_addr, session_row['id']))
+            else:
+                cursor.execute("INSERT INTO user_session (user_id, device_info, location, ip_address, is_current) VALUES (%s, %s, 'Hà Nội, VN', %s, 1)", (user['user_id'], user_agent, ip_addr))
+
+            cursor.execute("UPDATE user SET last_login = NOW() WHERE user_id = %s", (user['user_id'],))
+            conn.commit()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'user_id':   user['user_id'],
+                'email':     user['email'],
+                'role':      user['role'],
+                'full_name': user['full_name'] or email.split('@')[0],
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# -------------------------------------------------------
 # API: Register Request OTP
 # -------------------------------------------------------
 @auth_bp.route('/register/request-otp', methods=['POST'])
