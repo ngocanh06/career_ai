@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import './App.css';
 
 import Landing from './components/Landing/Landing';
@@ -31,42 +32,44 @@ function App() {
     const compact = localStorage.getItem('career_compact') === 'true';
 
     document.documentElement.style.setProperty('--primary-color', color);
-    
+
     if (theme === 'dark') document.body.classList.add('dark-theme');
     else document.body.classList.remove('dark-theme');
-    
+
     if (compact) document.body.classList.add('compact-mode');
     else document.body.classList.remove('compact-mode');
-    
+
     if (fontSize === 'small') document.documentElement.style.fontSize = '14px';
     else if (fontSize === 'large') document.documentElement.style.fontSize = '18px';
     else document.documentElement.style.fontSize = '16px';
   }, []);
 
   return (
-    <Router>
-      {/* ScrollToTop phải nằm bên trong <Router> để dùng được useLocation() */}
-      <ScrollToTop />
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Landing />} />
+    <GoogleOAuthProvider clientId="300432678489-9qimf9qv0f1hv6u5v1q8jjs31b92f8s4.apps.googleusercontent.com">
+      <Router>
+        {/* ScrollToTop phải nằm bên trong <Router> để dùng được useLocation() */}
+        <ScrollToTop />
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Landing />} />
 
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Logged-in Routes – yêu cầu đăng nhập */}
-          <Route path="/dashboard" element={<PrivateRoute><DashboardLogged /></PrivateRoute>} />
-          <Route path="/ai-cv" element={<PrivateRoute><AiCvAnalysis /></PrivateRoute>} />
-          <Route path="/portfolio" element={<PrivateRoute><PortfolioBuilder /></PrivateRoute>} />
-          <Route path="/career" element={<PrivateRoute><CareerOrientation /></PrivateRoute>} />
-          <Route path="/learning-path" element={<PrivateRoute><LearningPath /></PrivateRoute>} />
-          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
-        </Routes>
-      </div>
-    </Router>
+            {/* Logged-in Routes – yêu cầu đăng nhập */}
+            <Route path="/dashboard" element={<PrivateRoute><DashboardLogged /></PrivateRoute>} />
+            <Route path="/ai-cv" element={<PrivateRoute><AiCvAnalysis /></PrivateRoute>} />
+            <Route path="/portfolio" element={<PrivateRoute><PortfolioBuilder /></PrivateRoute>} />
+            <Route path="/career" element={<PrivateRoute><CareerOrientation /></PrivateRoute>} />
+            <Route path="/learning-path" element={<PrivateRoute><LearningPath /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+          </Routes>
+        </div>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

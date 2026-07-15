@@ -7,12 +7,14 @@
     "@fortawesome/fontawesome-svg-core": "^7.3.0",
     "@fortawesome/free-brands-svg-icons": "^7.3.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
+    "@react-oauth/google": "^0.13.5",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
-    "html2pdf.js": "^0.14.0",
     "html2canvas-pro": "^2.2.4",
+    "html2pdf.js": "^0.14.0",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -26,9 +28,6 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "overrides": {
-    "html2canvas": "npm:html2canvas-pro@latest"
   },
   "eslintConfig": {
     "extends": [
