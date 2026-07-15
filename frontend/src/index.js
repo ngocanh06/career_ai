@@ -2,7 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './index.css';
+import html2canvas from 'html2canvas-pro';
 import App from './App';
+
+window.html2canvas = html2canvas;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
