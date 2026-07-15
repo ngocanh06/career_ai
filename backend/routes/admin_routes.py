@@ -1,74 +1,63 @@
 from flask import Blueprint, jsonify, request
 from utils.db import get_db
-import json
 
 admin_bp = Blueprint('admin', __name__)
 
-# Middleware check is not built-in, so we'll check role from request body for simplicity
-# In a real app with JWT, we'd extract the role from the token.
-def check_admin(request):
-    data = request.get_json(silent=True) or request.args
-    # Just for simulation, we'll check 'request_user_id' and query its role
-    # Wait, the simplest way is just assume the frontend will send user_id, 
-    # but let's query the DB to be sure they are admin.
-    user_id = data.get('admin_user_id') if isinstance(data, dict) else None
+
+def check_admin(req):
+    """Verify the requesting user is an admin via X-Admin-User-Id header."""
+    user_id = req.headers.get('X-Admin-User-Id')
     if not user_id:
-        user_id = request.headers.get('X-Admin-User-Id')
-    
+        data = req.get_json(silent=True)
+        if isinstance(data, dict):
+            user_id = data.get('admin_user_id')
     if not user_id:
         return False
-    
     conn = get_db()
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT role FROM user WHERE user_id = %s", (user_id,))
-        user = cursor.fetchone()
-        if user and user['role'] == 'admin':
-            conn.close()
-            return True
-    conn.close()
-    return False
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT role FROM user WHERE user_id = %s", (user_id,))
+            user = cursor.fetchone()
+            return bool(user and user['role'] == 'admin')
+    finally:
+        conn.close()
 
+
+# ─── Stats ────────────────────────────────────────────────────────────────────
 @admin_bp.route('/admin/stats', methods=['GET'])
 def get_stats():
     if not check_admin(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
     try:
         conn = get_db()
         with conn.cursor() as cursor:
-            # Count users
-            cursor.execute("SELECT COUNT(*) as total_users FROM user")
-            total_users = cursor.fetchone()['total_users']
-            
-            cursor.execute("SELECT COUNT(*) as active_users FROM user WHERE status = 'active'")
-            active_users = cursor.fetchone()['active_users']
-            
-            cursor.execute("SELECT COUNT(*) as total_roadmaps FROM roadmap")
-            total_roadmaps = cursor.fetchone()['total_roadmaps']
-            
-            # Count generated portfolios
-            # We don't have a portfolio table, but we can count users with experience/skills
-            cursor.execute("SELECT COUNT(DISTINCT user_id) as portfolio_count FROM userskill")
-            portfolio_count = cursor.fetchone()['portfolio_count']
-            
+            cursor.execute("SELECT COUNT(*) as v FROM user")
+            total_users = cursor.fetchone()['v']
+            cursor.execute("SELECT COUNT(*) as v FROM user WHERE status = 'active'")
+            active_users = cursor.fetchone()['v']
+            cursor.execute("SELECT COUNT(*) as v FROM roadmap")
+            total_roadmaps = cursor.fetchone()['v']
+            cursor.execute("SELECT COUNT(*) as v FROM cv")
+            total_cvs = cursor.fetchone()['v']
+            cursor.execute("SELECT COUNT(*) as v FROM portfolio WHERE is_published = 1")
+            published_portfolios = cursor.fetchone()['v']
         conn.close()
-        return jsonify({
-            'success': True,
-            'data': {
-                'total_users': total_users,
-                'active_users': active_users,
-                'total_roadmaps': total_roadmaps,
-                'portfolio_count': portfolio_count
-            }
-        })
+        return jsonify({'success': True, 'data': {
+            'total_users': total_users,
+            'active_users': active_users,
+            'total_roadmaps': total_roadmaps,
+            'total_cvs': total_cvs,
+            'published_portfolios': published_portfolios,
+        }})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+# ─── Users list ───────────────────────────────────────────────────────────────
 @admin_bp.route('/admin/users', methods=['GET'])
 def get_users():
     if not check_admin(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
     try:
         conn = get_db()
         with conn.cursor() as cursor:
@@ -76,7 +65,9 @@ def get_users():
                 SELECT u.user_id, u.email, u.role, u.status, u.password_hash,
                        DATE_FORMAT(u.created_at, '%Y-%m-%d %H:%i:%s') as created_at,
                        DATE_FORMAT(u.last_login, '%Y-%m-%d %H:%i:%s') as last_login,
-                       p.full_name, p.dob
+                       p.full_name,
+                       DATE_FORMAT(p.dob, '%Y-%m-%d') as dob,
+                       p.phone, p.bio
                 FROM user u
                 LEFT JOIN profile p ON u.user_id = p.user_id
                 ORDER BY u.created_at DESC
@@ -87,127 +78,161 @@ def get_users():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+# ─── Update user ──────────────────────────────────────────────────────────────
 @admin_bp.route('/admin/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     if not check_admin(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
-    data = request.json
-    role = data.get('role')
-    status = data.get('status')
-    full_name = data.get('full_name')
-    password = data.get('password')
-    dob = data.get('dob')
-    
+
+    data = request.get_json(silent=True) or {}
     try:
         conn = get_db()
         with conn.cursor() as cursor:
-            if role or status:
-                query_parts = []
-                params = []
-                if role:
-                    query_parts.append("role = %s")
-                    params.append(role)
-                if status:
-                    query_parts.append("status = %s")
-                    params.append(status)
-                if password:
-                    query_parts.append("password_hash = %s")
-                    params.append(password)
-                
-                params.append(user_id)
-                query = f"UPDATE user SET {', '.join(query_parts)} WHERE user_id = %s"
-                cursor.execute(query, params)
-                
-            if full_name is not None or dob is not None:
-                p_query_parts = []
-                p_params = []
-                if full_name is not None:
-                    p_query_parts.append("full_name = %s")
-                    p_params.append(full_name)
-                if dob is not None:
-                    p_query_parts.append("dob = %s")
-                    p_params.append(dob if dob.strip() != "" else None)
-                
-                if p_query_parts:
-                    p_params.append(user_id)
-                    p_query = f"UPDATE profile SET {', '.join(p_query_parts)} WHERE user_id = %s"
-                    cursor.execute(p_query, p_params)
-                
+            # --- Update user table ---
+            user_fields = {}
+            if 'role' in data and data['role']:
+                user_fields['role'] = data['role']
+            if 'status' in data and data['status']:
+                user_fields['status'] = data['status']
+            if 'password' in data and data['password'] and data['password'].strip():
+                user_fields['password_hash'] = data['password'].strip()
+
+            if user_fields:
+                set_clause = ', '.join(f"{k} = %s" for k in user_fields)
+                params = list(user_fields.values()) + [user_id]
+                cursor.execute(f"UPDATE user SET {set_clause} WHERE user_id = %s", params)
+
+            # --- Update profile table ---
+            profile_fields = {}
+            if 'full_name' in data:
+                profile_fields['full_name'] = data['full_name'] or None
+            if 'phone' in data:
+                profile_fields['phone'] = data['phone'] or None
+            if 'bio' in data:
+                profile_fields['bio'] = data['bio'] or None
+            if 'dob' in data:
+                dob_val = (data['dob'] or '').strip()
+                profile_fields['dob'] = dob_val if dob_val else None
+
+            if profile_fields:
+                cursor.execute("SELECT profile_id FROM profile WHERE user_id = %s", (user_id,))
+                existing = cursor.fetchone()
+                if existing:
+                    set_clause = ', '.join(f"{k} = %s" for k in profile_fields)
+                    params = list(profile_fields.values()) + [user_id]
+                    cursor.execute(f"UPDATE profile SET {set_clause} WHERE user_id = %s", params)
+                else:
+                    profile_fields['user_id'] = user_id
+                    cols = ', '.join(profile_fields.keys())
+                    placeholders = ', '.join(['%s'] * len(profile_fields))
+                    cursor.execute(
+                        f"INSERT INTO profile ({cols}) VALUES ({placeholders})",
+                        list(profile_fields.values())
+                    )
+
             conn.commit()
         conn.close()
-        return jsonify({'success': True, 'message': 'Cập nhật thành công'})
+        return jsonify({'success': True, 'message': 'Cap nhat thanh cong'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+# ─── User full details (profile + CV + portfolio + roadmap + activity) ────────
 @admin_bp.route('/admin/users/<int:user_id>/details', methods=['GET'])
 def get_user_details(user_id):
     if not check_admin(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
     try:
         conn = get_db()
         with conn.cursor() as cursor:
-            # 1. Get user & profile
+            # 1. Profile
             cursor.execute('''
                 SELECT u.user_id, u.email, u.role, u.status, u.password_hash,
                        DATE_FORMAT(u.created_at, '%%Y-%%m-%%d %%H:%%i:%%s') as created_at,
                        DATE_FORMAT(u.last_login, '%%Y-%%m-%%d %%H:%%i:%%s') as last_login,
-                       p.full_name, p.dob, p.phone, p.bio
+                       p.full_name, DATE_FORMAT(p.dob, '%%Y-%%m-%%d') as dob,
+                       p.phone, p.bio, p.avatar_url
                 FROM user u
                 LEFT JOIN profile p ON u.user_id = p.user_id
                 WHERE u.user_id = %s
             ''', (user_id,))
             user_info = cursor.fetchone()
-            
             if not user_info:
                 conn.close()
                 return jsonify({'success': False, 'message': 'User not found'}), 404
-                
-            # 2. Get user sessions (activity log)
+
+            # 2. CVs
+            cursor.execute('''
+                SELECT cv_id, file_path, file_type, ats_score, status,
+                       DATE_FORMAT(upload_date, '%%Y-%%m-%%d %%H:%%i') as upload_date
+                FROM cv WHERE user_id = %s ORDER BY upload_date DESC
+            ''', (user_id,))
+            user_info['cvs'] = cursor.fetchall()
+
+            # 3. Portfolios
+            cursor.execute('''
+                SELECT portfolio_id, title, slug, is_published, view_count,
+                       DATE_FORMAT(created_at, '%%Y-%%m-%%d') as created_at
+                FROM portfolio WHERE user_id = %s ORDER BY created_at DESC
+            ''', (user_id,))
+            user_info['portfolios'] = cursor.fetchall()
+
+            # 4. Roadmaps
+            cursor.execute('''
+                SELECT roadmap_id, title, total_months, completion_rate, status,
+                       DATE_FORMAT(created_at, '%%Y-%%m-%%d') as created_at
+                FROM roadmap WHERE user_id = %s ORDER BY created_at DESC
+            ''', (user_id,))
+            user_info['roadmaps'] = cursor.fetchall()
+
+            # 5. Skills
+            cursor.execute('''
+                SELECT s.skill_name, us.proficiency_level
+                FROM userskill us
+                JOIN skill s ON us.skill_id = s.skill_id
+                WHERE us.user_id = %s
+            ''', (user_id,))
+            user_info['skills'] = cursor.fetchall()
+
+            # 6. Activity log (sessions)
             cursor.execute('''
                 SELECT device_info, location, ip_address, is_current,
                        DATE_FORMAT(last_active, '%%Y-%%m-%%d %%H:%%i:%%s') as last_active
                 FROM user_session
-                WHERE user_id = %s
-                ORDER BY last_active DESC
+                WHERE user_id = %s ORDER BY last_active DESC LIMIT 20
             ''', (user_id,))
-            sessions = cursor.fetchall()
-            
-            user_info['sessions'] = sessions
-            
+            user_info['sessions'] = cursor.fetchall()
+
         conn.close()
         return jsonify({'success': True, 'data': user_info})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+# ─── Delete user ──────────────────────────────────────────────────────────────
 @admin_bp.route('/admin/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     if not check_admin(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
     try:
         conn = get_db()
         with conn.cursor() as cursor:
-            # Delete related data first (roadmap, goals, user_session, etc)
             cursor.execute("DELETE FROM user_session WHERE user_id = %s", (user_id,))
             cursor.execute("DELETE FROM resource_bookmark WHERE user_id = %s", (user_id,))
             cursor.execute("DELETE FROM userskill WHERE user_id = %s", (user_id,))
             cursor.execute("DELETE FROM experience WHERE user_id = %s", (user_id,))
             cursor.execute("DELETE FROM certificate WHERE user_id = %s", (user_id,))
-            
-            # Delete roadmaps (this cascade needs manual deletion if FK doesn't have CASCADE)
+            cursor.execute("DELETE FROM cv WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM portfolio WHERE user_id = %s", (user_id,))
             cursor.execute("SELECT roadmap_id FROM roadmap WHERE user_id = %s", (user_id,))
-            roadmaps = cursor.fetchall()
-            for r in roadmaps:
+            for r in cursor.fetchall():
                 cursor.execute("DELETE FROM goal WHERE roadmap_id = %s", (r['roadmap_id'],))
             cursor.execute("DELETE FROM roadmap WHERE user_id = %s", (user_id,))
-            
             cursor.execute("DELETE FROM profile WHERE user_id = %s", (user_id,))
             cursor.execute("DELETE FROM user WHERE user_id = %s", (user_id,))
-            
             conn.commit()
         conn.close()
-        return jsonify({'success': True, 'message': 'Xóa người dùng thành công'})
+        return jsonify({'success': True, 'message': 'Xoa nguoi dung thanh cong'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

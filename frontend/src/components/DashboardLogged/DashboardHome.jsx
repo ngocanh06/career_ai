@@ -17,6 +17,267 @@ import {
   FaCircleExclamation,
 } from "react-icons/fa6";
 import './DashboardHome.css';
+import '../Admin/AdminDashboard.css';
+import { FaUsers, FaRoute, FaSearch, FaEye, FaTimes, FaFileAlt, FaHistory, FaCode as FaCodeR, FaGlobe, FaLock, FaFilePdf } from 'react-icons/fa';
+
+/* ── Admin Stats View ── */
+function AdminStats({ adminUser }) {
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [viewingUser, setViewingUser] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailTab, setDetailTab] = useState('profile');
+  const H = { 'Content-Type': 'application/json', 'X-Admin-User-Id': adminUser.user_id };
+
+  useEffect(() => {
+    Promise.all([
+      fetch('http://localhost:5000/api/admin/stats', { headers: H }).then(r => r.json()),
+      fetch('http://localhost:5000/api/admin/users', { headers: H }).then(r => r.json()),
+    ]).then(([s, u]) => {
+      if (s.success) setStats(s.data);
+      if (u.success) setUsers(u.data);
+    }).finally(() => setLoading(false));
+  }, [adminUser.user_id]);
+
+  const openDetails = async (user) => {
+    setDetailsLoading(true);
+    setDetailTab('profile');
+    setViewingUser({ basic: user, details: null });
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/users/${user.user_id}/details`, { headers: H });
+      const json = await res.json();
+      if (json.success) setViewingUser({ basic: user, details: json.data });
+      else setViewingUser(null);
+    } catch { setViewingUser(null); }
+    setDetailsLoading(false);
+  };
+
+  const filtered = users.filter(u =>
+    (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+    (u.full_name || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const statItems = [
+    { label: 'Tổng người dùng', key: 'total_users', color: '#3b5bdb', icon: <FaUsers /> },
+    { label: 'Đang hoạt động', key: 'active_users', color: '#10b981', icon: <FaArrowTrendUp /> },
+    { label: 'Lộ trình tạo', key: 'total_roadmaps', color: '#f59e0b', icon: <FaRoute /> },
+    { label: 'CV đã tải lên', key: 'total_cvs', color: '#8b5cf6', icon: <FaFileLines /> },
+    { label: 'Portfolio công khai', key: 'published_portfolios', color: '#ec4899', icon: <FaBriefcase /> },
+  ];
+
+  const TABS = [
+    { key: 'profile', label: 'Hồ sơ' },
+    { key: 'cv', label: 'CV' },
+    { key: 'portfolio', label: 'Portfolio' },
+    { key: 'roadmap', label: 'Lộ trình' },
+    { key: 'skills', label: 'Kỹ năng' },
+    { key: 'activity', label: 'Activity Log' },
+  ];
+
+  return (
+    <div className="admin-container" style={{ padding: '30px 40px' }}>
+      <h1 className="admin-title">
+        <FaArrowTrendUp style={{ marginRight: 10, color: '#3b5bdb' }} />
+        Theo dõi dữ liệu người dùng
+      </h1>
+
+      <div className="admin-stats-grid">
+        {statItems.map(s => (
+          <div className="admin-stat-card" key={s.key}>
+            <div className="stat-icon" style={{ background: `${s.color}18`, color: s.color }}>{s.icon}</div>
+            <div className="stat-info"><h3>{s.label}</h3><p>{loading ? '…' : stats?.[s.key] ?? 0}</p></div>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-table-container" style={{ marginTop: 28 }}>
+        <div className="table-header">
+          <h2>Danh sách người dùng</h2>
+          <div className="search-box">
+            <FaSearch className="search-icon" />
+            <input placeholder="Tìm kiếm email, tên..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+        </div>
+        {loading ? (
+          <div style={{ padding: 24, textAlign: 'center', color: '#6b7280' }}>Đang tải...</div>
+        ) : (
+          <table className="admin-table">
+            <thead><tr>
+              <th>ID</th><th>Họ Tên</th><th>Email</th>
+              <th>Vai trò</th><th>Trạng thái</th><th>Ngày tạo</th><th>Xem</th>
+            </tr></thead>
+            <tbody>
+              {filtered.map(u => (
+                <tr key={u.user_id}>
+                  <td>{u.user_id}</td>
+                  <td><strong>{u.full_name || '—'}</strong></td>
+                  <td>{u.email}</td>
+                  <td><span className={`role-badge ${u.role}`}>{u.role}</span></td>
+                  <td><span className={`status-badge ${u.status}`}>{u.status}</span></td>
+                  <td>{u.created_at?.split(' ')[0] || '—'}</td>
+                  <td>
+                    <button className="admin-btn-icon admin-btn-view" onClick={() => openDetails(u)} title="Xem chi tiết"><FaEye /></button>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 20, color: '#9ca3af' }}>Không tìm thấy người dùng nào.</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* View Details Modal */}
+      {viewingUser && (
+        <div className="admin-modal-overlay" onClick={() => setViewingUser(null)}>
+          <div className="admin-modal admin-modal-xl" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Hồ sơ: {viewingUser.basic.email}</h3>
+              </div>
+              <button className="btn-close" onClick={() => setViewingUser(null)}><FaTimes /></button>
+            </div>
+
+            <div className="detail-tabs">
+              {TABS.map(t => (
+                <button key={t.key} className={`detail-tab ${detailTab === t.key ? 'active' : ''}`} onClick={() => setDetailTab(t.key)}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="admin-modal-body detail-body">
+              {detailsLoading && !viewingUser.details ? (
+                <div className="admin-loading">Đang tải dữ liệu...</div>
+              ) : viewingUser.details ? (
+                <>
+                  {detailTab === 'profile' && (
+                    <div className="detail-grid-2">
+                      <div className="details-section">
+                        <h4>Thông tin cơ bản</h4>
+                        <IRow label="Họ tên" value={viewingUser.details.full_name} />
+                        <IRow label="Email" value={viewingUser.details.email} />
+                        <IRow label="Ngày sinh" value={viewingUser.details.dob} />
+                        <IRow label="Số điện thoại" value={viewingUser.details.phone} />
+                        <IRow label="Bio" value={viewingUser.details.bio} />
+                      </div>
+                      <div className="details-section">
+                        <h4>Bảo mật &amp; Tài khoản</h4>
+                        <IRow label="Vai trò" value={<span className={`role-badge ${viewingUser.details.role}`}>{viewingUser.details.role}</span>} />
+                        <IRow label="Trạng thái" value={<span className={`status-badge ${viewingUser.details.status}`}>{viewingUser.details.status}</span>} />
+                        <IRow label="Ngày tạo" value={viewingUser.details.created_at} />
+                        <IRow label="Đăng nhập cuối" value={viewingUser.details.last_login} />
+                        <IRow label="Mật khẩu (hash)" value={<code className="password-hash">{viewingUser.details.password_hash}</code>} />
+                      </div>
+                    </div>
+                  )}
+                  {detailTab === 'cv' && (
+                    <div>
+                      <h4 className="detail-section-title"><FaFileAlt /> Danh sách CV đã tải lên</h4>
+                      {viewingUser.details.cvs?.length > 0 ? (
+                        <table className="admin-table">
+                          <thead><tr><th>#</th><th>Loại file</th><th>Điểm ATS</th><th>Trạng thái</th><th>Ngày tải lên</th><th>Xem</th></tr></thead>
+                          <tbody>{viewingUser.details.cvs.map((cv, i) => (
+                            <tr key={cv.cv_id}>
+                              <td>{i+1}</td><td>{cv.file_type}</td>
+                              <td>{cv.ats_score != null ? <><strong>{Math.round(cv.ats_score)}</strong>/100</> : '—'}</td>
+                              <td><span className={`status-badge ${cv.status === 'analyzed' ? 'active' : 'inactive'}`}>{cv.status}</span></td>
+                              <td>{cv.upload_date}</td>
+                              <td><a href={cv.file_path} target="_blank" rel="noreferrer" className="detail-link">Mở file</a></td>
+                            </tr>
+                          ))}</tbody>
+                        </table>
+                      ) : <p className="no-data">Người dùng chưa tải CV lên.</p>}
+                    </div>
+                  )}
+                  {detailTab === 'portfolio' && (
+                    <div>
+                      <h4 className="detail-section-title"><FaBriefcase /> Portfolio</h4>
+                      {viewingUser.details.portfolios?.length > 0 ? (
+                        <table className="admin-table">
+                          <thead><tr><th>#</th><th>Tiêu đề</th><th>Slug</th><th>Trạng thái</th><th>Lượt xem</th><th>Ngày tạo</th></tr></thead>
+                          <tbody>{viewingUser.details.portfolios.map((p, i) => (
+                            <tr key={p.portfolio_id}>
+                              <td>{i+1}</td><td>{p.title||'—'}</td><td><code>{p.slug}</code></td>
+                              <td><span className={`status-badge ${p.is_published ? 'active':'inactive'}`}>{p.is_published?'Công khai':'Riêng tư'}</span></td>
+                              <td>{p.view_count}</td><td>{p.created_at}</td>
+                            </tr>
+                          ))}</tbody>
+                        </table>
+                      ) : <p className="no-data">Người dùng chưa có portfolio.</p>}
+                    </div>
+                  )}
+                  {detailTab === 'roadmap' && (
+                    <div>
+                      <h4 className="detail-section-title"><FaRoute /> Lộ trình học tập</h4>
+                      {viewingUser.details.roadmaps?.length > 0 ? viewingUser.details.roadmaps.map(r => (
+                        <div key={r.roadmap_id} className="roadmap-card">
+                          <div className="roadmap-card-header">
+                            <span className="roadmap-title">{r.title||'Lộ trình không tên'}</span>
+                            <span className={`status-badge ${r.status==='completed'?'active':r.status==='in_progress'?'status-inprogress':'inactive'}`}>{r.status}</span>
+                          </div>
+                          <div className="roadmap-meta">{r.total_months} tháng · Tạo: {r.created_at}</div>
+                          <div className="progress-bar-wrap">
+                            <div className="progress-bar-track"><div className="progress-bar-fill" style={{width:`${r.completion_rate}%`}} /></div>
+                            <span className="progress-pct">{Math.round(r.completion_rate)}%</span>
+                          </div>
+                        </div>
+                      )) : <p className="no-data">Người dùng chưa có lộ trình.</p>}
+                    </div>
+                  )}
+                  {detailTab === 'skills' && (
+                    <div>
+                      <h4 className="detail-section-title"><FaCodeR /> Kỹ năng</h4>
+                      {viewingUser.details.skills?.length > 0 ? (
+                        <div className="skills-wrap">
+                          {viewingUser.details.skills.map((s,i)=>(
+                            <span key={i} className={`mp-skill-badge mp-skill-badge--${s.proficiency_level||'beginner'}`}>
+                              {s.skill_name} <small>({s.proficiency_level})</small>
+                            </span>
+                          ))}
+                        </div>
+                      ) : <p className="no-data">Người dùng chưa có kỹ năng.</p>}
+                    </div>
+                  )}
+                  {detailTab === 'activity' && (
+                    <div>
+                      <h4 className="detail-section-title"><FaHistory /> Nhật ký hoạt động</h4>
+                      {viewingUser.details.sessions?.length > 0 ? (
+                        <table className="admin-table">
+                          <thead><tr><th>Thời gian</th><th>Địa chỉ IP</th><th>Vị trí</th><th>Thiết bị</th></tr></thead>
+                          <tbody>{viewingUser.details.sessions.map((s,i)=>(
+                            <tr key={i}>
+                              <td>{s.last_active} {s.is_current?<span className="current-session-badge">Hiện tại</span>:''}</td>
+                              <td>{s.ip_address}</td><td>{s.location||'Unknown'}</td>
+                              <td style={{fontSize:12,maxWidth:220,wordBreak:'break-word'}}>{s.device_info}</td>
+                            </tr>
+                          ))}</tbody>
+                        </table>
+                      ) : <p className="no-data">Chưa có lịch sử hoạt động.</p>}
+                    </div>
+                  )}
+                </>
+              ) : <div className="admin-loading">Lỗi khi tải dữ liệu.</div>}
+            </div>
+            <div className="admin-modal-footer">
+              <button className="btn-cancel" onClick={() => setViewingUser(null)}>Đóng</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IRow({ label, value }) {
+  return (
+    <p><strong>{label}:</strong> {value || <span style={{ color: '#9ca3af' }}>Chưa cập nhật</span>}</p>
+  );
+}
+
 
 /* ── Skeleton loader cho card ── */
 function SkeletonCard({ height = 120 }) {
@@ -49,13 +310,16 @@ export default function DashboardLogged() {
   const navigate = useNavigate();
   const localUser = JSON.parse(localStorage.getItem('career_user')) || {};
   const userId = localUser.user_id;
+  const isAdmin = localUser.role === 'admin';
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Hook phải gọi trước mọi return có điều kiện
   useEffect(() => {
+    if (isAdmin) { setLoading(false); return; }  // Admin không cần fetch dashboard user
     if (!userId) { setLoading(false); return; }
 
     const loadDashboard = () => {
@@ -72,17 +336,12 @@ export default function DashboardLogged() {
 
     loadDashboard();
 
-    // Nếu CV vừa được upload gần đây (trong vòng 60 giây),
-    // đợi backend xử lý AI xong rồi tự fetch lại
     const cvUpdatedAt = parseInt(localStorage.getItem('cv_updated_at') || '0', 10);
     const secondsSinceUpload = (Date.now() - cvUpdatedAt) / 1000;
     let retryTimer = null;
     if (cvUpdatedAt && secondsSinceUpload < 60) {
-      // Xóa flag để không retry vô tận
       localStorage.removeItem('cv_updated_at');
-      // Hiển thị banner "đang cập nhật" cho user
       setIsRefreshing(true);
-      // Đợi backend AI analysis hoàn tất (~5 giây) rồi load lại
       const delay = Math.max(5000 - (secondsSinceUpload * 1000), 1500);
       retryTimer = setTimeout(() => {
         setIsRefreshing(false);
@@ -90,13 +349,21 @@ export default function DashboardLogged() {
       }, delay);
     }
 
-    // Reload khi CV mới được upload từ trang Phân tích CV (cùng tab)
     window.addEventListener('cv-updated', loadDashboard);
     return () => {
       window.removeEventListener('cv-updated', loadDashboard);
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [userId]);
+  }, [userId, isAdmin]);
+
+  // Sau khi tất cả hooks được gọi, mới return có điều kiện cho admin
+  if (isAdmin) {
+    return (
+      <DashboardLayout>
+        <AdminStats adminUser={localUser} />
+      </DashboardLayout>
+    );
+  }
 
   const fullName = data?.user?.full_name || localUser.full_name || 'Người dùng';
   const completion = data?.profile_completion ?? 0;

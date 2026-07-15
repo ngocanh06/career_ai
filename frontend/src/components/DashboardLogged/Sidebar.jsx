@@ -12,29 +12,33 @@ import {
 } from "react-icons/fa6";
 import './DashboardLayout.css';
 
-const mainNav = [
-  { icon: <FaTableCellsLarge />,      label: 'Trang chủ',                path: '/dashboard' },
-  { icon: <FaFileLines />,            label: 'Phân tích CV',             path: '/ai-cv' },
-  { icon: <FaBriefcase />,            label: 'Xây dựng Portfolio',       path: '/portfolio' },
-  { icon: <FaEarthAmericas />,        label: 'Định hướng nghề nghiệp',   path: '/career' },
-  { icon: <FaChartSimple />,          label: 'Lộ trình học tập',         path: '/learning-path' },
+const userNav = [
+  { icon: <FaTableCellsLarge />,   label: 'Trang chủ',              path: '/dashboard' },
+  { icon: <FaFileLines />,         label: 'Phân tích CV',           path: '/ai-cv' },
+  { icon: <FaBriefcase />,         label: 'Xây dựng Portfolio',     path: '/portfolio' },
+  { icon: <FaEarthAmericas />,     label: 'Định hướng nghề nghiệp', path: '/career' },
+  { icon: <FaChartSimple />,       label: 'Lộ trình học tập',       path: '/learning-path' },
+];
+
+const adminNav = [
+  { icon: <FaTableCellsLarge />,   label: 'Theo dõi dữ liệu',              path: '/dashboard' },
 ];
 
 const bottomNav = [
-  { icon: <FaGear />,                 label: 'Cài đặt', path: '/settings' },
-  { icon: <FaCircleQuestion />,       label: 'Hỗ trợ',  path: '/support' },
+  { icon: <FaGear />,              label: 'Cài đặt',                path: '/settings' },
+  { icon: <FaCircleQuestion />,    label: 'Hỗ trợ',                 path: '/support' },
 ];
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  
+
   let isAdmin = false;
   try {
     const user = JSON.parse(localStorage.getItem('career_user'));
-    if (user && user.role === 'admin') {
-      isAdmin = true;
-    }
+    if (user && user.role === 'admin') isAdmin = true;
   } catch (e) {}
+
+  const mainNav = isAdmin ? adminNav : userNav;
 
   return (
     <aside className="sidebar">
@@ -50,35 +54,35 @@ export default function Sidebar() {
           <NavLink
             key={item.path}
             to={item.path}
-            className={({ isActive }) =>
-              'sidebar-nav-item' + (isActive ? ' active' : '')
-            }
+            className={({ isActive }) => 'sidebar-nav-item' + (isActive ? ' active' : '')}
           >
             <span className="sidebar-nav-icon">{item.icon}</span>
             <span>{item.label}</span>
           </NavLink>
         ))}
-        
+
         {isAdmin && (
           <NavLink
             to="/admin"
             className={({ isActive }) =>
               'sidebar-nav-item admin-nav-link' + (isActive ? ' active' : '')
             }
-            style={{ marginTop: '10px', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}
+            style={{ marginTop: 8, color: '#ef4444', backgroundColor: 'rgba(239,68,68,.06)' }}
           >
             <span className="sidebar-nav-icon"><FaGear /></span>
-            <span style={{ fontWeight: 600 }}>Quản trị viên</span>
+            <span style={{ fontWeight: 600 }}>Quản lý dữ liệu người dùng</span>
           </NavLink>
         )}
       </nav>
 
-      {/* CTA */}
-      <div className="sidebar-cta">
-        <button className="sidebar-cta-btn" onClick={() => navigate('/ai-cv')}>
-          <FaWandMagicSparkles /> Phân tích CV mới
-        </button>
-      </div>
+      {/* CTA — hide for admin */}
+      {!isAdmin && (
+        <div className="sidebar-cta">
+          <button className="sidebar-cta-btn" onClick={() => navigate('/ai-cv')}>
+            <FaWandMagicSparkles /> Phân tích CV mới
+          </button>
+        </div>
+      )}
 
       {/* Bottom nav */}
       <nav className="sidebar-bottom">
@@ -86,9 +90,7 @@ export default function Sidebar() {
           <NavLink
             key={item.path}
             to={item.path}
-            className={({ isActive }) =>
-              'sidebar-nav-item' + (isActive ? ' active' : '')
-            }
+            className={({ isActive }) => 'sidebar-nav-item' + (isActive ? ' active' : '')}
           >
             <span className="sidebar-nav-icon">{item.icon}</span>
             <span>{item.label}</span>
