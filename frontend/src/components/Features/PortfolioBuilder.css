@@ -596,6 +596,39 @@
 .pb-btn-extract:hover { background: var(--pb-primary-light); }
 .pb-btn-extract:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.pb-btn-save {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: var(--pb-radius-sm);
+  font-size: 12.5px; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+  display: flex; align-items: center;
+  justify-content: center; gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #10b98140;
+  transition: background var(--pb-transition), transform 0.1s, box-shadow 0.15s;
+}
+.pb-btn-save:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 14px #10b98155;
+  transform: translateY(-1px);
+}
+.pb-btn-save:active { transform: translateY(0); }
+.pb-btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+@keyframes pb-spin { to { transform: rotate(360deg); } }
+.pb-save-spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pb-spin 0.7s linear infinite;
+}
+
+
 /* ── Empty state ── */
 .pb-empty-state-cta {
   display: flex; flex-direction: column;

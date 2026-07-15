@@ -573,6 +573,7 @@ export default function PortfolioBuilder() {
     if (uid) setPortfolioUrl(makePortfolioSlug(uid));
   }, []);
 
+  const lastSavedDraftRef = useRef(null);
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
 
@@ -593,6 +594,8 @@ export default function PortfolioBuilder() {
           if (d.projects) setProjects(d.projects);
           if (d.awards) setAwards(d.awards);
           if (d.avatarUrl) setAvatarUrl(d.avatarUrl);
+          
+          lastSavedDraftRef.current = JSON.stringify(d);
           setHasLoadedInitialData(true);
           showToast('✓ Đã khôi phục bản nháp Portfolio!', 'info');
         } else {
@@ -604,12 +607,26 @@ export default function PortfolioBuilder() {
       });
 
     function loadFromStandardProfile() {
-      // 1. Fetch user profile
-      fetch(`http://localhost:5000/api/user/${userId}`)
-        .then(r => r.json())
-        .then(json => {
-          if (!json.success) return;
-          const d = json.data;
+      Promise.allSettled([
+        fetch(`http://localhost:5000/api/user/${userId}`).then(r => r.json()),
+        fetch(`http://localhost:5000/api/cv/${userId}`).then(r => r.json()),
+        fetch(`http://localhost:5000/api/skills/${userId}`).then(r => r.json()),
+        fetch(`http://localhost:5000/api/experience/${userId}`).then(r => r.json()),
+        fetch(`http://localhost:5000/api/certificate/${userId}`).then(r => r.json())
+      ]).then(([resUser, resCv, resSkills, resExp, resCert]) => {
+        let loadedInfo = { ...FALLBACK_INFO };
+        setInfo(prev => {
+          loadedInfo = { ...prev };
+          return prev;
+        });
+        let loadedSkills = [];
+        let loadedProjects = [];
+        let loadedAwards = [];
+        let loadedInsight = '';
+
+        // 1. User profile
+        if (resUser.status === 'fulfilled' && resUser.value?.success) {
+          const d = resUser.value.data;
           let savedTitle = '';
           let savedBio = '';
           if (d.bio?.includes('||')) {
@@ -619,21 +636,15 @@ export default function PortfolioBuilder() {
           } else {
             savedBio = d.bio || '';
           }
-          setInfo(prev => ({
-            ...prev,
-            name: d.full_name || prev.name,
-            title: savedTitle || prev.title,
-            bio: savedBio || prev.bio,
-            email: d.email || prev.email,
-          }));
-        }).catch(() => { });
+          loadedInfo.name = d.full_name || loadedInfo.name;
+          loadedInfo.title = savedTitle || loadedInfo.title;
+          loadedInfo.bio = savedBio || loadedInfo.bio;
+          loadedInfo.email = d.email || loadedInfo.email;
+        }
 
-      // 2. Fetch CV data
-      fetch(`http://localhost:5000/api/cv/${userId}`)
-        .then(r => r.json())
-        .then(json => {
-          if (!json.success || !json.data) return;
-          const cv = json.data;
+        // 2. CV data
+        if (resCv.status === 'fulfilled' && resCv.value?.success && resCv.value.data) {
+          const cv = resCv.value.data;
           try {
             const analysis = typeof cv.analysis_result === 'string'
               ? JSON.parse(cv.analysis_result)
@@ -651,29 +662,26 @@ export default function PortfolioBuilder() {
 
             const summary = analysis?.summary || '';
             if (isCritiqueText(summary)) {
-              setAiInsight(prev => ({ ...prev, insight: summary }));
+              loadedInsight = summary;
             } else if (summary) {
-              setInfo(prev => ({ ...prev, bio: prev.bio || summary }));
+              loadedInfo.bio = loadedInfo.bio || summary;
             }
 
             if (extractedTitle) {
-              setInfo(prev => ({ ...prev, title: prev.title || extractedTitle }));
+              loadedInfo.title = loadedInfo.title || extractedTitle;
             }
           } catch { }
-        }).catch(() => { });
+        }
 
-      // 3. Fetch skills
-      fetch(`http://localhost:5000/api/skills/${userId}`)
-        .then(r => r.json())
-        .then(json => { if (json.success) setSkills(json.data.map(s => s.skill_name)); })
-        .catch(() => { });
+        // 3. Skills
+        if (resSkills.status === 'fulfilled' && resSkills.value?.success) {
+          loadedSkills = resSkills.value.data.map(s => s.skill_name);
+        }
 
-      // 4. Fetch experience
-      fetch(`http://localhost:5000/api/experience/${userId}`)
-        .then(r => r.json())
-        .then(json => {
-          if (!json.success) return;
-          setProjects(json.data.map(exp => ({
+        // 4. Experience
+        if (resExp.status === 'fulfilled' && resExp.value?.success) {
+          const expData = resExp.value.data;
+          loadedProjects = expData.map(exp => ({
             id: exp.experience_id,
             title: `${exp.position} - ${exp.company}`,
             desc: exp.description || '',
@@ -681,33 +689,50 @@ export default function PortfolioBuilder() {
             link: '',
             github: '',
             image: null,
-          })));
-          if (json.data.length > 0) {
-            setInfo(prev => ({ ...prev, title: prev.title || json.data[0].position || '' }));
+          }));
+          if (expData.length > 0) {
+            loadedInfo.title = loadedInfo.title || expData[0].position || '';
           }
-        }).catch(() => { });
+        }
 
-      // 5. Fetch certificates
-      fetch(`http://localhost:5000/api/certificate/${userId}`)
-        .then(r => r.json())
-        .then(json => {
-          if (!json.success) return;
-          setAwards(json.data.map(cert => ({
+        // 5. Certificates
+        if (resCert.status === 'fulfilled' && resCert.value?.success) {
+          const certData = resCert.value.data;
+          loadedAwards = certData.map(cert => ({
             id: cert.certificate_id,
             title: cert.name,
             org: cert.organization + (cert.issue_date ? ` (${cert.issue_date})` : ''),
-          })));
-        }).catch(() => { });
+          }));
+        }
 
-      setHasLoadedInitialData(true);
+        if (loadedInsight) setAiInsight(prev => ({ ...prev, insight: loadedInsight }));
+        setInfo(loadedInfo);
+        setSkills(loadedSkills);
+        setProjects(loadedProjects);
+        setAwards(loadedAwards);
+
+        // Pre-populate lastSavedDraftRef
+        const initialDraftData = {
+          theme: 'modern',
+          layout: 'center',
+          fontStyle: 'sans',
+          info: loadedInfo,
+          skills: loadedSkills,
+          projects: loadedProjects,
+          awards: loadedAwards,
+          avatarUrl: null
+        };
+        lastSavedDraftRef.current = JSON.stringify(initialDraftData);
+        setHasLoadedInitialData(true);
+      }).catch(() => {
+        setHasLoadedInitialData(true);
+      });
     }
   }, [userId]);
 
   /* ── Auto-save Draft with Debounce (1.5s) ── */
   useEffect(() => {
     if (!userId || !hasLoadedInitialData) return;
-
-    setSaveStatus('saving');
 
     const draftData = {
       theme,
@@ -719,6 +744,13 @@ export default function PortfolioBuilder() {
       awards,
       avatarUrl
     };
+
+    const draftStr = JSON.stringify(draftData);
+    if (draftStr === lastSavedDraftRef.current) {
+      return;
+    }
+
+    setSaveStatus('saving');
 
     const delayDebounceFn = setTimeout(() => {
       fetch('http://localhost:5000/api/portfolio/save-draft', {
@@ -732,6 +764,7 @@ export default function PortfolioBuilder() {
         .then(r => r.json())
         .then(json => {
           if (json.success) {
+            lastSavedDraftRef.current = draftStr;
             setSaveStatus('saved');
           } else {
             setSaveStatus('idle');
@@ -744,6 +777,60 @@ export default function PortfolioBuilder() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [theme, layout, fontStyle, info, skills, projects, awards, avatarUrl, userId, hasLoadedInitialData]);
+
+  /* ── Save Draft immediately (used after extract-CV so F5 doesn't wipe data) ── */
+  const saveDraftNow = useCallback((overrides = {}) => {
+    if (!userId) return;
+    const draftData = {
+      theme,
+      layout,
+      fontStyle,
+      info,
+      skills,
+      projects,
+      awards,
+      avatarUrl,
+      ...overrides,
+    };
+    const draftStr = JSON.stringify(draftData);
+    lastSavedDraftRef.current = draftStr;
+
+    fetch('http://localhost:5000/api/portfolio/save-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, draft_data: draftData }),
+    }).catch(() => {});
+  }, [userId, theme, layout, fontStyle, info, skills, projects, awards, avatarUrl]);
+
+  /* ── Manual Save ── */
+  const [isManuallySaving, setIsManuallySaving] = useState(false);
+  const handleManualSave = async () => {
+    if (!userId || isManuallySaving) return;
+    setIsManuallySaving(true);
+    const draftData = { theme, layout, fontStyle, info, skills, projects, awards, avatarUrl };
+    const draftStr = JSON.stringify(draftData);
+    try {
+      const res = await fetch('http://localhost:5000/api/portfolio/save-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          draft_data: draftData,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        lastSavedDraftRef.current = draftStr;
+        showToast('✓ Đã lưu Portfolio!', 'success');
+      } else {
+        showToast('Lưu thất bại, thử lại.', 'warn');
+      }
+    } catch {
+      showToast('Không thể kết nối máy chủ.', 'warn');
+    }
+    setIsManuallySaving(false);
+  };
+
 
   /* ── AI Insight fetch ── */
   useEffect(() => {
@@ -914,30 +1001,52 @@ export default function PortfolioBuilder() {
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;
-        if (d.skills) setSkills(prev => [...new Set([...prev, ...d.skills])]);
-        if (d.projects) setProjects(prev => [...prev, ...d.projects.map((p, i) => ({ id: Date.now() + i, title: p.title || 'Dự án mới', desc: p.desc || '', tech: p.tech || '', link: '', github: '', image: null }))]);
-        if (d.awards) setAwards(prev => [...prev, ...d.awards.map((a, i) => ({ id: Date.now() + 100 + i, title: a.title || 'Giải thưởng', org: a.org || '' }))]);
 
-        // === FIX 1: Extract title, phone, address from CV extract response ===
+        // Build the new merged state eagerly so we can save it immediately
+        const newSkills = d.skills ? [...new Set([...skills, ...d.skills])] : skills;
+        const newProjects = d.projects
+          ? [...projects, ...d.projects.map((p, i) => ({ id: Date.now() + i, title: p.title || 'Dự án mới', desc: p.desc || '', tech: p.tech || '', link: '', github: '', image: null }))]
+          : projects;
+        const newAwards = d.awards
+          ? [...awards, ...d.awards.map((a, i) => ({ id: Date.now() + 100 + i, title: a.title || 'Giải thưởng', org: a.org || '' }))]
+          : awards;
+
         const extractedTitle = d.title || d.desired_position || d.position || '';
         const extractedPhone = d.phone || '';
         const extractedAddress = d.address || '';
 
-        setInfo(prev => ({
-          ...prev,
-          title: prev.title || extractedTitle,
-          phone: prev.phone || extractedPhone,
-          address: prev.address || extractedAddress
-        }));
+        const newInfo = {
+          ...info,
+          title: info.title || extractedTitle,
+          phone: info.phone || extractedPhone,
+          address: info.address || extractedAddress,
+        };
 
-        // === FIX 2: If summary is a critique, redirect to insight panel ===
         if (d.summary) {
           if (isCritiqueText(d.summary)) {
             setAiInsight(prev => ({ ...prev, insight: d.summary }));
-          } else if (!info.bio) {
-            setInfo(prev => ({ ...prev, bio: d.summary }));
+          } else if (!newInfo.bio) {
+            newInfo.bio = d.summary;
           }
         }
+
+        // Apply state
+        setSkills(newSkills);
+        setProjects(newProjects);
+        setAwards(newAwards);
+        setInfo(newInfo);
+
+        // ── Persist IMMEDIATELY so F5 won't lose the data ──
+        // (the normal debounce fires 1.5s later but the user may refresh first)
+        setHasLoadedInitialData(true); // ensure auto-save guard is open
+        fetch('http://localhost:5000/api/portfolio/save-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            draft_data: { theme, layout, fontStyle, info: newInfo, skills: newSkills, projects: newProjects, awards: newAwards, avatarUrl },
+          }),
+        }).catch(() => {});
 
         showToast('Đã trích xuất thông tin từ CV!', 'success');
       } else {
@@ -1438,6 +1547,11 @@ export default function PortfolioBuilder() {
               <button className="pb-btn-extract" onClick={handleExtractCV} disabled={isExtracting || !userId}>
                 <FaWandMagicSparkles />
                 {isExtracting ? 'Đang đọc CV...' : 'Auto điền từ CV'}
+              </button>
+              <button className="pb-btn-save" onClick={handleManualSave} disabled={isManuallySaving || !userId}>
+                {isManuallySaving
+                  ? <><span className="pb-save-spinner" /> Đang lưu...</>
+                  : <>✓ Lưu</>}
               </button>
             </div>
           </div>

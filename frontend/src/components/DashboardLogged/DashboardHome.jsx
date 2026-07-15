@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa6";
 import './DashboardHome.css';
 import '../Admin/AdminDashboard.css';
+import AdminDashboard from '../Admin/AdminDashboard';
 import { FaUsers, FaRoute, FaSearch, FaEye, FaTimes, FaFileAlt, FaHistory, FaCode as FaCodeR, FaGlobe, FaLock, FaFilePdf } from 'react-icons/fa';
 
 /* ── Admin Stats View ── */
@@ -358,11 +359,7 @@ export default function DashboardLogged() {
 
   // Sau khi tất cả hooks được gọi, mới return có điều kiện cho admin
   if (isAdmin) {
-    return (
-      <DashboardLayout>
-        <AdminStats adminUser={localUser} />
-      </DashboardLayout>
-    );
+    return <AdminDashboard />;
   }
 
   const fullName = data?.user?.full_name || localUser.full_name || 'Người dùng';

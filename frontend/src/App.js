@@ -23,6 +23,7 @@ import MyProfile from './components/Features/MyProfile';
 
 // Admin
 import AdminDashboard from './components/Admin/AdminDashboard';
+import AdminUsers from './components/Admin/AdminUsers';
 
 // Tiện ích: reset scroll về đầu trang khi navigate
 import ScrollToTop from './components/DashboardLogged/ScrollToTop';
@@ -72,7 +73,7 @@ function App() {
             <Route path="/profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
             
             {/* Admin Routes */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminUsers /></AdminRoute>} />
           </Routes>
         </div>
       </Router>
