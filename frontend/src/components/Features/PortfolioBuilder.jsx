@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas-pro';
+import { jsPDF } from 'jspdf';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './PortfolioBuilder.css';
 
@@ -534,6 +535,7 @@ export default function PortfolioBuilder() {
   const [userId, setUserId] = useState(null);
   const [portfolioUrl, setPortfolioUrl] = useState('portfolio.ai/u/p-????');
   const [toast, setToast] = useState({ show: false, msg: '', type: 'info' });
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   // === FIX 3: Avatar state ===
   const [avatarUrl, setAvatarUrl] = useState(null);
@@ -1081,27 +1083,105 @@ export default function PortfolioBuilder() {
   };
 
   /* ── Download PDF ── */
-  const handleDownloadPDF = () => {
-    const element = document.getElementById('portfolio-preview-content');
-    if (element) {
-      try {
-        const slug = userId ? `p-${((userId * 2654435761) >>> 0).toString(16).slice(0, 4)}` : 'career_ai';
-        html2pdf().set({
-          margin: [0, 0, 0, 0],
-          filename: `Portfolio_${slug}.pdf`,
-          image: { type: 'jpeg', quality: 1.0 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        }).from(element).save().catch(err => {
-          console.error("PDF generation error:", err);
-          showToast('Lỗi tạo PDF. Vui lòng thử lại.', 'warn');
-        });
-      } catch (error) {
-        console.error("PDF setup error:", error);
-        showToast('Tính năng xuất PDF đang gặp lỗi (có thể do thư viện html2pdf.js). Vui lòng thử chạy lại npm install.', 'warn');
-      }
-    } else {
+  const handleDownloadPDF = async () => {
+    if (isExportingPdf) return;
+
+    const card = document.querySelector('#portfolio-preview-content .pf-card');
+    if (!card) {
       showToast('Không tìm thấy nội dung để xuất PDF.', 'warn');
+      return;
+    }
+
+    const exportHost = document.createElement('div');
+    exportHost.id = 'portfolio-pdf-export-host';
+    exportHost.setAttribute('aria-hidden', 'true');
+    exportHost.style.cssText = [
+      'position:fixed',
+      'left:-10000px',
+      'top:0',
+      'width:640px',
+      'background:#fff',
+      'overflow:visible',
+      'z-index:-1',
+      'pointer-events:none',
+    ].join(';');
+
+    const exportCard = card.cloneNode(true);
+    exportCard.id = 'portfolio-pdf-export';
+    exportCard.style.maxWidth = '640px';
+    exportCard.style.width = '640px';
+    exportCard.style.margin = '0';
+    exportCard.style.boxShadow = 'none';
+    exportCard.style.borderRadius = '0';
+
+    exportHost.appendChild(exportCard);
+    document.body.appendChild(exportHost);
+
+    exportCard.querySelectorAll(
+      '.pf-cta-row, .pf-avatar-overlay, .pf-ats-panel, .pf-orb, .pf-avatar-wrapper'
+    ).forEach(el => el.remove());
+
+    setIsExportingPdf(true);
+    try {
+      const slug = userId ? `p-${((userId * 2654435761) >>> 0).toString(16).slice(0, 4)}` : 'career_ai';
+      const contentHeight = exportCard.scrollHeight || exportCard.offsetHeight;
+      const scale = contentHeight > 7000 ? 1 : contentHeight > 4500 ? 1.5 : 2;
+
+      const canvas = await html2canvas(exportCard, {
+        scale,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 640,
+        windowHeight: Math.max(contentHeight, 800),
+        onclone: (clonedDoc) => {
+          const clonedHost = clonedDoc.getElementById('portfolio-pdf-export-host');
+          if (clonedHost) {
+            clonedHost.style.left = '0';
+            clonedHost.style.position = 'static';
+          }
+          const clonedCard = clonedDoc.getElementById('portfolio-pdf-export');
+          if (clonedCard) {
+            clonedCard.style.maxWidth = '640px';
+            clonedCard.style.width = '640px';
+            clonedCard.style.overflow = 'visible';
+          }
+        },
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const printableWidth = pageWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
+      const imgWidth = printableWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+      heightLeft -= printableHeight;
+
+      while (heightLeft > 0) {
+        position -= printableHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+        heightLeft -= printableHeight;
+      }
+
+      pdf.save(`Portfolio_${slug}.pdf`);
+      showToast('Đã tải PDF thành công!', 'success');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      showToast('Lỗi tạo PDF. Vui lòng thử lại.', 'warn');
+    } finally {
+      exportHost.remove();
+      setIsExportingPdf(false);
     }
   };
 
@@ -1583,8 +1663,8 @@ export default function PortfolioBuilder() {
                   </button>
                 ))}
               </div>
-              <button className="pb-btn-pdf" onClick={handleDownloadPDF}>
-                <FaDownload /> Tải PDF
+              <button className="pb-btn-pdf" onClick={handleDownloadPDF} disabled={isExportingPdf}>
+                <FaDownload /> {isExportingPdf ? 'Đang tạo PDF...' : 'Tải PDF'}
               </button>
             </div>
 

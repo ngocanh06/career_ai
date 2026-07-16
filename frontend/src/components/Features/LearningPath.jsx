@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
 import './LearningPath.css';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas-pro';
+import { jsPDF } from 'jspdf';
 
 const LEVEL_PCT = { expert: 100, advanced: 80, intermediate: 60, beginner: 30 };
 
@@ -136,6 +137,7 @@ export default function LearningPath() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generatingInsight, setGeneratingInsight] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [aiInsight, setAiInsight] = useState("Nhấn 'Lấy gợi ý AI mới' để nhận phân tích cá nhân hoá.");
   const [expandedGoal, setExpandedGoal] = useState(null);
   const [showTargetModal, setShowTargetModal] = useState(false);
@@ -579,25 +581,100 @@ export default function LearningPath() {
     }
   };
 
-  const handleDownloadPDF = () => {
-    const element = document.getElementById('learning-path-print-content');
-    if (element) {
-      try {
-        const slug = roadmap ? `lp-${roadmap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'learning-path';
-        html2pdf().set({
-          margin: [0.4, 0.4, 0.4, 0.4],
-          filename: `LearningPath_${slug}.pdf`,
-          image: { type: 'jpeg', quality: 1.0 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        }).from(element).save().catch(err => {
-          console.error("PDF generation error:", err);
-          alert('Lỗi khi xuất PDF. Vui lòng thử lại.');
-        });
-      } catch (error) {
-        console.error("PDF setup error:", error);
-        alert('Lỗi xuất PDF (có thể do thiếu thư viện html2pdf.js). Hãy yêu cầu chạy npm install.');
+  const handleDownloadPDF = async () => {
+    if (isExportingPdf) return;
+
+    const source = document.getElementById('learning-path-print-content');
+    if (!source) {
+      alert('Không tìm thấy nội dung để xuất PDF.');
+      return;
+    }
+
+    const exportHost = document.createElement('div');
+    exportHost.id = 'learning-path-pdf-export-host';
+    exportHost.setAttribute('aria-hidden', 'true');
+    exportHost.style.cssText = [
+      'position:fixed',
+      'left:-10000px',
+      'top:0',
+      'width:900px',
+      'background:#fff',
+      'overflow:visible',
+      'z-index:-1',
+      'pointer-events:none',
+    ].join(';');
+
+    const exportContent = source.cloneNode(true);
+    exportContent.id = 'learning-path-pdf-export';
+    exportContent.style.width = '900px';
+    exportContent.style.maxWidth = '900px';
+
+    exportHost.appendChild(exportContent);
+    document.body.appendChild(exportHost);
+
+    exportContent.querySelectorAll('button').forEach(el => el.remove());
+    exportContent.querySelectorAll('input[type="checkbox"]').forEach(el => el.remove());
+
+    setIsExportingPdf(true);
+    try {
+      const slug = roadmap ? `lp-${roadmap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'learning-path';
+      const contentHeight = exportContent.scrollHeight || exportContent.offsetHeight;
+      const scale = contentHeight > 7000 ? 1 : contentHeight > 4500 ? 1.5 : 2;
+
+      const canvas = await html2canvas(exportContent, {
+        scale,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 900,
+        windowHeight: Math.max(contentHeight, 800),
+        onclone: (clonedDoc) => {
+          const clonedHost = clonedDoc.getElementById('learning-path-pdf-export-host');
+          if (clonedHost) {
+            clonedHost.style.left = '0';
+            clonedHost.style.position = 'static';
+          }
+          const clonedContent = clonedDoc.getElementById('learning-path-pdf-export');
+          if (clonedContent) {
+            clonedContent.style.width = '900px';
+            clonedContent.style.maxWidth = '900px';
+            clonedContent.style.overflow = 'visible';
+          }
+        },
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const printableWidth = pageWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
+      const imgWidth = printableWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+      heightLeft -= printableHeight;
+
+      while (heightLeft > 0) {
+        position -= printableHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+        heightLeft -= printableHeight;
       }
+
+      pdf.save(`LearningPath_${slug}.pdf`);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert('Lỗi khi xuất PDF. Vui lòng thử lại.');
+    } finally {
+      exportHost.remove();
+      setIsExportingPdf(false);
     }
   };
 
@@ -863,8 +940,9 @@ export default function LearningPath() {
                 : 'Hãy tạo lộ trình học tập AI cá nhân hoá dựa trên kỹ năng và mục tiêu nghề nghiệp của bạn.'}
             </p>
             <div className="lp-hero-actions" style={{ display: 'flex', gap: '10px' }}>
-              <button className="lp-btn-primary" disabled={!roadmap} onClick={handleDownloadPDF}>
-                <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Xuất lộ trình PDF
+              <button className="lp-btn-primary" disabled={!roadmap || isExportingPdf} onClick={handleDownloadPDF}>
+                <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i>
+                {isExportingPdf ? 'Đang tạo PDF...' : 'Xuất lộ trình PDF'}
               </button>
               {!roadmap && (
                 <>
