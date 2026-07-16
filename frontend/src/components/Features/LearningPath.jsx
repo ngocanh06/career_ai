@@ -582,14 +582,22 @@ export default function LearningPath() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('learning-path-print-content');
     if (element) {
-      const slug = roadmap ? `lp-${roadmap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'learning-path';
-      html2pdf().set({
-        margin: [0.4, 0.4, 0.4, 0.4],
-        filename: `LearningPath_${slug}.pdf`,
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-      }).from(element).save();
+      try {
+        const slug = roadmap ? `lp-${roadmap.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'learning-path';
+        html2pdf().set({
+          margin: [0.4, 0.4, 0.4, 0.4],
+          filename: `LearningPath_${slug}.pdf`,
+          image: { type: 'jpeg', quality: 1.0 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        }).from(element).save().catch(err => {
+          console.error("PDF generation error:", err);
+          alert('Lỗi khi xuất PDF. Vui lòng thử lại.');
+        });
+      } catch (error) {
+        console.error("PDF setup error:", error);
+        alert('Lỗi xuất PDF (có thể do thiếu thư viện html2pdf.js). Hãy yêu cầu chạy npm install.');
+      }
     }
   };
 

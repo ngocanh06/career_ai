@@ -1084,14 +1084,24 @@ export default function PortfolioBuilder() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('portfolio-preview-content');
     if (element) {
-      const slug = userId ? `p-${((userId * 2654435761) >>> 0).toString(16).slice(0, 4)}` : 'career_ai';
-      html2pdf().set({
-        margin: [0, 0, 0, 0],
-        filename: `Portfolio_${slug}.pdf`,
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-      }).from(element).save();
+      try {
+        const slug = userId ? `p-${((userId * 2654435761) >>> 0).toString(16).slice(0, 4)}` : 'career_ai';
+        html2pdf().set({
+          margin: [0, 0, 0, 0],
+          filename: `Portfolio_${slug}.pdf`,
+          image: { type: 'jpeg', quality: 1.0 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        }).from(element).save().catch(err => {
+          console.error("PDF generation error:", err);
+          showToast('Lỗi tạo PDF. Vui lòng thử lại.', 'warn');
+        });
+      } catch (error) {
+        console.error("PDF setup error:", error);
+        showToast('Tính năng xuất PDF đang gặp lỗi (có thể do thư viện html2pdf.js). Vui lòng thử chạy lại npm install.', 'warn');
+      }
+    } else {
+      showToast('Không tìm thấy nội dung để xuất PDF.', 'warn');
     }
   };
 

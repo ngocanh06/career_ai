@@ -625,8 +625,26 @@ export default function DashboardLogged() {
 
               {hasCV && (userSkills.length > 0 || strongSkills.length > 0 || missingSkills.length > 0) ? (
                 <>
-                  {/* User skills từ DB (userskill table) */}
-                  {userSkills.length > 0 && (
+                  {/* Strong skills từ CV analysis (Ưu tiên hiển thị theo CV) */}
+                  {strongSkills.length > 0 && (
+                    <div className="home-skills-list">
+                      {strongSkills.map((skill, i) => (
+                        <div key={i} className="home-skill-row">
+                          <div className="home-skill-meta">
+                            <span className="home-skill-name">{skill}</span>
+                            <span className="home-skill-badge">Ghi nhận từ CV</span>
+                          </div>
+                          <div className="home-skill-track">
+                            <div className="home-skill-fill" style={{ width: `${85 - i * 10}%` }} />
+                          </div>
+                          <span className="home-skill-pct">{85 - i * 10}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Nếu không có strongSkills từ CV, fallback sang userSkills từ DB */}
+                  {strongSkills.length === 0 && userSkills.length > 0 && (
                     <div className="home-skills-list">
                       {userSkills.slice(0, 4).map((s, i) => {
                         const lvlMap = { expert: 95, advanced: 80, intermediate: 65, beginner: 40 };
@@ -648,24 +666,6 @@ export default function DashboardLogged() {
                           </div>
                         );
                       })}
-                    </div>
-                  )}
-
-                  {/* Nếu không có userSkills, hiển thị strongSkills từ CV analysis */}
-                  {userSkills.length === 0 && strongSkills.length > 0 && (
-                    <div className="home-skills-list">
-                      {strongSkills.map((skill, i) => (
-                        <div key={i} className="home-skill-row">
-                          <div className="home-skill-meta">
-                            <span className="home-skill-name">{skill}</span>
-                            <span className="home-skill-badge">Ghi nhận từ CV</span>
-                          </div>
-                          <div className="home-skill-track">
-                            <div className="home-skill-fill" style={{ width: `${85 - i * 10}%` }} />
-                          </div>
-                          <span className="home-skill-pct">{85 - i * 10}%</span>
-                        </div>
-                      ))}
                     </div>
                   )}
 
