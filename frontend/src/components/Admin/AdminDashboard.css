@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 :root {
   --admin-primary: #6366f1;
@@ -157,7 +157,9 @@
 
 .search-box {
   position: relative;
-  width: 300px;
+  width: 260px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .search-icon {
@@ -172,17 +174,18 @@
 
 .search-box input {
   width: 100%;
-  padding: 11px 16px 11px 40px;
+  padding: 9px 16px 9px 38px;
   border: 1.5px solid #e2e8f0;
-  border-radius: 99px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
   background: white;
   color: #334155;
   font-family: "Inter", sans-serif;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  font-weight: 500;
 }
 
 .search-box input:focus {

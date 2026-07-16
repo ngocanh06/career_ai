@@ -146,10 +146,6 @@ export default function AdminUsers() {
         <div className="admin-table-container">
           <div className="table-header">
             <h2>Danh sách người dùng</h2>
-            <div className="search-box">
-              <FaSearch className="search-icon" />
-              <input type="text" placeholder="Tìm kiếm email, tên..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
           </div>
 
           {/* Filter Bar */}
@@ -175,6 +171,10 @@ export default function AdminUsers() {
                 <option value="active">Hoạt động (Active)</option>
                 <option value="inactive">Ngừng (Inactive)</option>
               </select>
+              <div className="search-box">
+                <FaSearch className="search-icon" />
+                <input type="text" placeholder="Tìm kiếm email, tên..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
             </div>
             {(filterType !== "all" || filterRole !== "all" || filterStatus !== "all" || search) && (
               <button
