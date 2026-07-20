@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaMagnifyingGlass, FaBell, FaChevronDown, FaUser, FaGear } from "react-icons/fa6";
+import { 
+  FaMagnifyingGlass, 
+  FaBell, 
+  FaChevronDown, 
+  FaUser, 
+  FaGear,
+} from "react-icons/fa6";
 
 const pageTitles = {
   '/dashboard': 'Trang chủ',
@@ -18,18 +24,62 @@ export default function Topbar({ user }) {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const debounceTimer = useRef(null);
 
-  const localUser = JSON.parse(localStorage.getItem('career_user')) || {};
+  // ── Fix #1: Parse an toàn, tránh lỗi nếu dữ liệu localStorage bị rác ──
+  let localUser = {};
+  try {
+    localUser = JSON.parse(localStorage.getItem('career_user')) || {};
+  } catch {
+    localUser = {};
+  }
+
   const displayName = localUser.full_name || user?.name || 'Người dùng';
   const displayEmail = localUser.email || 'user@example.com';
-  // Lấy chữ cái đầu tiên của tên để làm avatar (ví dụ: Nguyễn Văn A -> A)
-  const nameParts = displayName.split(' ');
-  const avatarInitial = nameParts[nameParts.length - 1].charAt(0).toUpperCase();
 
+  // ── Fix #2: Dùng .trim() trước khi split để tránh phần tử rỗng
+  //    khi tên có khoảng trắng thừa ở cuối (ví dụ: "John ") ──
+  const nameParts = displayName.trim().split(/\s+/);
+  const avatarInitial = nameParts[nameParts.length - 1].charAt(0).toUpperCase() || '?';
+
+  // ── Fix #3: Logout dùng replace để chặn Back-button quay lại Dashboard ──
   const handleLogout = () => {
     localStorage.removeItem('career_user');
-    navigate('/login');
+    // replace: true → thay thế entry history hiện tại, không thể Back lại
+    navigate('/login', { replace: true });
   };
+
+  // ── Fix #4: Debounce search (400ms) + xử lý Enter để tránh "Broken Feature" ──
+  const handleSearchChange = useCallback((e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+
+    // Hủy timer cũ nếu người dùng đang gõ
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    // Chờ 400ms sau lần gõ cuối rồi mới kích hoạt tìm kiếm
+    debounceTimer.current = setTimeout(() => {
+      if (value.trim()) {
+        // TODO: Kết nối với trang tìm kiếm/filter thực — hiện tại navigate đến /career với query
+        navigate(`/career?q=${encodeURIComponent(value.trim())}`);
+      }
+    }, 400);
+  }, [navigate]);
+
+  const handleSearchKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && searchValue.trim()) {
+      // Hủy debounce, thực thi ngay khi nhấn Enter
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      navigate(`/career?q=${encodeURIComponent(searchValue.trim())}`);
+    }
+  }, [navigate, searchValue]);
+
+  // Dọn dẹp timer khi component unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   return (
     <header className="topbar">
@@ -38,11 +88,14 @@ export default function Topbar({ user }) {
         <div className="topbar-search">
           <FaMagnifyingGlass className="topbar-search-icon" style={{ left: '16px', fontSize: '14px' }} />
           <input
+            id="topbar-search-input"
             className="topbar-search-input"
             type="text"
-            placeholder="Tìm kiếm..."
+            placeholder="Tìm kiếm vị trí, kỹ năng..."
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
+            aria-label="Tìm kiếm"
           />
         </div>
       </div>

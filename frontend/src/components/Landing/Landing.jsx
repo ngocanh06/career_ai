@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Landing.css';
 import rightImage from '../../assets/images/right.png';
 import logoPinterest from '../../assets/images/logo/logo-pinterest.png';
@@ -13,7 +13,65 @@ import logoMacys from '../../assets/images/logo/logo-macys.png';
 import logoWalmart from '../../assets/images/logo/logo-walmart.png';
 import logoMain from '../../assets/images/logo/logo-career.png';
 
+/* ── Modal yêu cầu đăng nhập ── */
+function AuthRequiredModal({ featureName, onClose }) {
+  const navigate = useNavigate();
+
+  // Đóng modal khi click ra ngoài overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div className="auth-modal-overlay" onClick={handleOverlayClick}>
+      <div className="auth-modal-box">
+        {/* Icon khóa */}
+        <div className="auth-modal-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0458E6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+
+        {/* Nội dung */}
+        <h2 className="auth-modal-title">Yêu cầu đăng nhập</h2>
+        <p className="auth-modal-desc">
+          Bạn cần đăng nhập để sử dụng chức năng
+          {featureName ? <> <strong>"{featureName}"</strong></> : ''}.
+          <br />
+          Hãy đăng nhập hoặc tạo tài khoản miễn phí ngay!
+        </p>
+
+        {/* Buttons */}
+        <div className="auth-modal-actions">
+          <button
+            className="auth-modal-btn-login"
+            onClick={() => navigate('/login')}
+          >
+            Đăng nhập
+          </button>
+          <button
+            className="auth-modal-btn-register"
+            onClick={() => navigate('/register')}
+          >
+            Tạo tài khoản
+          </button>
+        </div>
+
+        {/* Đóng */}
+        <button className="auth-modal-close" onClick={onClose} aria-label="Đóng">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
+  const navigate = useNavigate();
   const companies = [
     { name: 'Pinterest', logo: logoPinterest, alt: 'Pinterest logo' },
     { name: 'Spotify', logo: logoSpotify, alt: 'Spotify logo' },
@@ -27,8 +85,94 @@ export default function Landing() {
     { name: 'Main', logo: logoMain, alt: 'Main logo' },
   ];
 
+  // State quản lý modal yêu cầu đăng nhập
+  const [modal, setModal] = useState(null); // null | { featureName: string }
+
+  // State cho form validation
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState('');
+  
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      setSearchError('Vui lòng nhập từ khóa tìm kiếm');
+      return;
+    }
+    setSearchError('');
+    // TODO: implement search logic
+    console.log('Searching for:', searchQuery);
+  };
+
+  const handleSubscribe = () => {
+    if (!email.trim()) {
+      setEmailError('Vui lòng nhập địa chỉ email');
+      setEmailSuccess('');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setEmailError('Địa chỉ email không hợp lệ');
+      setEmailSuccess('');
+      return;
+    }
+    setEmailError('');
+    setEmailSuccess('Đăng ký nhận bản tin thành công!');
+    setEmail('');
+  };
+
+  const requireLogin = (featureName) => {
+    let isLoggedIn = false;
+
+    try {
+      const raw = localStorage.getItem('career_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Kiểm tra nhất quán với PrivateRoute: phải có user_id
+        isLoggedIn = !!(parsed && parsed.user_id);
+      }
+    } catch (e) {
+      // JSON lỗi → dọn dẹp dữ liệu rác
+      localStorage.removeItem('career_user');
+    }
+
+    if (isLoggedIn) {
+      // Đã đăng nhập, điều hướng tương ứng
+      if (featureName === 'Hồ sơ') navigate('/profile');
+      else if (featureName === 'Nghề nghiệp') navigate('/career');
+      else if (featureName === 'Công cụ') navigate('/dashboard');
+      else if (featureName === 'Lộ trình học tập') navigate('/learning-path');
+      return true;
+    }
+
+    // Chưa đăng nhập → hiện modal xác thực
+    setModal({ featureName });
+    return false;
+  };
+
+  // Xác định user đang đăng nhập để đổi nút header
+  let loggedInUser = null;
+  try {
+    const raw = localStorage.getItem('career_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.user_id) {
+        loggedInUser = parsed;
+      }
+    }
+  } catch (e) {}
+
   return (
     <div className="landing">
+      {/* Modal yêu cầu đăng nhập */}
+      {modal && (
+        <AuthRequiredModal
+          featureName={modal.featureName}
+          onClose={() => setModal(null)}
+        />
+      )}
       {/* HEADER / NAVBAR */}
       <header className="header">
         <div className="header-container">
@@ -38,20 +182,28 @@ export default function Landing() {
           </div>
           <nav className="nav">
             <Link to="/" className="active">Trang chủ</Link>
-            <Link to="/profile">Hồ sơ</Link>
-            <Link to="/career">Nghề nghiệp</Link>
-            <Link to="/tools">Công cụ</Link>
-            <Link to="/learning">Lộ trình học tập</Link>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Công cụ'); }}>Công cụ</button>
+            <button type="button" className="nav-btn-link" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button>
           </nav>
           
           {/* Đã chuyển đổi từ <button> sang <Link> để kết nối sang Login/Register */}
           <div className="auth-buttons">
-            <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng ký
-            </Link>
-            <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlignment: 'center' }}>
-              Đăng nhập
-            </Link>
+            {loggedInUser ? (
+              <Link to="/dashboard" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                Đến Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn-signup" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng ký
+                </Link>
+                <Link to="/login" className="btn-login" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                  Đăng nhập
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -260,9 +412,9 @@ export default function Landing() {
           <div className="footer-section">
             <h4>Công cụ</h4>
             <ul>
-              <li><Link to="/profile">Hồ sơ</Link></li>
-              <li><Link to="/career">Nghề nghiệp</Link></li>
-              <li><Link to="/learning">Lộ trình học tập</Link></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Hồ sơ'); }}>Hồ sơ</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Nghề nghiệp'); }}>Nghề nghiệp</button></li>
+              <li><button type="button" className="footer-nav-btn" onClick={(e) => { e.preventDefault(); requireLogin('Lộ trình học tập'); }}>Lộ trình học tập</button></li>
             </ul>
           </div>
           <div className="footer-section">
@@ -275,9 +427,25 @@ export default function Landing() {
           <div className="footer-newsletter">
             <h4 className="newsletter-title">Đăng ký nhận bản tin của chúng tôi và không bao giờ bỏ lỡ bất kỳ cập nhật việc làm nào!</h4>
             <div className="newsletter-input-wrapper">
-              <input type="email" placeholder="Enter your email" />
-              <i className="fa-regular fa-envelope newsletter-mail-icon"></i>
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                  if (emailSuccess) setEmailSuccess('');
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
+              />
+              <i 
+                className="fa-regular fa-envelope newsletter-mail-icon" 
+                onClick={handleSubscribe} 
+                style={{ cursor: 'pointer' }}
+              ></i>
             </div>
+            {emailError && <div style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{emailError}</div>}
+            {emailSuccess && <div style={{ color: '#10b981', fontSize: '13px', marginTop: '8px' }}>{emailSuccess}</div>}
           </div>
         </div>
         <div className="footer-bottom">

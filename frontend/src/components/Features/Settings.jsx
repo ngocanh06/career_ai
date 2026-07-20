@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '../DashboardLogged/DashboardLayout';
-import { updateUser, changePassword, getUser, CURRENT_USER_ID, uploadAvatar, getLoginSessions, getLoginHistory, revokeOtherSessions } from '../../services/api';
+import { updateUser, changePassword, uploadAvatar, getLoginSessions, revokeOtherSessions } from '../../services/api';
 import './Settings.css';
 import {
-  FaUser, FaPalette, FaBell, FaShieldHalved, FaLock,
+  FaUser, FaPalette, FaBell, FaShieldHalved,
   FaEye, FaLink, FaGlobe, FaCircleInfo,
   FaSun, FaMoon, FaDesktop, FaGoogle, FaGithub,
   FaLinkedin, FaTrashCan, FaDownload, FaKey,
-  FaClockRotateLeft, FaMobileScreen, FaRightFromBracket,
+  FaMobileScreen, FaRightFromBracket,
   FaCheck, FaXmark
 } from 'react-icons/fa6';
 
@@ -66,7 +66,7 @@ function Section({ title, children }) {
 ══════════════════════════════════════════════════ */
 function TabGeneral() {
   const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-  const userId = user.user_id || CURRENT_USER_ID;
+  const userId = user?.user_id;
   const [name, setName] = useState(user.full_name || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || '');
   const [saved, setSaved] = useState(false);
@@ -75,6 +75,11 @@ function TabGeneral() {
   const fileInputRef = useRef(null);
 
   const handleAvatarChange = async (e) => {
+    if (!userId) {
+      setError('Bạn cần đăng nhập để thực hiện thao tác này');
+      return;
+    }
+
     const file = e.target.files[0];
     if (!file) return;
     
@@ -99,6 +104,11 @@ function TabGeneral() {
   };
 
   const handleSave = async () => {
+    if (!userId) {
+      setError('Bạn cần đăng nhập để thực hiện thao tác này');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -317,25 +327,22 @@ function TabSecurity() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   const [sessions, setSessions] = useState([]);
-  const [history, setHistory] = useState([]);
   
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
     
     getLoginSessions(userId).then(res => {
       if(res.success) setSessions(res.data);
-    }).catch(console.error);
-
-    getLoginHistory(userId).then(res => {
-      if(res.success) setHistory(res.data);
     }).catch(console.error);
   }, []);
 
   const handleRevokeSessions = async () => {
     if(!window.confirm('Bạn có chắc muốn đăng xuất khỏi tất cả các thiết bị khác không?')) return;
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
     try {
       await revokeOtherSessions(userId);
       const res = await getLoginSessions(userId);
@@ -357,7 +364,8 @@ function TabSecurity() {
     setPasswordSuccess(false);
     
     const user = JSON.parse(localStorage.getItem('career_user') || '{}');
-    const userId = user.user_id || CURRENT_USER_ID;
+    const userId = user?.user_id;
+    if (!userId) return;
 
     try {
       await changePassword(userId, { 
@@ -488,23 +496,7 @@ function TabSecurity() {
         </div>
       </Section>
 
-      <Section title="Lịch sử đăng nhập">
-        <div className="stg-history-list">
-          {history.map((h, i) => (
-            <div key={i} className="stg-history-item">
-              <FaClockRotateLeft className="stg-history-icon" />
-              <div className="stg-session-info">
-                <span className="stg-session-device">{h.time}</span>
-                <span className="stg-session-meta">IP: {h.ip_address} · {h.device_info || 'Unknown Device'}</span>
-              </div>
-              <span className={`stg-badge ${h.status === 'Thành công' ? 'stg-badge--green' : 'stg-badge--red'}`}>
-                {h.status}
-              </span>
-            </div>
-          ))}
-          {history.length === 0 && <div className="stg-info-box">Chưa có thông tin lịch sử đăng nhập</div>}
-        </div>
-      </Section>
+
     </>
   );
 }
